@@ -126,6 +126,8 @@ export default function TasksPage() {
       completedAt: new Date().toISOString(),
       observations: execution.observations,
       photoUrl: execution.photoAfter,
+      lubricationPointId: selectedTask.lubricationPointId,
+      workOrderId: selectedTask.workOrderId,
     });
 
     setTasks(prev =>

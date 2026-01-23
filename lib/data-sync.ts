@@ -114,18 +114,25 @@ async function syncPendingChanges(): Promise<number> {
       let success = false;
       
       if (change.type === 'task') {
+        // Insertar o actualizar tarea en Supabase
+        const taskData = {
+          id: change.entityId,
+          work_order_id: change.data.workOrderId || null,
+          lubrication_point_id: change.data.lubricationPointId || change.entityId.split('-').pop() || 'unknown',
+          status: change.data.status as string,
+          quantity_used: change.data.quantityUsed as number || null,
+          observations: change.data.observations as string || null,
+          photo_url: change.data.photoUrl as string || null,
+          completed_at: change.data.completedAt as string || null,
+          updated_at: new Date().toISOString(),
+        };
+        
         const { error } = await supabase
           .from('tasks')
-          .upsert({
-            id: change.entityId,
-            status: change.data.status,
-            quantity_used: change.data.quantityUsed,
-            observations: change.data.observations,
-            photo_url: change.data.photoUrl,
-            completed_at: change.data.completedAt,
-            updated_at: new Date().toISOString(),
-          });
+          .upsert(taskData, { onConflict: 'id' });
+        
         success = !error;
+        if (error) console.error('Task sync error:', error);
       } else if (change.type === 'workOrder') {
         const { error } = await supabase
           .from('work_orders')
