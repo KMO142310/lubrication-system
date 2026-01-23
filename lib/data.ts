@@ -22,7 +22,7 @@ const STORAGE_KEYS = {
     tasks: 'aisa_tasks',
     anomalies: 'aisa_anomalies',
     users: 'aisa_users',
-    initialized: 'aisa_data_initialized_v11', // 23 enero - datos reales sin autocompletar
+    initialized: 'aisa_data_initialized_v12', // 3 plantas, áreas correctas, responsive
 };
 
 // ============================================================

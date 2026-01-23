@@ -67,7 +67,13 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal daily-report-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+      <div className="modal daily-report-modal" onClick={e => e.stopPropagation()} style={{ 
+        maxWidth: '700px', 
+        width: '95vw',
+        maxHeight: '90vh',
+        overflow: 'auto',
+        margin: '16px'
+      }}>
         {/* Header */}
         <div className="modal-header" style={{ 
           background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)',
@@ -110,10 +116,10 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
           </button>
         </div>
 
-        {/* Info Bar */}
+        {/* Info Bar - Responsive */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
           gap: '1px',
           background: 'var(--border)',
           borderBottom: '1px solid var(--border)'
@@ -159,12 +165,12 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
           </div>
         </div>
 
-        {/* KPIs */}
+        {/* KPIs - Responsive 2x2 en móvil */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '12px',
-          padding: '16px'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
+          gap: '8px',
+          padding: '12px'
         }}>
           <div style={{
             background: 'var(--success-100)',
