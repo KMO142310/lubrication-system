@@ -1,21 +1,79 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Camera, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { Camera, X, Upload, Image as ImageIcon, AlertTriangle } from 'lucide-react';
+import { generateImageHash, checkDuplicatePhoto, registerPhoto, createFraudAlert } from '@/lib/anti-fraud';
 
 interface PhotoUploadProps {
     label: string;
     onPhotoCapture: (dataUrl: string) => void;
     existingPhoto?: string;
     required?: boolean;
+    taskId?: string;
+    userId?: string;
+    photoType?: 'before' | 'after';
 }
 
-export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, required }: PhotoUploadProps) {
+export default function PhotoUpload({ 
+    label, 
+    onPhotoCapture, 
+    existingPhoto, 
+    required,
+    taskId = 'unknown',
+    userId = 'unknown',
+    photoType = 'after'
+}: PhotoUploadProps) {
     const [photo, setPhoto] = useState<string | null>(existingPhoto || null);
     const [showCamera, setShowCamera] = useState(false);
+    const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Verificar foto duplicada y registrar
+    const processPhoto = async (dataUrl: string) => {
+        setDuplicateWarning(null);
+        
+        try {
+            const hash = await generateImageHash(dataUrl);
+            const duplicate = checkDuplicatePhoto(hash);
+            
+            if (duplicate) {
+                // ¡FOTO DUPLICADA DETECTADA!
+                const duplicateDate = new Date(duplicate.timestamp).toLocaleString('es-CL');
+                setDuplicateWarning(
+                    `⚠️ Esta foto ya fue usada el ${duplicateDate} en otra tarea. Por favor tome una foto nueva.`
+                );
+                
+                // Crear alerta de fraude
+                createFraudAlert({
+                    type: 'duplicate_photo',
+                    severity: 'high',
+                    userId,
+                    taskId,
+                    description: `Intento de reutilizar foto del ${duplicateDate} (Tarea original: ${duplicate.taskId})`,
+                });
+                
+                // NO registrar la foto, devolver null
+                return false;
+            }
+            
+            // Registrar foto nueva
+            registerPhoto({
+                hash,
+                timestamp: new Date().toISOString(),
+                deviceInfo: navigator.userAgent,
+                taskId,
+                userId,
+                type: photoType,
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('Error processing photo:', error);
+            return true; // En caso de error, permitir la foto
+        }
+    };
 
     const startCamera = async () => {
         try {
@@ -58,7 +116,7 @@ export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, requ
         setShowCamera(false);
     }, []);
 
-    const capturePhoto = () => {
+    const capturePhoto = async () => {
         if (videoRef.current) {
             const canvas = document.createElement('canvas');
             canvas.width = videoRef.current.videoWidth;
@@ -68,24 +126,33 @@ export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, requ
             if (ctx) {
                 ctx.drawImage(videoRef.current, 0, 0);
 
-                // Add timestamp watermark
+                // Add timestamp watermark with task info
                 const timestamp = new Date().toLocaleString('es-CL', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
+                    second: '2-digit',
                 });
 
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                ctx.fillRect(0, canvas.height - 36, canvas.width, 36);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 14px Inter, sans-serif';
-                ctx.fillText(`AISA Lubricación | ${timestamp}`, 12, canvas.height - 12);
+                ctx.fillText(`AISA Lubricación | ${timestamp}`, 12, canvas.height - 28);
+                ctx.font = '12px Inter, sans-serif';
+                ctx.fillText(`Tarea: ${taskId} | Usuario: ${userId}`, 12, canvas.height - 10);
 
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                setPhoto(dataUrl);
-                onPhotoCapture(dataUrl);
+                
+                // Verificar si la foto es duplicada
+                const isValid = await processPhoto(dataUrl);
+                
+                if (isValid) {
+                    setPhoto(dataUrl);
+                    onPhotoCapture(dataUrl);
+                }
             }
 
             stopCamera();
@@ -101,7 +168,7 @@ export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, requ
 
                 // Add watermark to uploaded image too
                 const img = new window.Image();
-                img.onload = () => {
+                img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
@@ -116,18 +183,27 @@ export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, requ
                             year: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit',
+                            second: '2-digit',
                         });
 
-                        const barHeight = Math.max(36, img.height * 0.05);
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                        const barHeight = Math.max(50, img.height * 0.06);
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                         ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
                         ctx.fillStyle = 'white';
-                        ctx.font = `bold ${Math.max(14, img.height * 0.025)}px Inter, sans-serif`;
-                        ctx.fillText(`AISA Lubricación | ${timestamp}`, 12, canvas.height - barHeight / 3);
+                        ctx.font = `bold ${Math.max(14, img.height * 0.02)}px Inter, sans-serif`;
+                        ctx.fillText(`AISA Lubricación | ${timestamp}`, 12, canvas.height - barHeight * 0.55);
+                        ctx.font = `${Math.max(12, img.height * 0.015)}px Inter, sans-serif`;
+                        ctx.fillText(`Tarea: ${taskId} | Usuario: ${userId}`, 12, canvas.height - barHeight * 0.2);
 
                         const watermarkedUrl = canvas.toDataURL('image/jpeg', 0.8);
-                        setPhoto(watermarkedUrl);
-                        onPhotoCapture(watermarkedUrl);
+                        
+                        // Verificar si la foto es duplicada
+                        const isValid = await processPhoto(watermarkedUrl);
+                        
+                        if (isValid) {
+                            setPhoto(watermarkedUrl);
+                            onPhotoCapture(watermarkedUrl);
+                        }
                     }
                 };
                 img.src = dataUrl;
@@ -147,6 +223,30 @@ export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, requ
                 <span>{label}</span>
                 {required && <span className="required-badge">Requerido</span>}
             </div>
+
+            {/* Alerta de foto duplicada */}
+            {duplicateWarning && (
+                <div className="duplicate-warning" style={{
+                    background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                    border: '2px solid #ef4444',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                }}>
+                    <AlertTriangle style={{ width: 20, height: 20, color: '#dc2626', flexShrink: 0, marginTop: '2px' }} />
+                    <div>
+                        <div style={{ fontWeight: 700, color: '#991b1b', fontSize: '14px', marginBottom: '4px' }}>
+                            FOTO DUPLICADA DETECTADA
+                        </div>
+                        <div style={{ color: '#b91c1c', fontSize: '13px', lineHeight: 1.4 }}>
+                            {duplicateWarning}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {photo ? (
                 <div className="photo-preview">
