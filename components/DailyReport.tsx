@@ -20,7 +20,8 @@ interface TaskSummary {
   component: string;
   machine: string;
   lubricant: string;
-  quantity: number;
+  method: string;
+  quantityUsed?: number; // Lo que realmente se usó
   unit: string;
   status: 'completado' | 'pendiente' | 'omitido';
   completedAt?: string;
@@ -41,7 +42,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
   const skipped = tasks.filter(t => t.status === 'omitido');
   
   const totalLubricant = completed.reduce((acc, t) => {
-    return acc + t.quantity;
+    return acc + (t.quantityUsed || 0);
   }, 0);
 
   const compliance = tasks.length > 0 
@@ -296,7 +297,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
                     <td style={{ padding: '8px 12px' }}>{task.component}</td>
                     <td style={{ padding: '8px 12px' }}>{task.lubricant}</td>
                     <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                      {task.quantity} {task.unit}
+                      {task.quantityUsed || '-'} {task.quantityUsed ? task.unit : ''}
                     </td>
                     <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                       <span style={{
