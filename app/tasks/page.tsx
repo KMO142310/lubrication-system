@@ -63,30 +63,17 @@ export default function TasksPage() {
     // Inicializar datos locales
     dataService.init();
     
-    // Cargar tareas completadas desde Supabase
-    let serverTasksMap: Record<string, any> = {};
+    // Cargar tareas completadas desde Supabase (fuente de verdad)
+    let serverTasksByPoint: Record<string, any> = {};
     if (isOnline()) {
       const serverTasks = await getCompletedTasksFromServer();
-      console.log('📥 Tareas de Supabase:', serverTasks.length);
+      console.log('📥 Tareas del servidor:', serverTasks.length);
       
-      // Crear mapa para búsqueda rápida
+      // Mapear por lubrication_point_id (clave única real)
       serverTasks.forEach(st => {
-        serverTasksMap[st.id] = st;
-        // También mapear por lubricationPointId para matching alternativo
         if (st.lubricationPointId) {
-          serverTasksMap[`lp-${st.lubricationPointId}`] = st;
+          serverTasksByPoint[st.lubricationPointId] = st;
         }
-      });
-      
-      // Actualizar tareas locales con datos del servidor
-      serverTasks.forEach(st => {
-        dataService.updateTask(st.id, {
-          status: st.status as 'completado',
-          quantityUsed: st.quantityUsed,
-          observations: st.observations,
-          photoUrl: st.photoUrl,
-          completedAt: st.completedAt,
-        });
       });
     }
     
@@ -108,8 +95,8 @@ export default function TasksPage() {
         const lub = lubricants.find(l => l.id === lp?.lubricantId)!;
         const freq = frequencies.find(f => f.id === lp?.frequencyId)!;
 
-        // Merge con datos del servidor si existe
-        const serverData = serverTasksMap[task.id] || serverTasksMap[`lp-${task.lubricationPointId}`];
+        // Merge con datos del servidor (por punto de lubricación)
+        const serverData = serverTasksByPoint[task.lubricationPointId];
         if (serverData && serverData.status === 'completado') {
           return { 
             ...task, 

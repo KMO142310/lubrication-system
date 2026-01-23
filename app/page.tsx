@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { useAuth } from '@/lib/auth';
+import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -47,27 +48,43 @@ export default function Dashboard() {
   }>>([]);
 
   useEffect(() => {
-    const workOrders = dataService.getWorkOrders();
-    const allTasks = dataService.getTasks();
-    const anomalies = dataService.getAnomalies();
-    const points = dataService.getLubricationPoints();
-    const machines = dataService.getMachines();
-    const components = dataService.getComponents();
-    const lubricants = dataService.getLubricants();
-    const frequencies = dataService.getFrequencies();
+    const loadDashboard = async () => {
+      const workOrders = dataService.getWorkOrders();
+      const allTasks = dataService.getTasks();
+      const anomalies = dataService.getAnomalies();
+      const points = dataService.getLubricationPoints();
+      const machines = dataService.getMachines();
+      const components = dataService.getComponents();
+      const lubricants = dataService.getLubricants();
+      const frequencies = dataService.getFrequencies();
 
-    const completedWOs = workOrders.filter(wo => wo.status === 'completado');
-    const totalWOs = workOrders.filter(wo => new Date(wo.scheduledDate) <= new Date());
+      // Cargar tareas completadas del servidor
+      let serverTasksByPoint: Record<string, any> = {};
+      if (isOnline()) {
+        const serverTasks = await getCompletedTasksFromServer();
+        serverTasks.forEach(st => {
+          if (st.lubricationPointId) {
+            serverTasksByPoint[st.lubricationPointId] = st;
+          }
+        });
+      }
 
-    const todayWO = dataService.getTodayWorkOrder();
-    const todayTasks = todayWO ? allTasks.filter(t => t.workOrderId === todayWO.id) : [];
-    const todayCompleted = todayTasks.filter(t => t.status === 'completado').length;
+      const completedWOs = workOrders.filter(wo => wo.status === 'completado');
+      const totalWOs = workOrders.filter(wo => new Date(wo.scheduledDate) <= new Date());
 
-    // Cumplimiento SLA: solo cuenta las tareas de HOY
-    // Si no hay tareas = 0% (no inventar datos)
-    const compliance = todayTasks.length > 0
-      ? Math.round((todayCompleted / todayTasks.length) * 100)
-      : 0;
+      const todayWO = dataService.getTodayWorkOrder();
+      const todayTasks = todayWO ? allTasks.filter(t => t.workOrderId === todayWO.id) : [];
+      
+      // Contar completadas: local + servidor
+      const todayCompleted = todayTasks.filter(t => {
+        if (t.status === 'completado') return true;
+        const serverData = serverTasksByPoint[t.lubricationPointId];
+        return serverData && serverData.status === 'completado';
+      }).length;
+
+      const compliance = todayTasks.length > 0
+        ? Math.round((todayCompleted / todayTasks.length) * 100)
+        : 0;
 
     setStats({
       compliance,
@@ -101,6 +118,11 @@ export default function Dashboard() {
     });
 
     setTodayTasksList(tasksList);
+    };
+    
+    loadDashboard();
+    const interval = setInterval(loadDashboard, 10000); // Refresh cada 10s
+    return () => clearInterval(interval);
   }, []);
 
   const todayProgress = stats.todayTasks > 0

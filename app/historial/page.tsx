@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { getAuditLogs } from '@/lib/anti-fraud';
+import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
 
 interface CompletedTask {
   id: string;
@@ -44,19 +45,19 @@ export default function HistorialPage() {
     loadCompletedTasks();
   }, []);
 
-  const loadCompletedTasks = () => {
-    const workOrders = dataService.getWorkOrders();
-    const tasks = dataService.getTasks();
+  const loadCompletedTasks = async () => {
     const points = dataService.getLubricationPoints();
     const components = dataService.getComponents();
     const machines = dataService.getMachines();
     const lubricants = dataService.getLubricants();
 
-    // Filtrar tareas completadas
-    const completed = tasks
-      .filter(t => t.status === 'completado')
-      .map(task => {
-        const wo = workOrders.find(w => w.id === task.workOrderId);
+    // Cargar tareas completadas DESDE SUPABASE (fuente de verdad)
+    let completed: CompletedTask[] = [];
+    
+    if (isOnline()) {
+      const serverTasks = await getCompletedTasksFromServer();
+      
+      completed = serverTasks.map(task => {
         const point = points.find(p => p.id === task.lubricationPointId);
         const comp = point ? components.find(c => c.id === point.componentId) : null;
         const machine = comp ? machines.find(m => m.id === comp.machineId) : null;
@@ -64,19 +65,19 @@ export default function HistorialPage() {
 
         return {
           id: task.id,
-          date: wo?.scheduledDate || '',
+          date: task.completedAt?.split('T')[0] || '',
           taskId: task.id,
-          pointCode: point?.code || '',
+          pointCode: point?.code || task.lubricationPointId || '',
           pointDescription: point?.description || '',
           machineName: machine?.name || '',
           lubricant: lub?.name || '',
           quantity: task.quantityUsed || point?.quantity || 0,
           completedAt: task.completedAt || '',
           photo: task.photoUrl,
-          technicianName: 'Técnico',
+          technicianName: 'Omar Alexis',
         };
-      })
-      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+      }).sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+    }
 
     setCompletedTasks(completed);
 
