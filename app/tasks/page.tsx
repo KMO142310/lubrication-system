@@ -23,7 +23,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
-import { syncDataService, subscribeToTaskUpdates } from '@/lib/data-sync';
+import { saveCompletedTask, getCompletedTasksFromServer, uploadPhoto, downloadPhotoToGallery, isOnline } from '@/lib/sync';
 import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
 import { Task, LubricationPoint, WorkOrder, Component, Machine, Lubricant, Frequency } from '@/lib/types';
@@ -60,8 +60,22 @@ export default function TasksPage() {
   });
 
   const loadData = async () => {
-    // Primero inicializar y sincronizar con Supabase
-    await syncDataService.init();
+    // Inicializar datos locales
+    dataService.init();
+    
+    // Cargar tareas completadas desde Supabase
+    if (isOnline()) {
+      const serverTasks = await getCompletedTasksFromServer();
+      serverTasks.forEach(st => {
+        dataService.updateTask(st.id, {
+          status: st.status as 'completado',
+          quantityUsed: st.quantityUsed,
+          observations: st.observations,
+          photoUrl: st.photoUrl,
+          completedAt: st.completedAt,
+        });
+      });
+    }
     
     const wo = dataService.getTodayWorkOrder();
     if (wo) {
@@ -93,8 +107,7 @@ export default function TasksPage() {
     loadData();
     
     // Refrescar cada 30 segundos para sincronizar
-    const interval = setInterval(async () => {
-      await syncDataService.refreshFromServer();
+    const interval = setInterval(() => {
       loadData();
     }, 30000);
     
@@ -112,7 +125,7 @@ export default function TasksPage() {
     setExecutionMode(true);
   };
 
-  const handleCompleteTask = () => {
+  const handleCompleteTask = async () => {
     if (!selectedTask) return;
 
     if (!execution.photoAfter) {
@@ -120,35 +133,66 @@ export default function TasksPage() {
       return;
     }
 
-    syncDataService.updateTask(selectedTask.id, {
+    const completedAt = new Date().toISOString();
+    const photoFileName = `AISA_${selectedTask.lubricationPoint.code}_${Date.now()}.jpg`;
+    
+    // 1. Guardar foto en galería del dispositivo (backup local)
+    downloadPhotoToGallery(execution.photoAfter, photoFileName);
+    
+    // 2. Subir foto a Supabase Storage
+    let photoUrl = execution.photoAfter;
+    if (isOnline()) {
+      photoUrl = await uploadPhoto(execution.photoAfter, selectedTask.id);
+    }
+    
+    // 3. Actualizar tarea localmente
+    dataService.updateTask(selectedTask.id, {
       status: 'completado',
       quantityUsed: execution.quantityUsed,
-      completedAt: new Date().toISOString(),
+      completedAt,
       observations: execution.observations,
-      photoUrl: execution.photoAfter,
-      lubricationPointId: selectedTask.lubricationPointId,
-      workOrderId: selectedTask.workOrderId,
+      photoUrl,
     });
+
+    // 4. Sincronizar con Supabase
+    if (isOnline()) {
+      const result = await saveCompletedTask({
+        id: selectedTask.id,
+        workOrderId: selectedTask.workOrderId,
+        lubricationPointId: selectedTask.lubricationPointId,
+        status: 'completado',
+        quantityUsed: execution.quantityUsed,
+        observations: execution.observations,
+        photoUrl,
+        completedAt,
+      });
+      
+      if (result.success) {
+        toast.success(`✅ Tarea ${selectedTask.lubricationPoint.code} sincronizada`);
+      } else {
+        toast.error(`⚠️ Tarea guardada localmente (${result.error})`);
+      }
+    } else {
+      toast.success(`📱 Tarea guardada (se sincronizará cuando haya conexión)`);
+    }
 
     setTasks(prev =>
       prev.map(t =>
         t.id === selectedTask.id
-          ? { ...t, status: 'completado', completedAt: new Date().toISOString() }
+          ? { ...t, status: 'completado', completedAt, photoUrl }
           : t
       )
     );
 
-    toast.success(`Tarea ${selectedTask.lubricationPoint.code} completada`);
     setSelectedTask(null);
     setExecutionMode(false);
   };
 
   const handleSignRoute = (signatureUrl: string) => {
     if (workOrder) {
-      syncDataService.updateWorkOrder(workOrder.id, {
+      dataService.updateWorkOrder(workOrder.id, {
         status: 'completado',
         completedAt: new Date().toISOString(),
-        signatureUrl: signatureUrl,
       });
 
       // Generate PDF with photo evidence
