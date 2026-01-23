@@ -2176,4 +2176,58 @@ h3 {
   .kpi-card-label {
     font-size: 11px;
   }
+  
+  /* KPI Grid Móvil - 2 columnas */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .kpi-clickable {
+    padding: 16px !important;
+  }
+  
+  .kpi-clickable > div:first-child {
+    height: 3px !important;
+  }
+  
+  /* Tablas responsive */
+  .data-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .data-table {
+    min-width: 500px;
+  }
+  
+  /* Modales responsive */
+  .modal {
+    margin: 8px !important;
+    max-height: calc(100vh - 16px) !important;
+  }
+  
+  /* Cards responsive */
+  .card {
+    margin-bottom: 12px;
+  }
+  
+  .card-body {
+    padding: 12px;
+  }
+  
+  /* Hierarchy view responsive */
+  .hierarchy-list {
+    font-size: 13px;
+  }
+  
+  .hierarchy-header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .add-btn {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
 }
