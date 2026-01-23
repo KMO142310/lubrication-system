@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from './supabase';
+import { User } from '@supabase/supabase-js';
 
 // Types
 export type UserRole = 'admin' | 'supervisor' | 'tecnico';
@@ -10,8 +12,6 @@ export interface AuthUser {
     email: string;
     name: string;
     role: UserRole;
-    companyId: string;
-    companyName: string;
 }
 
 interface AuthContextType {
@@ -22,16 +22,14 @@ interface AuthContextType {
     isAuthenticated: boolean;
 }
 
-// Demo users for local authentication
-const DEMO_USERS: (AuthUser & { password: string })[] = [
+// Fallback users para cuando no hay conexión a Supabase
+const FALLBACK_USERS: (AuthUser & { password: string })[] = [
     {
         id: 'user-admin-1',
         email: 'omar@aisa.cl',
         password: 'admin123',
         name: 'Omar Alexis',
         role: 'admin',
-        companyId: 'aisa',
-        companyName: 'AISA',
     },
     {
         id: 'user-sup-1',
@@ -39,26 +37,13 @@ const DEMO_USERS: (AuthUser & { password: string })[] = [
         password: 'super123',
         name: 'Carlos Muñoz',
         role: 'supervisor',
-        companyId: 'aisa',
-        companyName: 'AISA',
     },
     {
         id: 'user-tech-1',
-        email: 'juan@lubricacion.cl',
+        email: 'tecnico@aisa.cl',
         password: 'tech123',
         name: 'Juan Pérez',
         role: 'tecnico',
-        companyId: 'lub-pro',
-        companyName: 'Lubricación Profesional Ltda.',
-    },
-    {
-        id: 'user-tech-2',
-        email: 'pedro@lubricacion.cl',
-        password: 'tech123',
-        name: 'Pedro González',
-        role: 'tecnico',
-        companyId: 'lub-pro',
-        companyName: 'Lubricación Profesional Ltda.',
     },
 ];
 
@@ -67,48 +52,138 @@ const AUTH_STORAGE_KEY = 'aisa_auth_session';
 // Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper para convertir Supabase User a AuthUser
+async function supabaseUserToAuthUser(supabaseUser: User): Promise<AuthUser> {
+    // Intentar obtener el perfil de la DB
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .single();
+    
+    return {
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        name: profile?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuario',
+        role: profile?.role || 'tecnico',
+    };
+}
+
 // Provider
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<AuthUser | null>(() => {
-        if (typeof window === 'undefined') return null;
-        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (stored) {
-            try {
-                return JSON.parse(stored);
-            } catch {
-                localStorage.removeItem(AUTH_STORAGE_KEY);
-            }
-        }
-        return null;
-    });
+    const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Mark loading complete after initial render
+    // Inicializar sesión
     useEffect(() => {
-        setIsLoading(false);
+        const initSession = async () => {
+            try {
+                // Verificar sesión de Supabase
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session?.user) {
+                    const authUser = await supabaseUserToAuthUser(session.user);
+                    setUser(authUser);
+                } else {
+                    // Intentar cargar de localStorage (fallback)
+                    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+                    if (stored) {
+                        try {
+                            setUser(JSON.parse(stored));
+                        } catch {
+                            localStorage.removeItem(AUTH_STORAGE_KEY);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error initializing session:', error);
+                // Fallback a localStorage
+                const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+                if (stored) {
+                    try {
+                        setUser(JSON.parse(stored));
+                    } catch {
+                        localStorage.removeItem(AUTH_STORAGE_KEY);
+                    }
+                }
+            }
+            setIsLoading(false);
+        };
+
+        initSession();
+
+        // Escuchar cambios de auth
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                const authUser = await supabaseUserToAuthUser(session.user);
+                setUser(authUser);
+                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                localStorage.removeItem(AUTH_STORAGE_KEY);
+            }
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            // Intentar login con Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
-        const found = DEMO_USERS.find(
-            u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-        );
+            if (data?.user) {
+                const authUser = await supabaseUserToAuthUser(data.user);
+                setUser(authUser);
+                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
+                return { success: true };
+            }
 
-        if (!found) {
-            return { success: false, error: 'Credenciales inválidas' };
+            if (error) {
+                // Si Supabase falla, intentar con usuarios de fallback
+                const fallbackUser = FALLBACK_USERS.find(
+                    u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+                );
+
+                if (fallbackUser) {
+                    const { password: _, ...userWithoutPassword } = fallbackUser;
+                    void _;
+                    setUser(userWithoutPassword);
+                    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+                    return { success: true };
+                }
+
+                return { success: false, error: error.message || 'Credenciales inválidas' };
+            }
+
+            return { success: false, error: 'Error desconocido' };
+        } catch (err) {
+            // Fallback sin conexión
+            const fallbackUser = FALLBACK_USERS.find(
+                u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+            );
+
+            if (fallbackUser) {
+                const { password: _, ...userWithoutPassword } = fallbackUser;
+                void _;
+                setUser(userWithoutPassword);
+                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+                return { success: true };
+            }
+
+            return { success: false, error: 'Error de conexión' };
         }
-
-        const { password: _, ...userWithoutPassword } = found;
-void _; // Explicitly mark as intentionally unused
-        setUser(userWithoutPassword);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
-
-        return { success: true };
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
         setUser(null);
         localStorage.removeItem(AUTH_STORAGE_KEY);
     };

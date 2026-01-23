@@ -192,7 +192,7 @@ export default function Sidebar() {
                         </div>
                         <div className="user-info">
                             <span className="user-name">{user?.name || 'Usuario'}</span>
-                            <span className="user-role">{user?.companyName || ''}</span>
+                            <span className="user-role">{user?.role || ''}</span>
                         </div>
                         <button
                             className="btn-icon sm btn-ghost"

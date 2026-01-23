@@ -138,7 +138,7 @@ export default function TasksPage() {
         code: `OT-${workOrder.id.slice(-4).toUpperCase()}`,
         date: new Date(workOrder.scheduledDate).toLocaleDateString('es-CL'),
         technician: user?.name || 'Técnico',
-        company: user?.companyName,
+        company: 'AISA',
         tasks: tasks.map(t => ({
           code: t.lubricationPoint.code,
           machine: t.machine.name,
@@ -212,7 +212,7 @@ export default function TasksPage() {
               <div className="header-meta">
                 <span className="meta-item">
                   <MapPin style={{ width: 14, height: 14 }} />
-                  {user?.companyName || 'AISA'}
+                  AISA
                 </span>
                 <span className="meta-item">
                   <Wrench style={{ width: 14, height: 14 }} />
