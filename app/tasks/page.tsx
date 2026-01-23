@@ -446,11 +446,17 @@ export default function TasksPage() {
                   <PhotoUpload
                     label="Foto Antes (Opcional)"
                     onPhotoCapture={(url) => setExecution(prev => ({ ...prev, photoBefore: url }))}
+                    taskId={selectedTask?.lubricationPoint.code || 'N/A'}
+                    userId={user?.name || 'Técnico'}
+                    photoType="before"
                   />
                   <PhotoUpload
                     label="Foto Después"
                     onPhotoCapture={(url) => setExecution(prev => ({ ...prev, photoAfter: url }))}
                     required
+                    taskId={selectedTask?.lubricationPoint.code || 'N/A'}
+                    userId={user?.name || 'Técnico'}
+                    photoType="after"
                   />
                 </div>
               </div>
