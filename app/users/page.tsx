@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
-import { Users, Shield, Mail, Plus, X, Check, Pencil } from 'lucide-react';
+import { Users, Shield, Plus, X, Check, Pencil, Trash2 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { User } from '@/lib/types';
 
@@ -12,20 +12,72 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     role: 'tecnico' as 'admin' | 'supervisor' | 'tecnico',
   });
 
-  useEffect(() => {
+  const loadUsers = () => {
     setUsers(dataService.getUsers());
+  };
+
+  useEffect(() => {
+    loadUsers();
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, this would save to Supabase
+    
+    if (editingUser) {
+      // Actualizar usuario existente
+      const updatedUsers = users.map(u => 
+        u.id === editingUser.id 
+          ? { ...u, name: formData.name, email: formData.email, role: formData.role }
+          : u
+      );
+      localStorage.setItem('aisa_users', JSON.stringify(updatedUsers));
+      setUsers(updatedUsers);
+      setEditingUser(null);
+    } else {
+      // Crear nuevo usuario
+      const newUser: User = {
+        id: `user-${Date.now()}`,
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        createdAt: new Date().toISOString(),
+      };
+      const updatedUsers = [...users, newUser];
+      localStorage.setItem('aisa_users', JSON.stringify(updatedUsers));
+      setUsers(updatedUsers);
+    }
+    
     setShowForm(false);
+    setFormData({ name: '', email: '', role: 'tecnico' });
+  };
+
+  const handleEdit = (user: User) => {
+    setEditingUser(user);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = (userId: string) => {
+    const updatedUsers = users.filter(u => u.id !== userId);
+    localStorage.setItem('aisa_users', JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
+    setShowDeleteConfirm(null);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingUser(null);
     setFormData({ name: '', email: '', role: 'tecnico' });
   };
 
@@ -159,13 +211,23 @@ export default function UsersPage() {
                           {new Date(user.createdAt).toLocaleDateString('es-CL')}
                         </td>
                         <td>
-                          <button
-                            className="btn btn-sm btn-secondary"
-                            onClick={() => setEditingUser(user)}
-                            title="Editar usuario"
-                          >
-                            <Pencil style={{ width: 14, height: 14 }} />
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              className="btn btn-sm btn-secondary"
+                              onClick={() => handleEdit(user)}
+                              title="Editar usuario"
+                            >
+                              <Pencil style={{ width: 14, height: 14 }} />
+                            </button>
+                            <button
+                              className="btn btn-sm"
+                              style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                              onClick={() => setShowDeleteConfirm(user.id)}
+                              title="Eliminar usuario"
+                            >
+                              <Trash2 style={{ width: 14, height: 14 }} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -176,13 +238,13 @@ export default function UsersPage() {
           </div>
         </main>
 
-        {/* New User Modal */}
+        {/* User Form Modal */}
         {showForm && (
-          <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="modal-overlay" onClick={handleCloseForm}>
             <div className="modal" style={{ maxWidth: 450 }} onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2 className="modal-title">Nuevo Usuario</h2>
-                <button className="modal-close" onClick={() => setShowForm(false)}>
+                <h2 className="modal-title">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
+                <button className="modal-close" onClick={handleCloseForm}>
                   <X style={{ width: 16, height: 16 }} />
                 </button>
               </div>
@@ -227,15 +289,47 @@ export default function UsersPage() {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
+                  <button type="button" className="btn btn-secondary" onClick={handleCloseForm}>
                     Cancelar
                   </button>
                   <button type="submit" className="btn btn-primary">
                     <Check style={{ width: 16, height: 16 }} />
-                    Crear Usuario
+                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
+            <div className="modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2 className="modal-title">Confirmar Eliminación</h2>
+                <button className="modal-close" onClick={() => setShowDeleteConfirm(null)}>
+                  <X style={{ width: 16, height: 16 }} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowDeleteConfirm(null)}>
+                  Cancelar
+                </button>
+                <button 
+                  className="btn" 
+                  style={{ background: '#ef4444', color: 'white' }}
+                  onClick={() => handleDelete(showDeleteConfirm)}
+                >
+                  <Trash2 style={{ width: 16, height: 16 }} />
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         )}

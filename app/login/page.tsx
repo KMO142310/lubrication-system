@@ -102,23 +102,10 @@ export default function LoginPage() {
                     </button>
                 </form>
 
-                {/* Demo credentials */}
-                <div className="demo-credentials">
-                    <p className="demo-title">Credenciales de Demo:</p>
-                    <div className="demo-users">
-                        <div className="demo-user">
-                            <span className="badge badge-danger">Admin</span>
-                            <code>omar@aisa.cl / admin123</code>
-                        </div>
-                        <div className="demo-user">
-                            <span className="badge badge-warning">Supervisor</span>
-                            <code>supervisor@aisa.cl / super123</code>
-                        </div>
-                        <div className="demo-user">
-                            <span className="badge badge-primary">Técnico</span>
-                            <code>juan@lubricacion.cl / tech123</code>
-                        </div>
-                    </div>
+                {/* Footer info */}
+                <div className="login-footer">
+                    <p>Sistema de Gestión de Lubricación Industrial</p>
+                    <p>AISA Aserraderos © 2026</p>
                 </div>
             </div>
 
@@ -213,38 +200,22 @@ export default function LoginPage() {
           padding: var(--space-4);
         }
 
-        .demo-credentials {
+        .login-footer {
           margin-top: var(--space-6);
           padding-top: var(--space-6);
           border-top: 1px solid var(--border);
+          text-align: center;
         }
 
-        .demo-title {
+        .login-footer p {
           font-size: var(--text-xs);
+          color: var(--text-muted);
+          margin: 0;
+        }
+
+        .login-footer p:first-child {
           font-weight: 600;
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: var(--space-3);
-        }
-
-        .demo-users {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-2);
-        }
-
-        .demo-user {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          font-size: var(--text-sm);
-        }
-
-        .demo-user code {
-          font-family: var(--font-mono);
-          font-size: var(--text-xs);
-          color: var(--text-muted);
+          margin-bottom: var(--space-1);
         }
       `}</style>
         </div>
