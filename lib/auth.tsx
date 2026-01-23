@@ -35,7 +35,7 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         id: 'user-sup-1',
         email: 'supervisor@aisa.cl',
         password: 'super123',
-        name: 'Carlos Muñoz',
+        name: 'Enrique Gonzáles M.',
         role: 'supervisor',
     },
     {
