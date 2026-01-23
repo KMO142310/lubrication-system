@@ -22,7 +22,7 @@ const STORAGE_KEYS = {
     tasks: 'aisa_tasks',
     anomalies: 'aisa_anomalies',
     users: 'aisa_users',
-    initialized: 'aisa_data_initialized_v10', // Forzar recarga datos reales AISA
+    initialized: 'aisa_data_initialized_v11', // 23 enero - datos reales sin autocompletar
 };
 
 // ============================================================
@@ -85,15 +85,18 @@ function generateWeeklyWorkOrders(): void {
     const frequencies = FRECUENCIAS;
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
-    // Generar desde el 1 de enero hasta el 31 de enero 2026
-    const startDate = new Date(2026, 0, 1); // 1 enero 2026
-    const endDate = new Date(2026, 0, 31);  // 31 enero 2026
+    // Generar desde el 20 de enero hasta el 31 de enero 2026 (solo días relevantes)
+    const startDate = new Date(2026, 0, 20); // 20 enero 2026
+    const endDate = new Date(2026, 0, 31);   // 31 enero 2026
     
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dateStr = date.toISOString().split('T')[0];
         const dayOfWeek = date.getDay();
-        const isPast = date < today;
+        const dateOnly = new Date(date);
+        dateOnly.setHours(0, 0, 0, 0);
+        const isPast = dateOnly < today; // Solo marcar como completado si realmente pasó
 
         const dailyPoints = points.filter((p: LubricationPoint) => {
             const freq = frequencies.find((f: Frequency) => f.id === p.frequencyId);
