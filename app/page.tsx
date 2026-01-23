@@ -64,9 +64,10 @@ export default function Dashboard() {
     const todayCompleted = todayTasks.filter(t => t.status === 'completado').length;
 
     // Cumplimiento SLA: solo cuenta las tareas de HOY
+    // Si no hay tareas = 0% (no inventar datos)
     const compliance = todayTasks.length > 0
       ? Math.round((todayCompleted / todayTasks.length) * 100)
-      : 100;
+      : 0;
 
     setStats({
       compliance,

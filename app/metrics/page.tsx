@@ -50,7 +50,7 @@ export default function MetricsPage() {
 
     const compliance = dueTasks.length > 0
       ? Math.round((completedTasks.length / dueTasks.length) * 100)
-      : 100;
+      : 0; // Sin tareas = 0% (no inventar datos)
 
     const openAnomalies = anomalies.filter(a => a.status !== 'resuelta');
     const criticalAnomalies = anomalies.filter(a => a.severity === 'critica' || a.severity === 'alta');
@@ -60,20 +60,20 @@ export default function MetricsPage() {
     setMetrics([
       {
         title: 'Cumplimiento del Plan',
-        value: `${compliance}%`,
-        subtitle: `${completedTasks.length} de ${dueTasks.length} tareas`,
+        value: dueTasks.length > 0 ? `${compliance}%` : 'Sin datos',
+        subtitle: dueTasks.length > 0 ? `${completedTasks.length} de ${dueTasks.length} tareas` : 'Complete tareas para ver métricas',
         icon: <Target style={{ width: 24, height: 24 }} />,
-        trend: compliance >= 90 ? 'up' : compliance >= 70 ? 'neutral' : 'down',
-        trendValue: compliance >= 90 ? 'Excelente' : compliance >= 70 ? 'Aceptable' : 'Bajo',
+        trend: dueTasks.length === 0 ? 'neutral' : compliance >= 90 ? 'up' : compliance >= 70 ? 'neutral' : 'down',
+        trendValue: dueTasks.length === 0 ? 'Esperando datos' : compliance >= 90 ? 'Excelente' : compliance >= 70 ? 'Aceptable' : 'Bajo',
         iconType: 'primary',
       },
       {
         title: 'Órdenes Completadas',
         value: completedWOs.length,
-        subtitle: `de ${totalWOs.length} programadas`,
+        subtitle: totalWOs.length > 0 ? `de ${totalWOs.length} programadas` : 'Sin órdenes aún',
         icon: <CheckCircle2 style={{ width: 24, height: 24 }} />,
-        trend: 'up',
-        trendValue: totalWOs.length > 0 ? `${Math.round((completedWOs.length / totalWOs.length) * 100)}%` : '100%',
+        trend: totalWOs.length === 0 ? 'neutral' : completedWOs.length > 0 ? 'up' : 'neutral',
+        trendValue: totalWOs.length > 0 ? `${Math.round((completedWOs.length / totalWOs.length) * 100)}%` : 'Sin datos',
         iconType: 'success',
       },
       {
@@ -86,11 +86,12 @@ export default function MetricsPage() {
         iconType: 'warning',
       },
       {
-        title: 'Consumo Total',
-        value: `${(totalConsumption / 1000).toFixed(1)} L`,
-        subtitle: 'Lubricantes aplicados',
+        title: 'Tareas Completadas',
+        value: completedTasks.length,
+        subtitle: 'Total histórico',
         icon: <Droplets style={{ width: 24, height: 24 }} />,
-        trend: 'neutral',
+        trend: completedTasks.length > 0 ? 'up' : 'neutral',
+        trendValue: completedTasks.length > 0 ? 'Con registros' : 'Sin registros',
         iconType: 'accent',
       },
       {
@@ -190,22 +191,22 @@ export default function MetricsPage() {
                   <div className="card-body">
                     <div className="metrics-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
                       <div style={{ textAlign: 'center', padding: '16px' }}>
-                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>64</div>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>{dataService.getLubricationPoints().length}</div>
                         <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Puntos de Lubricación</div>
-                        <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Auditados</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Registrados</div>
                       </div>
                       <div style={{ textAlign: 'center', padding: '16px' }}>
-                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>8</div>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>{dataService.getMachines().length}</div>
                         <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Equipos</div>
                         <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Activos</div>
                       </div>
                       <div style={{ textAlign: 'center', padding: '16px' }}>
-                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>7</div>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>{dataService.getFrequencies().length}</div>
                         <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Frecuencias</div>
                         <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Configuradas</div>
                       </div>
                       <div style={{ textAlign: 'center', padding: '16px' }}>
-                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>6</div>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>{dataService.getLubricants().length}</div>
                         <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Lubricantes</div>
                         <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>En uso</div>
                       </div>
