@@ -57,19 +57,21 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v2.0.0-clean';
+const DATA_VERSION = 'v2.1.0';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
 
     const storedVersion = localStorage.getItem('aisa_data_version');
     
-    // Si la versión cambió o no existe, hacer reset completo
+    // Si la versión cambió, resetear solo datos de trabajo (NO la sesión de auth)
     if (storedVersion !== DATA_VERSION) {
-        // Limpiar TODO el localStorage relacionado con la app
-        Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
-        localStorage.removeItem('aisa_data_version');
-        localStorage.removeItem('aisa_auth_session');
+        // Solo limpiar datos de trabajo, NO la sesión de usuario
+        localStorage.removeItem(STORAGE_KEYS.workOrders);
+        localStorage.removeItem(STORAGE_KEYS.tasks);
+        localStorage.removeItem(STORAGE_KEYS.anomalies);
+        localStorage.removeItem(STORAGE_KEYS.initialized);
+        localStorage.setItem('aisa_data_version', DATA_VERSION);
     }
 
     const initialized = localStorage.getItem(STORAGE_KEYS.initialized);
