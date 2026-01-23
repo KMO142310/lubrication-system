@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
 import { getCompletedTasksFromServer } from '@/lib/sync';
@@ -66,6 +67,30 @@ export default function SupervisorDashboard() {
 
   useEffect(() => {
     loadSupervisorData();
+    
+    // Suscripción en tiempo real a cambios en tareas
+    const channel = supabase
+      .channel('supervisor-tasks')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        (payload) => {
+          console.log('📡 Cambio detectado:', payload);
+          toast.success('🔄 Nueva actividad detectada');
+          loadSupervisorData(); // Recargar datos
+        }
+      )
+      .subscribe();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      loadSupervisorData();
+    }, 15000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
   }, []);
 
   const loadSupervisorData = async () => {
