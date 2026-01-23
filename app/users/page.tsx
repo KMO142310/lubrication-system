@@ -81,19 +81,13 @@ export default function UsersPage() {
     setFormData({ name: '', email: '', role: 'lubricador' });
   };
 
-  const getRoleBadge = (role: string) => {
-    const config: Record<string, { class: string; label: string }> = {
-      admin: { class: 'badge-danger', label: 'Administrador' },
-      supervisor: { class: 'badge-warning', label: 'Supervisor' },
-      tecnico: { class: 'badge-primary', label: 'Técnico' },
+  const getRoleInfo = (role: string) => {
+    const config: Record<string, { color: string; bg: string; label: string }> = {
+      desarrollador: { color: '#6366f1', bg: 'rgba(99, 102, 241, 0.1)', label: 'Desarrollador' },
+      supervisor: { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', label: 'Supervisor' },
+      lubricador: { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', label: 'Lubricador' },
     };
-    const { class: cls, label } = config[role] || config.tecnico;
-    return (
-      <span className={`badge ${cls}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        <Shield style={{ width: 12, height: 12 }} />
-        {label}
-      </span>
-    );
+    return config[role] || config.lubricador;
   };
 
   return (
@@ -124,47 +118,45 @@ export default function UsersPage() {
               </div>
             </header>
 
-            {/* Stats */}
-            <div className="dashboard-grid" style={{ marginBottom: '24px' }}>
-              <div className="col-span-4">
-                <div className="stat-card">
-                  <div className="stat-header">
-                    <div className="stat-icon primary">
-                      <Users style={{ width: 24, height: 24 }} />
-                    </div>
+            {/* Stats - Premium Design */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(3, 1fr)', 
+              gap: '16px', 
+              marginBottom: '32px' 
+            }}>
+              {[
+                { value: users.length, label: 'Total', color: '#64748b' },
+                { value: users.filter(u => u.role === 'desarrollador').length, label: 'Desarrolladores', color: '#6366f1' },
+                { value: users.filter(u => u.role === 'supervisor').length, label: 'Supervisores', color: '#f59e0b' },
+              ].map((stat, i) => (
+                <div key={i} style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ 
+                    fontSize: '36px', 
+                    fontWeight: 600, 
+                    color: stat.color,
+                    lineHeight: 1,
+                    marginBottom: '8px',
+                  }}>
+                    {stat.value}
                   </div>
-                  <div>
-                    <span className="stat-value">{users.length}</span>
-                    <span className="stat-label">Usuarios Totales</span>
-                  </div>
-                </div>
-              </div>
-              <div className="col-span-4">
-                <div className="stat-card">
-                  <div className="stat-header">
-                    <div className="stat-icon success">
-                      <Shield style={{ width: 24, height: 24 }} />
-                    </div>
-                  </div>
-                  <div>
-                    <span className="stat-value">{users.filter(u => u.role === 'desarrollador').length}</span>
-                    <span className="stat-label">Administradores</span>
-                  </div>
-                </div>
-              </div>
-              <div className="col-span-4">
-                <div className="stat-card">
-                  <div className="stat-header">
-                    <div className="stat-icon accent">
-                      <Users style={{ width: 24, height: 24 }} />
-                    </div>
-                  </div>
-                  <div>
-                    <span className="stat-value">{users.filter(u => u.role === 'lubricador').length}</span>
-                    <span className="stat-label">Técnicos</span>
+                  <div style={{ 
+                    fontSize: '13px', 
+                    color: '#64748b',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    {stat.label}
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
 
             {/* Users Table */}
@@ -206,7 +198,27 @@ export default function UsersPage() {
                           </div>
                         </td>
                         <td style={{ color: 'var(--text-muted)' }}>{user.email}</td>
-                        <td>{getRoleBadge(user.role)}</td>
+                        <td>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '6px 12px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            background: getRoleInfo(user.role).bg,
+                            color: getRoleInfo(user.role).color,
+                          }}>
+                            <span style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: getRoleInfo(user.role).color,
+                            }} />
+                            {getRoleInfo(user.role).label}
+                          </span>
+                        </td>
                         <td style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
                           {new Date(user.createdAt).toLocaleDateString('es-CL')}
                         </td>
@@ -281,9 +293,9 @@ export default function UsersPage() {
                         onChange={e => setFormData({ ...formData, role: e.target.value as typeof formData.role })}
                         required
                       >
-                        <option value="tecnico">Técnico</option>
+                        <option value="lubricador">Lubricador</option>
                         <option value="supervisor">Supervisor</option>
-                        <option value="admin">Administrador</option>
+                        <option value="desarrollador">Desarrollador</option>
                       </select>
                     </div>
                   </div>
