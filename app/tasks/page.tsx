@@ -197,10 +197,17 @@ export default function TasksPage() {
 
       // Generate PDF with photo evidence
       const pdfData = {
-        code: `OT-${workOrder.id.slice(-4).toUpperCase()}`,
-        date: new Date(workOrder.scheduledDate).toLocaleDateString('es-CL'),
+        code: `OT-${workOrder.scheduledDate.replace(/-/g, '')}`,
+        date: new Date(workOrder.scheduledDate).toLocaleDateString('es-CL', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
         technician: user?.name || 'Técnico',
-        company: 'AISA',
+        company: 'AISA - Aserraderos Industriales S.A.',
+        plant: 'Planta Principal - Línea de Producción',
+        shift: new Date().getHours() < 14 ? 'Turno Mañana (06:00 - 14:00)' : 'Turno Tarde (14:00 - 22:00)',
         totalTasks: tasks.length,
         completedTasks: tasks.filter(t => t.status === 'completado').length,
         tasks: tasks.map(t => ({
@@ -209,9 +216,9 @@ export default function TasksPage() {
           component: t.component.name,
           lubricant: t.lubricant.name,
           method: t.lubricationPoint.method,
-          quantityUsed: t.quantityUsed ? `${t.quantityUsed} ${t.lubricant.type === 'grasa' ? 'g' : 'ml'}` : undefined,
+          quantityUsed: t.quantityUsed ? `${t.quantityUsed} ${t.lubricant.type === 'grasa' ? 'g' : 'ml'}` : '-',
           status: t.status,
-          observations: t.observations,
+          observations: t.observations || '',
           photoUrl: t.photoUrl,
           completedAt: t.completedAt ? new Date(t.completedAt).toLocaleString('es-CL') : undefined,
         })),
