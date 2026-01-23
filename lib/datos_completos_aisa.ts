@@ -7,54 +7,38 @@
 import type { Plant, Area, Machine, Component, Lubricant, Frequency, LubricationPoint } from './types';
 
 // ============================================================
-// PLANTAS - 3 Plantas Reales AISA
+// PLANTA PRINCIPAL - AISA
 // ============================================================
 
 export const PLANTA_AISA: Plant[] = [
-  { id: 'planta-lg', name: 'Aserradero Línea Gruesa', createdAt: new Date().toISOString() },
-  { id: 'planta-ld', name: 'Aserradero Línea Delgada', createdAt: new Date().toISOString() },
-  { id: 'planta-lg-nuevo', name: 'Aserradero Línea Gruesa Nuevo', createdAt: new Date().toISOString() },
+  { id: 'planta-aisa', name: 'AISA - Aserraderos Industriales S.A.', createdAt: new Date().toISOString() },
 ];
 
 // ============================================================
-// ÁREAS POR PLANTA
+// ÁREAS - Líneas de Producción
 // ============================================================
 
 export const CENTROS_GESTION: Area[] = [
-  // Línea Gruesa
-  { id: 'area-descortezado-lg', plantId: 'planta-lg', name: 'Descortezado LG', createdAt: new Date().toISOString() },
-  { id: 'area-aserradero-lg', plantId: 'planta-lg', name: 'Aserradero LG', createdAt: new Date().toISOString() },
-  { id: 'area-clasificacion-lg', plantId: 'planta-lg', name: 'Clasificación LG', createdAt: new Date().toISOString() },
-  
-  // Línea Delgada
-  { id: 'area-descortezado-ld', plantId: 'planta-ld', name: 'Descortezado LD', createdAt: new Date().toISOString() },
-  { id: 'area-aserradero-ld', plantId: 'planta-ld', name: 'Aserradero LD', createdAt: new Date().toISOString() },
-  { id: 'area-clasificacion-ld', plantId: 'planta-ld', name: 'Clasificación LD', createdAt: new Date().toISOString() },
-  
-  // Empresa General
-  { id: 'area-empresa-general', plantId: 'planta-lg', name: 'Empresa General', createdAt: new Date().toISOString() },
+  { id: 'area-linea-gruesa', plantId: 'planta-aisa', name: 'Aserradero Línea Gruesa', createdAt: new Date().toISOString() },
+  { id: 'area-linea-delgada', plantId: 'planta-aisa', name: 'Aserradero Línea Delgada', createdAt: new Date().toISOString() },
 ];
 
 // ============================================================
-// EQUIPOS
+// EQUIPOS - Organizados por Línea
 // ============================================================
 
 export const EQUIPOS: Machine[] = [
-  // ========== LÍNEA GRUESA - Descortezado ==========
-  { id: 'eq-8001', areaId: 'area-descortezado-lg', name: '8001 – Descortezador Línea Gruesa', make: 'Industrial', createdAt: new Date().toISOString() },
+  // ========== LÍNEA GRUESA ==========
+  { id: 'eq-8001', areaId: 'area-linea-gruesa', name: 'Descortezador Línea Gruesa (8001)', make: 'Industrial', createdAt: new Date().toISOString() },
+  { id: 'eq-8006', areaId: 'area-linea-gruesa', name: 'Aserradero Línea Gruesa (8006)', make: 'LINCK/ESTERER', createdAt: new Date().toISOString() },
   
-  // ========== LÍNEA GRUESA - Aserradero ==========
-  { id: 'eq-8006', areaId: 'area-aserradero-lg', name: '8006 – Aserradero Línea Gruesa', make: 'LINCK/ESTERER', createdAt: new Date().toISOString() },
-  
-  // ========== LÍNEA DELGADA - Descortezado ==========
-  { id: 'eq-8002', areaId: 'area-descortezado-ld', name: '8002 – Descortezador Línea Delgada', make: 'Industrial', createdAt: new Date().toISOString() },
-  
-  // ========== LÍNEA DELGADA - Aserradero ==========
-  { id: 'eq-8007', areaId: 'area-aserradero-ld', name: '8007 – Aserradero Línea Delgada', make: 'LINCK', createdAt: new Date().toISOString() },
-  { id: 'eq-canter', areaId: 'area-aserradero-ld', name: 'Canter 1 y 2', make: 'LINCK', createdAt: new Date().toISOString() },
-  { id: 'eq-perfiladora', areaId: 'area-aserradero-ld', name: 'Perfiladora LINCK', make: 'LINCK', createdAt: new Date().toISOString() },
-  { id: 'eq-wd', areaId: 'area-aserradero-ld', name: 'Sistema WD', make: 'WD', createdAt: new Date().toISOString() },
-  { id: 'eq-wd-fr10', areaId: 'area-aserradero-ld', name: 'WD FR10', make: 'WD', createdAt: new Date().toISOString() },
+  // ========== LÍNEA DELGADA ==========
+  { id: 'eq-8002', areaId: 'area-linea-delgada', name: 'Descortezador Línea Delgada (8002)', make: 'Industrial', createdAt: new Date().toISOString() },
+  { id: 'eq-8007', areaId: 'area-linea-delgada', name: 'Aserradero Línea Delgada (8007)', make: 'LINCK', createdAt: new Date().toISOString() },
+  { id: 'eq-canter', areaId: 'area-linea-delgada', name: 'Canter 1 y 2', make: 'LINCK', createdAt: new Date().toISOString() },
+  { id: 'eq-perfiladora', areaId: 'area-linea-delgada', name: 'Perfiladora LINCK', make: 'LINCK', createdAt: new Date().toISOString() },
+  { id: 'eq-wd', areaId: 'area-linea-delgada', name: 'Sistema WD H84', make: 'WD', createdAt: new Date().toISOString() },
+  { id: 'eq-wd-fr10', areaId: 'area-linea-delgada', name: 'WD FR10', make: 'WD', createdAt: new Date().toISOString() },
 ];
 
 // ============================================================

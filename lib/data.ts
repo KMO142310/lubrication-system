@@ -57,7 +57,7 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v2.1.0';
+const DATA_VERSION = 'v2.2.0';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
