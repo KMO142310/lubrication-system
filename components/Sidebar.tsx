@@ -46,8 +46,10 @@ export default function Sidebar() {
 
     // Navigation items vary by role
     const navigation = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'supervisor', 'tecnico'] },
-        { name: 'Mis Tareas', href: '/tasks', icon: ClipboardCheck, roles: ['admin', 'supervisor', 'tecnico'] },
+        { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['tecnico'] },
+        { name: 'Panel Supervisor', href: '/supervisor', icon: Shield, roles: ['admin', 'supervisor'] },
+        { name: 'Mis Tareas', href: '/tasks', icon: ClipboardCheck, roles: ['tecnico'] },
+        { name: 'Tareas Equipo', href: '/tasks', icon: ClipboardCheck, roles: ['admin', 'supervisor'] },
         { name: 'Historial', href: '/historial', icon: History, roles: ['admin', 'supervisor', 'tecnico'] },
         { name: 'Planificación', href: '/schedule', icon: Calendar, roles: ['admin', 'supervisor'] },
         { name: 'Indicadores', href: '/metrics', icon: BarChart3, roles: ['admin', 'supervisor'] },

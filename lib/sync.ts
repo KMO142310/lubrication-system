@@ -65,6 +65,8 @@ export async function saveCompletedTask(task: {
 export async function getCompletedTasksFromServer(): Promise<{
   id: string;
   status: string;
+  lubricationPointId?: string;
+  workOrderId?: string;
   quantityUsed?: number;
   observations?: string;
   photoUrl?: string;
@@ -89,6 +91,8 @@ export async function getCompletedTasksFromServer(): Promise<{
     return (data || []).map(t => ({
       id: t.id,
       status: t.status,
+      lubricationPointId: t.lubrication_point_id,
+      workOrderId: t.work_order_id,
       quantityUsed: t.quantity_used,
       observations: t.observations,
       photoUrl: t.photo_url,
