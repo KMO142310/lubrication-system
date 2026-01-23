@@ -1915,6 +1915,21 @@ h3 {
   letter-spacing: 1px;
 }
 
+/* KPI Cards Clickeables */
+.kpi-clickable {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  border-color: var(--slate-600) !important;
+}
+
+.kpi-clickable:active {
+  transform: translateY(-2px);
+}
+
 .kpi-card-sublabel {
   font-size: 12px;
   color: var(--slate-500);

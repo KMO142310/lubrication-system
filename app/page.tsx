@@ -187,125 +187,142 @@ export default function Dashboard() {
               </div>
             </header>
 
-            {/* Industrial KPI Cards */}
+            {/* Industrial KPI Cards - CLICKEABLES */}
             <section className="dashboard-content">
               <div className="kpi-grid">
-                {/* Compliance KPI */}
-                <div style={{
-                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  border: '1px solid #334155',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    background: stats.compliance >= 80 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f59e0b, #d97706)',
-                  }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                {/* Compliance KPI → Métricas */}
+                <Link href="/metrics" style={{ textDecoration: 'none' }}>
+                  <div className="kpi-clickable" style={{
+                    background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    border: '1px solid #334155',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}>
                     <div style={{
-                      width: '44px',
-                      height: '44px',
-                      background: stats.compliance >= 80 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <Target style={{ width: 22, height: 22, color: stats.compliance >= 80 ? '#22c55e' : '#f59e0b' }} />
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '4px',
+                      background: stats.compliance >= 80 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f59e0b, #d97706)',
+                    }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                      <div style={{
+                        width: '44px',
+                        height: '44px',
+                        background: stats.compliance >= 80 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Target style={{ width: 22, height: 22, color: stats.compliance >= 80 ? '#22c55e' : '#f59e0b' }} />
+                      </div>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: stats.compliance >= 80 ? '#22c55e' : '#f59e0b',
+                        background: stats.compliance >= 80 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}>
+                        {stats.compliance >= 80 ? '● OK' : '● BAJO'}
+                      </span>
                     </div>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: stats.compliance >= 80 ? '#22c55e' : '#f59e0b',
-                      background: stats.compliance >= 80 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                      padding: '4px 10px',
-                      borderRadius: '20px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      {stats.compliance >= 80 ? '● OK' : '● BAJO'}
-                    </span>
+                    <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                      {stats.compliance}<span style={{ fontSize: '20px', opacity: 0.6 }}>%</span>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Cumplimiento SLA
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      Ver métricas <ArrowRight style={{ width: 12, height: 12 }} />
+                    </div>
                   </div>
-                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
-                    {stats.compliance}<span style={{ fontSize: '20px', opacity: 0.6 }}>%</span>
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Cumplimiento SLA
-                  </div>
-                </div>
+                </Link>
 
-                {/* Today Tasks KPI */}
-                <div style={{
-                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  border: '1px solid #334155',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    background: 'linear-gradient(90deg, #3b82f6, #2563eb)',
-                  }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                {/* Today Tasks KPI → Tareas */}
+                <Link href="/tasks" style={{ textDecoration: 'none' }}>
+                  <div className="kpi-clickable" style={{
+                    background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    border: '1px solid #334155',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}>
                     <div style={{
-                      width: '44px',
-                      height: '44px',
-                      background: 'rgba(59, 130, 246, 0.15)',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <CheckCircle2 style={{ width: 22, height: 22, color: '#3b82f6' }} />
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '4px',
+                      background: 'linear-gradient(90deg, #3b82f6, #2563eb)',
+                    }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                      <div style={{
+                        width: '44px',
+                        height: '44px',
+                        background: 'rgba(59, 130, 246, 0.15)',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <CheckCircle2 style={{ width: 22, height: 22, color: '#3b82f6' }} />
+                      </div>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#3b82f6',
+                        background: 'rgba(59, 130, 246, 0.15)',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                      }}>
+                        <TrendingUp style={{ width: 12, height: 12, display: 'inline', marginRight: '4px' }} />
+                        {todayProgress}%
+                      </span>
                     </div>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#3b82f6',
-                      background: 'rgba(59, 130, 246, 0.15)',
-                      padding: '4px 10px',
-                      borderRadius: '20px',
-                    }}>
-                      <TrendingUp style={{ width: 12, height: 12, display: 'inline', marginRight: '4px' }} />
-                      {todayProgress}%
-                    </span>
+                    <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                      {stats.todayCompleted}<span style={{ fontSize: '20px', opacity: 0.6 }}>/{stats.todayTasks}</span>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Tareas Hoy
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      Ir a tareas <ArrowRight style={{ width: 12, height: 12 }} />
+                    </div>
                   </div>
-                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
-                    {stats.todayCompleted}<span style={{ fontSize: '20px', opacity: 0.6 }}>/{stats.todayTasks}</span>
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Tareas Hoy
-                  </div>
-                </div>
+                </Link>
 
-                {/* Anomalies KPI */}
-                <div style={{
-                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  border: '1px solid #334155',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    background: stats.openAnomalies > 0 ? 'linear-gradient(90deg, #ef4444, #dc2626)' : 'linear-gradient(90deg, #22c55e, #16a34a)',
-                  }} />
+                {/* Anomalies KPI → Anomalías */}
+                <Link href="/anomalies" style={{ textDecoration: 'none' }}>
+                  <div className="kpi-clickable" style={{
+                    background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    border: '1px solid #334155',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '4px',
+                      background: stats.openAnomalies > 0 ? 'linear-gradient(90deg, #ef4444, #dc2626)' : 'linear-gradient(90deg, #22c55e, #16a34a)',
+                    }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <div style={{
                       width: '44px',
@@ -337,48 +354,56 @@ export default function Dashboard() {
                   <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     Anomalías Abiertas
                   </div>
-                </div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    Ver anomalías <ArrowRight style={{ width: 12, height: 12 }} />
+                  </div>
+                  </div>
+                </Link>
 
-                {/* Equipment KPI */}
-                <div style={{
-                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  border: '1px solid #334155',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    background: 'linear-gradient(90deg, #8b5cf6, #7c3aed)',
-                  }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                {/* Equipment KPI → Activos */}
+                <Link href="/assets" style={{ textDecoration: 'none' }}>
+                  <div className="kpi-clickable" style={{
+                    background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    border: '1px solid #334155',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}>
                     <div style={{
-                      width: '44px',
-                      height: '44px',
-                      background: 'rgba(139, 92, 246, 0.15)',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <Cog style={{ width: 22, height: 22, color: '#8b5cf6' }} />
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '4px',
+                      background: 'linear-gradient(90deg, #8b5cf6, #7c3aed)',
+                    }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                      <div style={{
+                        width: '44px',
+                        height: '44px',
+                        background: 'rgba(139, 92, 246, 0.15)',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Cog style={{ width: 22, height: 22, color: '#8b5cf6' }} />
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                      {stats.totalMachines}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Equipos Activos
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {stats.totalPoints} puntos <ArrowRight style={{ width: 12, height: 12 }} />
                     </div>
                   </div>
-                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
-                    {stats.totalMachines}
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Equipos Activos
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                    {stats.totalPoints} puntos de lubricación
-                  </div>
-                </div>
+                </Link>
               </div>
             </section>
 
