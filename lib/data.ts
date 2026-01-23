@@ -56,8 +56,21 @@ function generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+// Versión de datos - incrementar para forzar reset en clientes
+const DATA_VERSION = 'v2.0.0-clean';
+
 function initializeData(): void {
     if (typeof window === 'undefined') return;
+
+    const storedVersion = localStorage.getItem('aisa_data_version');
+    
+    // Si la versión cambió o no existe, hacer reset completo
+    if (storedVersion !== DATA_VERSION) {
+        // Limpiar TODO el localStorage relacionado con la app
+        Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+        localStorage.removeItem('aisa_data_version');
+        localStorage.removeItem('aisa_auth_session');
+    }
 
     const initialized = localStorage.getItem(STORAGE_KEYS.initialized);
     if (initialized) return;
@@ -72,10 +85,11 @@ function initializeData(): void {
     saveToStorage(STORAGE_KEYS.lubricationPoints, PUNTOS_LUBRICACION);
     saveToStorage(STORAGE_KEYS.users, DEFAULT_USERS);
 
-    // Generate work orders for the current week
+    // Generate work orders for the current week - TODAS PENDIENTES
     generateWeeklyWorkOrders();
 
     localStorage.setItem(STORAGE_KEYS.initialized, 'true');
+    localStorage.setItem('aisa_data_version', DATA_VERSION);
 }
 
 function generateWeeklyWorkOrders(): void {
