@@ -13,7 +13,6 @@ import {
   Circle,
   AlertTriangle,
   Droplets,
-  Package,
   X,
   Play,
   Clock,
@@ -21,6 +20,7 @@ import {
   Wrench,
   FileText,
   PenTool,
+  Settings,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { useAuth } from '@/lib/auth';
@@ -303,8 +303,8 @@ export default function TasksPage() {
                           <span>{task.lubricant.name}</span>
                         </div>
                         <div className="spec">
-                          <Package style={{ width: 14, height: 14 }} />
-                          <span>{task.lubricationPoint.quantity} {task.lubricant.type === 'grasa' ? 'g' : 'ml'}</span>
+                          <Settings style={{ width: 14, height: 14 }} />
+                          <span>{task.lubricationPoint.method}</span>
                         </div>
                       </div>
 
@@ -362,8 +362,8 @@ export default function TasksPage() {
                   <span className="info-value method">{selectedTask.lubricationPoint.method}</span>
                 </div>
                 <div className="info-item">
-                  <span className="info-label">Cantidad Requerida</span>
-                  <span className="info-value">{selectedTask.lubricationPoint.quantity} {selectedTask.lubricant.type === 'grasa' ? 'g' : 'ml'}</span>
+                  <span className="info-label">Frecuencia</span>
+                  <span className="info-value">{selectedTask.frequency.name}</span>
                 </div>
               </div>
 
@@ -380,20 +380,6 @@ export default function TasksPage() {
                     onPhotoCapture={(url) => setExecution(prev => ({ ...prev, photoAfter: url }))}
                     required
                   />
-                </div>
-              </div>
-
-              {/* Quantity Input */}
-              <div className="quantity-section">
-                <label>Cantidad Real Aplicada</label>
-                <div className="quantity-input">
-                  <input
-                    type="number"
-                    value={execution.quantityUsed}
-                    onChange={e => setExecution(prev => ({ ...prev, quantityUsed: Number(e.target.value) }))}
-                    min={0}
-                  />
-                  <span className="unit">{selectedTask.lubricant.type === 'grasa' ? 'gramos' : 'ml'}</span>
                 </div>
               </div>
 

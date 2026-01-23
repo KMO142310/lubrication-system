@@ -87,16 +87,14 @@ function generateWeeklyWorkOrders(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Generar desde el 20 de enero hasta el 31 de enero 2026 (solo días relevantes)
-    const startDate = new Date(2026, 0, 20); // 20 enero 2026
-    const endDate = new Date(2026, 0, 31);   // 31 enero 2026
+    // Generar desde hoy hasta 7 días adelante (solo tareas futuras/actuales)
+    const startDate = new Date(today);
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + 7);
     
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dateStr = date.toISOString().split('T')[0];
         const dayOfWeek = date.getDay();
-        const dateOnly = new Date(date);
-        dateOnly.setHours(0, 0, 0, 0);
-        const isPast = dateOnly < today; // Solo marcar como completado si realmente pasó
 
         const dailyPoints = points.filter((p: LubricationPoint) => {
             const freq = frequencies.find((f: Frequency) => f.id === p.frequencyId);
@@ -125,10 +123,9 @@ function generateWeeklyWorkOrders(): void {
             workOrders.push({
                 id: woId,
                 scheduledDate: dateStr,
-                status: isPast ? 'completado' : 'pendiente',
+                status: 'pendiente',
                 technicianId: 'user-2',
                 createdAt: new Date().toISOString(),
-                completedAt: isPast ? new Date().toISOString() : undefined,
             });
 
             dailyPoints.forEach((point: LubricationPoint) => {
@@ -136,9 +133,7 @@ function generateWeeklyWorkOrders(): void {
                     id: `task-${woId}-${point.id}`,
                     workOrderId: woId,
                     lubricationPointId: point.id,
-                    status: isPast ? 'completado' : 'pendiente',
-                    quantityUsed: isPast ? point.quantity : undefined,
-                    completedAt: isPast ? new Date().toISOString() : undefined,
+                    status: 'pendiente',
                     createdAt: new Date().toISOString(),
                 });
             });
