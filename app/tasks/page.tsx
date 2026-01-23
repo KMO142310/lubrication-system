@@ -267,9 +267,9 @@ export default function TasksPage() {
                         Firmar y Cerrar Ruta
                       </button>
                     ) : (
-                      <button className="btn btn-secondary" disabled>
+                      <button className="btn btn-secondary" disabled style={{ opacity: 0.6 }}>
                         <Clock style={{ width: 16, height: 16 }} />
-                        Complete todas las tareas para firmar
+                        Pendiente firmar
                       </button>
                     )}
                   </div>
@@ -569,7 +569,19 @@ export default function TasksPage() {
 
         .progress-actions {
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
+          gap: 8px;
+          width: 100%;
+          margin-top: 12px;
+        }
+
+        .progress-actions .btn {
+          flex: 1;
+          min-width: 140px;
+          white-space: nowrap;
+          font-size: 13px;
+          padding: 10px 12px;
         }
 
         .sign-btn {
