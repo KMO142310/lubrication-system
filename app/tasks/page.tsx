@@ -166,11 +166,33 @@ export default function TasksPage() {
     }
 
     const completedAt = new Date().toISOString();
-    
-    // Usar la foto base64 directamente (más confiable)
     const photoUrl = execution.photoAfter;
     
-    // 1. Actualizar tarea localmente primero
+    // PRIMERO: Guardar en Supabase (fuente de verdad)
+    toast.loading('Guardando en servidor...', { id: 'saving' });
+    
+    const result = await saveCompletedTask({
+      id: selectedTask.id,
+      workOrderId: selectedTask.workOrderId,
+      lubricationPointId: selectedTask.lubricationPointId,
+      status: 'completado',
+      quantityUsed: execution.quantityUsed,
+      observations: execution.observations,
+      photoUrl: photoUrl.substring(0, 100),
+      completedAt,
+    });
+    
+    toast.dismiss('saving');
+    
+    if (result.success) {
+      toast.success(`✅ ${selectedTask.lubricationPoint.code} GUARDADO en servidor`);
+    } else if (result.queued) {
+      toast.success(`📱 ${selectedTask.lubricationPoint.code} en cola (se sincronizará)`);
+    } else {
+      toast.error(`⚠️ Error: ${result.error}`);
+    }
+
+    // SEGUNDO: Actualizar localStorage como caché
     dataService.updateTask(selectedTask.id, {
       status: 'completado',
       quantityUsed: execution.quantityUsed,
@@ -178,32 +200,6 @@ export default function TasksPage() {
       observations: execution.observations,
       photoUrl,
     });
-
-    // 2. Sincronizar con Supabase (sin esperar foto upload)
-    if (isOnline()) {
-      try {
-        const result = await saveCompletedTask({
-          id: selectedTask.id,
-          workOrderId: selectedTask.workOrderId,
-          lubricationPointId: selectedTask.lubricationPointId,
-          status: 'completado',
-          quantityUsed: execution.quantityUsed,
-          observations: execution.observations,
-          photoUrl: photoUrl.substring(0, 500), // Solo guardar referencia corta
-          completedAt,
-        });
-        
-        if (result.success) {
-          toast.success(`✅ Tarea ${selectedTask.lubricationPoint.code} sincronizada`);
-        } else {
-          toast.error(`⚠️ Guardada localmente`);
-        }
-      } catch (e) {
-        toast.error(`⚠️ Guardada localmente`);
-      }
-    } else {
-      toast.success(`📱 Guardada (se sincronizará después)`);
-    }
 
     setTasks(prev =>
       prev.map(t =>

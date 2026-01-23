@@ -1,14 +1,28 @@
 'use client';
 
 // ============================================================
-// SINCRONIZACIÓN DIRECTA CON SUPABASE
-// Solución simple y funcional
+// SINCRONIZACIÓN ROBUSTA CON SUPABASE
+// NIVEL ÉLITE - Anti-pérdida de datos
 // ============================================================
 
 import { supabase } from './supabase';
 
+// Cola de tareas pendientes (para modo offline)
+const PENDING_QUEUE_KEY = 'aisa_pending_tasks_queue';
+
+function getPendingQueue(): any[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(PENDING_QUEUE_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
+
+function savePendingQueue(queue: any[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(queue));
+}
+
 // ============================================================
-// GUARDAR TAREA COMPLETADA EN SUPABASE
+// GUARDAR TAREA - CON REINTENTOS Y COLA OFFLINE
 // ============================================================
 
 export async function saveCompletedTask(task: {
@@ -20,42 +34,101 @@ export async function saveCompletedTask(task: {
   observations?: string;
   photoUrl?: string;
   completedAt?: string;
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<{ success: boolean; error?: string; queued?: boolean }> {
   
-  try {
-    console.log('📤 Enviando tarea a Supabase:', task.id);
-    
-    const { error } = await supabase
-      .from('tasks')
-      .upsert({
-        id: task.id,
-        work_order_id: task.workOrderId,
-        lubrication_point_id: task.lubricationPointId,
-        status: task.status,
-        quantity_used: task.quantityUsed || 0,
-        observations: task.observations || '',
-        photo_url: task.photoUrl || '',
-        completed_at: task.completedAt || new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { 
-        onConflict: 'id',
-        ignoreDuplicates: false 
-      });
+  const taskData = {
+    id: task.id,
+    work_order_id: task.workOrderId,
+    lubrication_point_id: task.lubricationPointId,
+    status: task.status,
+    quantity_used: task.quantityUsed || 0,
+    observations: task.observations || '',
+    photo_url: task.photoUrl?.substring(0, 100) || '', // Solo referencia corta
+    completed_at: task.completedAt || new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 
-    if (error) {
-      console.error('❌ Error Supabase:', error.message);
-      return { success: false, error: error.message };
+  // Intentar guardar con 3 reintentos
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      console.log(`📤 Intento ${attempt}/3 - Guardando tarea:`, task.id);
+      
+      const { error } = await supabase
+        .from('tasks')
+        .upsert(taskData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        });
+
+      if (!error) {
+        console.log('✅ GUARDADO EXITOSO en Supabase:', task.id);
+        // Limpiar de cola pendiente si estaba
+        const queue = getPendingQueue().filter(t => t.id !== task.id);
+        savePendingQueue(queue);
+        return { success: true };
+      }
+
+      console.error(`❌ Intento ${attempt} falló:`, error.message);
+      
+      if (attempt < 3) {
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // Esperar antes de reintentar
+      }
+    } catch (e) {
+      console.error(`❌ Error de red intento ${attempt}:`, e);
+      if (attempt < 3) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
     }
-
-    console.log('✅ Tarea sincronizada:', task.id);
-    return { success: true };
-    
-  } catch (e) {
-    const errorMsg = e instanceof Error ? e.message : 'Error desconocido';
-    console.error('❌ Error de red:', errorMsg);
-    return { success: false, error: errorMsg };
   }
+
+  // Si falló después de 3 intentos, guardar en cola offline
+  console.log('⚠️ Guardando en cola offline:', task.id);
+  const queue = getPendingQueue();
+  if (!queue.find(t => t.id === task.id)) {
+    queue.push({ ...taskData, queuedAt: new Date().toISOString() });
+    savePendingQueue(queue);
+  }
+  
+  return { success: false, error: 'Guardado en cola offline', queued: true };
+}
+
+// ============================================================
+// SINCRONIZAR COLA PENDIENTE
+// ============================================================
+
+export async function syncPendingQueue(): Promise<{ synced: number; failed: number }> {
+  const queue = getPendingQueue();
+  if (queue.length === 0) return { synced: 0, failed: 0 };
+
+  console.log(`🔄 Sincronizando ${queue.length} tareas pendientes...`);
+  
+  let synced = 0;
+  let failed = 0;
+  const newQueue: any[] = [];
+
+  for (const task of queue) {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .upsert(task, { onConflict: 'id', ignoreDuplicates: false });
+
+      if (!error) {
+        synced++;
+        console.log('✅ Sincronizado:', task.id);
+      } else {
+        failed++;
+        newQueue.push(task);
+      }
+    } catch {
+      failed++;
+      newQueue.push(task);
+    }
+  }
+
+  savePendingQueue(newQueue);
+  console.log(`📊 Sync completo: ${synced} OK, ${failed} pendientes`);
+  return { synced, failed };
 }
 
 // ============================================================
