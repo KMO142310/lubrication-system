@@ -74,116 +74,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Inicializar sesión
+    // Inicializar sesión - SOLO desde localStorage (funciona offline)
     useEffect(() => {
-        const initSession = async () => {
-            try {
-                // Verificar sesión de Supabase
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (session?.user) {
-                    const authUser = await supabaseUserToAuthUser(session.user);
-                    setUser(authUser);
-                } else {
-                    // Intentar cargar de localStorage (fallback)
-                    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-                    if (stored) {
-                        try {
-                            setUser(JSON.parse(stored));
-                        } catch {
-                            localStorage.removeItem(AUTH_STORAGE_KEY);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error initializing session:', error);
-                // Fallback a localStorage
-                const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-                if (stored) {
-                    try {
-                        setUser(JSON.parse(stored));
-                    } catch {
-                        localStorage.removeItem(AUTH_STORAGE_KEY);
-                    }
+        const initSession = () => {
+            // Cargar sesión guardada de localStorage
+            const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+            if (stored) {
+                try {
+                    const parsedUser = JSON.parse(stored);
+                    setUser(parsedUser);
+                } catch {
+                    localStorage.removeItem(AUTH_STORAGE_KEY);
                 }
             }
             setIsLoading(false);
         };
 
         initSession();
-
-        // Escuchar cambios de auth
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-                const authUser = await supabaseUserToAuthUser(session.user);
-                setUser(authUser);
-                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
-            } else if (event === 'SIGNED_OUT') {
-                setUser(null);
-                localStorage.removeItem(AUTH_STORAGE_KEY);
-            }
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
 
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-        try {
-            // Intentar login con Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
+        // Login con usuarios locales (funciona offline)
+        const foundUser = FALLBACK_USERS.find(
+            u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+        );
 
-            if (data?.user) {
-                const authUser = await supabaseUserToAuthUser(data.user);
-                setUser(authUser);
-                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
-                return { success: true };
-            }
-
-            if (error) {
-                // Si Supabase falla, intentar con usuarios de fallback
-                const fallbackUser = FALLBACK_USERS.find(
-                    u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-                );
-
-                if (fallbackUser) {
-                    const { password: _, ...userWithoutPassword } = fallbackUser;
-                    void _;
-                    setUser(userWithoutPassword);
-                    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
-                    return { success: true };
-                }
-
-                return { success: false, error: error.message || 'Credenciales inválidas' };
-            }
-
-            return { success: false, error: 'Error desconocido' };
-        } catch (err) {
-            // Fallback sin conexión
-            const fallbackUser = FALLBACK_USERS.find(
-                u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-            );
-
-            if (fallbackUser) {
-                const { password: _, ...userWithoutPassword } = fallbackUser;
-                void _;
-                setUser(userWithoutPassword);
-                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
-                return { success: true };
-            }
-
-            return { success: false, error: 'Error de conexión' };
+        if (foundUser) {
+            const { password: _, ...userWithoutPassword } = foundUser;
+            void _;
+            setUser(userWithoutPassword);
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+            return { success: true };
         }
+
+        return { success: false, error: 'Credenciales inválidas' };
     };
 
-    const logout = async () => {
-        try {
-            await supabase.auth.signOut();
-        } catch (error) {
-            console.error('Error signing out:', error);
-        }
+    const logout = () => {
         setUser(null);
         localStorage.removeItem(AUTH_STORAGE_KEY);
     };
