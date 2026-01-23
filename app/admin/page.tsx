@@ -136,36 +136,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-
-            {/* Data Reset */}
-            <div className="col-span-12">
-              <div className="card" style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-                <div className="card-header">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <RefreshCw style={{ width: 20, height: 20, color: 'var(--accent-500)' }} />
-                    <span className="card-title">Reiniciar Datos</span>
-                  </span>
-                </div>
-                <div className="card-body">
-                  <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
-                    Puedes restaurar los datos del sistema a su estado inicial. Esta acción reiniciará todas las tareas, órdenes de trabajo y configuraciones.
-                  </p>
-                  {!resetConfirm ? (
-                    <button className="btn btn-primary" style={{ background: 'var(--accent-500)' }} onClick={() => setResetConfirm(true)}>
-                      Restaurar Datos Iniciales
-                    </button>
-                  ) : (
-                    <div style={{ background: 'var(--accent-100)', border: '1px solid var(--accent-200)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}>
-                      <p style={{ marginBottom: 'var(--space-3)', color: 'var(--accent-600)' }}>¿Estás seguro? Esto borrará todos los cambios realizados.</p>
-                      <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <button className="btn btn-secondary" onClick={() => setResetConfirm(false)}>Cancelar</button>
-                        <button className="btn btn-primary" style={{ background: 'var(--accent-500)' }} onClick={handleReset}>Confirmar</button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </main>
