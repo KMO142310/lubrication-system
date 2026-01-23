@@ -18,7 +18,9 @@ import {
     Users,
     PlusCircle,
     Menu,
-    X
+    X,
+    History,
+    Shield,
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -45,19 +47,20 @@ export default function Sidebar() {
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'supervisor', 'tecnico'] },
         { name: 'Mis Tareas', href: '/tasks', icon: ClipboardCheck, roles: ['admin', 'supervisor', 'tecnico'] },
+        { name: 'Historial', href: '/historial', icon: History, roles: ['admin', 'supervisor', 'tecnico'] },
         { name: 'Planificación', href: '/schedule', icon: Calendar, roles: ['admin', 'supervisor'] },
         { name: 'Indicadores', href: '/metrics', icon: BarChart3, roles: ['admin', 'supervisor'] },
     ];
 
     const management = [
         { name: 'Activos', href: '/assets', icon: Database, roles: ['admin', 'supervisor'] },
-        { name: 'Nuevo Activo', href: '/assets/new', icon: PlusCircle, roles: ['admin'] },
-        { name: 'Contratistas', href: '/contractors', icon: Users, roles: ['admin'] },
         { name: 'Anomalías', href: '/anomalies', icon: AlertTriangle, roles: ['admin', 'supervisor', 'tecnico'] },
         { name: 'Inventario', href: '/inventory', icon: Package, roles: ['admin', 'supervisor'] },
+        { name: 'Contratistas', href: '/contractors', icon: Users, roles: ['admin'] },
     ];
 
     const system = [
+        { name: 'Alertas', href: '/admin/alertas', icon: Shield, roles: ['admin', 'supervisor'] },
         { name: 'Usuarios', href: '/users', icon: Users, roles: ['admin'] },
         { name: 'Configuración', href: '/admin', icon: Settings, roles: ['admin'] },
     ];
