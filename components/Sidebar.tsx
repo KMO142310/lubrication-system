@@ -22,6 +22,7 @@ import {
     History,
     Shield,
 } from 'lucide-react';
+import ConnectionStatus from './ConnectionStatus';
 
 export default function Sidebar() {
     const pathname = usePathname();
@@ -84,12 +85,15 @@ export default function Sidebar() {
                     </div>
                     <span className="font-bold text-lg ml-2">AISA</span>
                 </div>
-                <button
-                    className="btn-icon btn-ghost"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <Menu style={{ width: 24, height: 24 }} />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ConnectionStatus />
+                    <button
+                        className="btn-icon btn-ghost"
+                        onClick={() => setIsOpen(true)}
+                    >
+                        <Menu style={{ width: 24, height: 24 }} />
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Overlay */}

@@ -1,0 +1,386 @@
+'use client';
+
+// ============================================================
+// DATA SERVICE CON SINCRONIZACIÓN SUPABASE
+// Mantiene localStorage como cache, sincroniza con Supabase
+// ============================================================
+
+import { supabase } from './supabase';
+import type { WorkOrder, Task, Anomaly } from './types';
+import { dataService } from './data';
+
+// ============================================================
+// ESTADO DE SINCRONIZACIÓN
+// ============================================================
+
+let isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+let lastSync: Date | null = null;
+let syncListeners: ((status: SyncStatus) => void)[] = [];
+
+export interface SyncStatus {
+  isOnline: boolean;
+  lastSync: Date | null;
+  isSyncing: boolean;
+}
+
+let isSyncing = false;
+
+function notifyListeners() {
+  const status: SyncStatus = { isOnline, lastSync, isSyncing };
+  syncListeners.forEach(cb => cb(status));
+}
+
+export function onSyncStatusChange(callback: (status: SyncStatus) => void): () => void {
+  syncListeners.push(callback);
+  return () => {
+    syncListeners = syncListeners.filter(cb => cb !== callback);
+  };
+}
+
+export function getSyncStatus(): SyncStatus {
+  return { isOnline, lastSync, isSyncing };
+}
+
+// ============================================================
+// INICIALIZACIÓN DE LISTENERS
+// ============================================================
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    isOnline = true;
+    notifyListeners();
+    syncPendingChanges();
+  });
+  
+  window.addEventListener('offline', () => {
+    isOnline = false;
+    notifyListeners();
+  });
+}
+
+// ============================================================
+// COLA DE CAMBIOS PENDIENTES
+// ============================================================
+
+const PENDING_KEY = 'aisa_pending_sync';
+
+interface PendingChange {
+  id: string;
+  type: 'task' | 'workOrder' | 'anomaly';
+  action: 'update' | 'create';
+  entityId: string;
+  data: Record<string, unknown>;
+  timestamp: string;
+}
+
+function getPendingChanges(): PendingChange[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(PENDING_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
+
+function savePendingChange(change: Omit<PendingChange, 'id' | 'timestamp'>): void {
+  if (typeof window === 'undefined') return;
+  const pending = getPendingChanges();
+  pending.push({
+    ...change,
+    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: new Date().toISOString(),
+  });
+  localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+}
+
+function clearPendingChanges(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(PENDING_KEY);
+}
+
+// ============================================================
+// SINCRONIZACIÓN CON SUPABASE
+// ============================================================
+
+async function syncPendingChanges(): Promise<number> {
+  if (!isOnline || isSyncing) return 0;
+  
+  isSyncing = true;
+  notifyListeners();
+  
+  const pending = getPendingChanges();
+  let synced = 0;
+  const failed: PendingChange[] = [];
+
+  for (const change of pending) {
+    try {
+      let success = false;
+      
+      if (change.type === 'task') {
+        const { error } = await supabase
+          .from('tasks')
+          .upsert({
+            id: change.entityId,
+            status: change.data.status,
+            quantity_used: change.data.quantityUsed,
+            observations: change.data.observations,
+            photo_url: change.data.photoUrl,
+            completed_at: change.data.completedAt,
+            updated_at: new Date().toISOString(),
+          });
+        success = !error;
+      } else if (change.type === 'workOrder') {
+        const { error } = await supabase
+          .from('work_orders')
+          .upsert({
+            id: change.entityId,
+            status: change.data.status,
+            completed_at: change.data.completedAt,
+            signature_url: change.data.signatureUrl,
+            updated_at: new Date().toISOString(),
+          });
+        success = !error;
+      } else if (change.type === 'anomaly') {
+        const { error } = await supabase
+          .from('anomalies')
+          .insert({
+            lubrication_point_id: change.data.lubricationPointId,
+            machine_id: change.data.machineId,
+            description: change.data.description,
+            severity: change.data.severity,
+            status: change.data.status || 'abierta',
+            photo_url: change.data.photoUrl,
+            reported_by: change.data.reportedBy,
+          });
+        success = !error;
+      }
+      
+      if (success) {
+        synced++;
+      } else {
+        failed.push(change);
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      failed.push(change);
+    }
+  }
+
+  // Guardar solo los que fallaron
+  if (failed.length > 0) {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(failed));
+  } else {
+    clearPendingChanges();
+  }
+
+  lastSync = new Date();
+  isSyncing = false;
+  notifyListeners();
+
+  return synced;
+}
+
+// ============================================================
+// SERVICIO DE DATOS SINCRONIZADO
+// ============================================================
+
+export const syncDataService = {
+  // Inicializar datos locales + intentar sync
+  init: async () => {
+    dataService.init();
+    if (isOnline) {
+      await syncPendingChanges();
+    }
+  },
+
+  // ============================================================
+  // WORK ORDERS
+  // ============================================================
+  
+  getWorkOrders: (): WorkOrder[] => {
+    return dataService.getWorkOrders();
+  },
+
+  getTodayWorkOrder: (): WorkOrder | undefined => {
+    return dataService.getTodayWorkOrder();
+  },
+
+  updateWorkOrder: async (id: string, data: Partial<WorkOrder> & { signatureUrl?: string }): Promise<void> => {
+    // Actualizar local primero
+    dataService.updateWorkOrder(id, data);
+    
+    // Agregar a cola de sync
+    savePendingChange({
+      type: 'workOrder',
+      action: 'update',
+      entityId: id,
+      data: data as Record<string, unknown>,
+    });
+    
+    // Intentar sync si online
+    if (isOnline) {
+      await syncPendingChanges();
+    }
+  },
+
+  // ============================================================
+  // TASKS
+  // ============================================================
+
+  getTasks: (workOrderId?: string): Task[] => {
+    return dataService.getTasks(workOrderId);
+  },
+
+  updateTask: async (id: string, data: Partial<Task>): Promise<void> => {
+    // Actualizar local primero
+    dataService.updateTask(id, data);
+    
+    // Agregar a cola de sync
+    savePendingChange({
+      type: 'task',
+      action: 'update',
+      entityId: id,
+      data: data as Record<string, unknown>,
+    });
+    
+    // Intentar sync si online
+    if (isOnline) {
+      await syncPendingChanges();
+    }
+  },
+
+  // ============================================================
+  // ANOMALIES
+  // ============================================================
+
+  getAnomalies: (): Anomaly[] => {
+    return dataService.getAnomalies();
+  },
+
+  addAnomaly: async (data: Omit<Anomaly, 'id' | 'createdAt'>): Promise<Anomaly> => {
+    // Crear local primero
+    const anomaly = dataService.addAnomaly(data);
+    
+    // Agregar a cola de sync
+    savePendingChange({
+      type: 'anomaly',
+      action: 'create',
+      entityId: anomaly.id,
+      data: data as unknown as Record<string, unknown>,
+    });
+    
+    // Intentar sync si online
+    if (isOnline) {
+      await syncPendingChanges();
+    }
+    
+    return anomaly;
+  },
+
+  updateAnomaly: async (id: string, data: Partial<Anomaly>): Promise<void> => {
+    dataService.updateAnomaly(id, data);
+    
+    savePendingChange({
+      type: 'anomaly',
+      action: 'update',
+      entityId: id,
+      data: data as Record<string, unknown>,
+    });
+    
+    if (isOnline) {
+      await syncPendingChanges();
+    }
+  },
+
+  // ============================================================
+  // DELEGADOS A dataService (datos estáticos)
+  // ============================================================
+
+  getPlants: dataService.getPlants,
+  getAreas: dataService.getAreas,
+  getMachines: dataService.getMachines,
+  getComponents: dataService.getComponents,
+  getLubricants: dataService.getLubricants,
+  getFrequencies: dataService.getFrequencies,
+  getLubricationPoints: dataService.getLubricationPoints,
+  getUsers: dataService.getUsers,
+  getCounts: dataService.getCounts,
+  addPlant: dataService.addPlant,
+  addArea: dataService.addArea,
+  addMachine: dataService.addMachine,
+  addComponent: dataService.addComponent,
+  addLubricant: dataService.addLubricant,
+  addLubricationPoint: dataService.addLubricationPoint,
+
+  // ============================================================
+  // SYNC UTILITIES
+  // ============================================================
+
+  getSyncStatus,
+  onSyncStatusChange,
+  syncNow: syncPendingChanges,
+  getPendingCount: () => getPendingChanges().length,
+};
+
+// ============================================================
+// REALTIME SUBSCRIPTIONS
+// ============================================================
+
+let tasksChannel: ReturnType<typeof supabase.channel> | null = null;
+
+export function subscribeToTaskUpdates(
+  callback: (task: { id: string; status: string; completedAt?: string }) => void
+): () => void {
+  if (typeof window === 'undefined') return () => {};
+  
+  tasksChannel = supabase
+    .channel('tasks_realtime')
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'tasks' },
+      (payload) => {
+        const task = payload.new as { id: string; status: string; completed_at?: string };
+        callback({
+          id: task.id,
+          status: task.status,
+          completedAt: task.completed_at,
+        });
+      }
+    )
+    .subscribe();
+
+  return () => {
+    if (tasksChannel) {
+      supabase.removeChannel(tasksChannel);
+      tasksChannel = null;
+    }
+  };
+}
+
+let workOrdersChannel: ReturnType<typeof supabase.channel> | null = null;
+
+export function subscribeToWorkOrderUpdates(
+  callback: (wo: { id: string; status: string; completedAt?: string }) => void
+): () => void {
+  if (typeof window === 'undefined') return () => {};
+  
+  workOrdersChannel = supabase
+    .channel('work_orders_realtime')
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'work_orders' },
+      (payload) => {
+        const wo = payload.new as { id: string; status: string; completed_at?: string };
+        callback({
+          id: wo.id,
+          status: wo.status,
+          completedAt: wo.completed_at,
+        });
+      }
+    )
+    .subscribe();
+
+  return () => {
+    if (workOrdersChannel) {
+      supabase.removeChannel(workOrdersChannel);
+      workOrdersChannel = null;
+    }
+  };
+}

@@ -23,6 +23,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
+import { syncDataService, subscribeToTaskUpdates } from '@/lib/data-sync';
 import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
 import { Task, LubricationPoint, WorkOrder, Component, Machine, Lubricant, Frequency } from '@/lib/types';
@@ -108,11 +109,12 @@ export default function TasksPage() {
       return;
     }
 
-    dataService.updateTask(selectedTask.id, {
+    syncDataService.updateTask(selectedTask.id, {
       status: 'completado',
       quantityUsed: execution.quantityUsed,
       completedAt: new Date().toISOString(),
       observations: execution.observations,
+      photoUrl: execution.photoAfter,
     });
 
     setTasks(prev =>
@@ -130,9 +132,10 @@ export default function TasksPage() {
 
   const handleSignRoute = (signatureUrl: string) => {
     if (workOrder) {
-      dataService.updateWorkOrder(workOrder.id, {
+      syncDataService.updateWorkOrder(workOrder.id, {
         status: 'completado',
         completedAt: new Date().toISOString(),
+        signatureUrl: signatureUrl,
       });
 
       // Generate PDF with photo evidence
