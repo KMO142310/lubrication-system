@@ -94,7 +94,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-        // Login con usuarios locales (funciona offline)
+        // 1. Intentar login con Supabase Auth primero (si hay conexión)
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (data?.user && !error) {
+                const authUser = await supabaseUserToAuthUser(data.user);
+                setUser(authUser);
+                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
+                return { success: true };
+            }
+        } catch (e) {
+            console.log('Supabase auth failed, trying local fallback');
+        }
+
+        // 2. Fallback a usuarios locales (funciona offline)
         const foundUser = FALLBACK_USERS.find(
             u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
         );

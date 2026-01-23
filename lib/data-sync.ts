@@ -320,6 +320,78 @@ export const syncDataService = {
 };
 
 // ============================================================
+// PHOTO UPLOAD TO SUPABASE STORAGE
+// ============================================================
+
+export async function uploadPhotoToStorage(
+  dataUrl: string,
+  taskId: string,
+  photoType: 'before' | 'after'
+): Promise<string | null> {
+  if (!isOnline) {
+    // Si offline, retornar el dataUrl original (se subirá después)
+    return dataUrl;
+  }
+
+  try {
+    // Convertir dataUrl a Blob
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    
+    // Comprimir si es muy grande (max 500KB)
+    let finalBlob = blob;
+    if (blob.size > 500000) {
+      const canvas = document.createElement('canvas');
+      const img = new Image();
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.src = dataUrl;
+      });
+      
+      // Reducir tamaño manteniendo proporción
+      const maxWidth = 1200;
+      const scale = Math.min(1, maxWidth / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      const compressedResponse = await fetch(compressedDataUrl);
+      finalBlob = await compressedResponse.blob();
+    }
+
+    // Generar nombre único
+    const timestamp = Date.now();
+    const fileName = `tasks/${taskId}/${photoType}_${timestamp}.jpg`;
+
+    // Subir a Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('photos')
+      .upload(fileName, finalBlob, {
+        contentType: 'image/jpeg',
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Error uploading photo:', error);
+      return dataUrl; // Fallback a dataUrl si falla
+    }
+
+    // Obtener URL pública
+    const { data: urlData } = supabase.storage
+      .from('photos')
+      .getPublicUrl(data.path);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Photo upload error:', error);
+    return dataUrl; // Fallback a dataUrl
+  }
+}
+
+// ============================================================
 // REALTIME SUBSCRIPTIONS
 // ============================================================
 
