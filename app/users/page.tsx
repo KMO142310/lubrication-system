@@ -16,7 +16,7 @@ export default function UsersPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'tecnico' as 'admin' | 'supervisor' | 'tecnico',
+    role: 'lubricador' as 'desarrollador' | 'supervisor' | 'lubricador',
   });
 
   const loadUsers = () => {
@@ -55,7 +55,7 @@ export default function UsersPage() {
     }
     
     setShowForm(false);
-    setFormData({ name: '', email: '', role: 'tecnico' });
+    setFormData({ name: '', email: '', role: 'lubricador' });
   };
 
   const handleEdit = (user: User) => {
@@ -78,7 +78,7 @@ export default function UsersPage() {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingUser(null);
-    setFormData({ name: '', email: '', role: 'tecnico' });
+    setFormData({ name: '', email: '', role: 'lubricador' });
   };
 
   const getRoleBadge = (role: string) => {
@@ -97,7 +97,7 @@ export default function UsersPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['desarrollador']}>
       <div className="app-layout">
         <Sidebar />
 
@@ -147,7 +147,7 @@ export default function UsersPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="stat-value">{users.filter(u => u.role === 'admin').length}</span>
+                    <span className="stat-value">{users.filter(u => u.role === 'desarrollador').length}</span>
                     <span className="stat-label">Administradores</span>
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function UsersPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="stat-value">{users.filter(u => u.role === 'tecnico').length}</span>
+                    <span className="stat-value">{users.filter(u => u.role === 'lubricador').length}</span>
                     <span className="stat-label">Técnicos</span>
                   </div>
                 </div>

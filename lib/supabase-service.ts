@@ -9,7 +9,7 @@ export interface Profile {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'supervisor' | 'tecnico';
+  role: 'desarrollador' | 'supervisor' | 'lubricador';
   avatar_url?: string;
   created_at: string;
 }

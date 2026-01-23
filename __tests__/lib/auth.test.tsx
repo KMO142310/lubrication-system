@@ -121,7 +121,7 @@ describe('Auth System', () => {
         await result.current.login('tecnico@aisa.cl', 'tech123');
       });
 
-      expect(result.current.user?.role).toBe('tecnico');
+      expect(result.current.user?.role).toBe('lubricador');
     });
   });
 });

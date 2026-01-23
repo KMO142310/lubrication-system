@@ -32,9 +32,9 @@ const STORAGE_KEYS = {
 // Constantes de datos reales
 
 const DEFAULT_USERS: User[] = [
-    { id: 'user-1', name: 'Omar Alexis', email: 'omar@aisa.cl', role: 'admin', createdAt: new Date().toISOString() },
-    { id: 'user-2', name: 'Juan Pérez', email: 'juan@lubricacion.cl', role: 'tecnico', createdAt: new Date().toISOString() },
-    { id: 'user-3', name: 'Carlos Muñoz', email: 'supervisor@aisa.cl', role: 'supervisor', createdAt: new Date().toISOString() },
+    { id: 'user-dev-1', name: 'Desarrollador AISA', email: 'dev@aisa.cl', role: 'desarrollador', createdAt: new Date().toISOString() },
+    { id: 'user-lub-1', name: 'Omar Alexis', email: 'omar@aisa.cl', role: 'lubricador', createdAt: new Date().toISOString() },
+    { id: 'user-sup-1', name: 'Enrique Gonzáles M.', email: 'supervisor@aisa.cl', role: 'supervisor', createdAt: new Date().toISOString() },
 ];
 
 // ============================================================

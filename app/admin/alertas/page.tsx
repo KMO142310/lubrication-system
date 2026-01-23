@@ -81,7 +81,7 @@ export default function AlertasPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+    <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
 

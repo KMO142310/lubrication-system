@@ -100,7 +100,7 @@ export default function SchedulePage() {
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+    <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
 

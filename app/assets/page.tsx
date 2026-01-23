@@ -123,7 +123,7 @@ export default function AssetsPage() {
   const counts = dataService.getCounts();
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+    <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
 

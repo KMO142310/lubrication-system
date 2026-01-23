@@ -46,26 +46,26 @@ export default function Sidebar() {
 
     // Navigation items vary by role
     const navigation = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['tecnico'] },
-        { name: 'Panel Supervisor', href: '/supervisor', icon: Shield, roles: ['admin', 'supervisor'] },
-        { name: 'Mis Tareas', href: '/tasks', icon: ClipboardCheck, roles: ['tecnico'] },
-        { name: 'Tareas Equipo', href: '/tasks', icon: ClipboardCheck, roles: ['admin', 'supervisor'] },
-        { name: 'Historial', href: '/historial', icon: History, roles: ['admin', 'supervisor', 'tecnico'] },
-        { name: 'Planificación', href: '/schedule', icon: Calendar, roles: ['admin', 'supervisor'] },
-        { name: 'Indicadores', href: '/metrics', icon: BarChart3, roles: ['admin', 'supervisor'] },
+        { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['lubricador'] },
+        { name: 'Panel Supervisor', href: '/supervisor', icon: Shield, roles: ['desarrollador', 'supervisor'] },
+        { name: 'Mis Tareas', href: '/tasks', icon: ClipboardCheck, roles: ['lubricador'] },
+        { name: 'Tareas Equipo', href: '/tasks', icon: ClipboardCheck, roles: ['desarrollador', 'supervisor'] },
+        { name: 'Historial', href: '/historial', icon: History, roles: ['desarrollador', 'supervisor', 'lubricador'] },
+        { name: 'Planificación', href: '/schedule', icon: Calendar, roles: ['desarrollador', 'supervisor'] },
+        { name: 'Indicadores', href: '/metrics', icon: BarChart3, roles: ['desarrollador', 'supervisor'] },
     ];
 
     const management = [
-        { name: 'Activos', href: '/assets', icon: Database, roles: ['admin', 'supervisor'] },
-        { name: 'Anomalías', href: '/anomalies', icon: AlertTriangle, roles: ['admin', 'supervisor', 'tecnico'] },
-        { name: 'Inventario', href: '/inventory', icon: Package, roles: ['admin', 'supervisor'] },
-        { name: 'Contratistas', href: '/contractors', icon: Users, roles: ['admin'] },
+        { name: 'Activos', href: '/assets', icon: Database, roles: ['desarrollador', 'supervisor'] },
+        { name: 'Anomalías', href: '/anomalies', icon: AlertTriangle, roles: ['desarrollador', 'supervisor', 'lubricador'] },
+        { name: 'Inventario', href: '/inventory', icon: Package, roles: ['desarrollador', 'supervisor'] },
+        { name: 'Contratistas', href: '/contractors', icon: Users, roles: ['desarrollador'] },
     ];
 
     const system = [
-        { name: 'Alertas', href: '/admin/alertas', icon: Shield, roles: ['admin', 'supervisor'] },
-        { name: 'Usuarios', href: '/users', icon: Users, roles: ['admin'] },
-        { name: 'Configuración', href: '/admin', icon: Settings, roles: ['admin'] },
+        { name: 'Alertas', href: '/admin/alertas', icon: Shield, roles: ['desarrollador', 'supervisor'] },
+        { name: 'Usuarios', href: '/users', icon: Users, roles: ['desarrollador'] },
+        { name: 'Configuración', href: '/admin', icon: Settings, roles: ['desarrollador'] },
     ];
 
     const filterByRole = (items: typeof navigation) => {
@@ -119,7 +119,7 @@ export default function Sidebar() {
                             <div className="sidebar-logo-text">
                                 <span className="sidebar-logo-title">AISA Lubricación</span>
                                 <span className="sidebar-logo-subtitle">
-                                    {user?.role === 'admin' ? 'Administrador' : user?.role === 'supervisor' ? 'Supervisor' : 'Técnico'}
+                                    {user?.role === 'desarrollador' ? 'Desarrollador' : user?.role === 'supervisor' ? 'Supervisor' : 'Lubricador'}
                                 </span>
                             </div>
                         </div>

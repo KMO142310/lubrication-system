@@ -117,7 +117,7 @@ export interface Anomaly {
 // USERS
 // ============================================================
 
-export type UserRole = 'admin' | 'supervisor' | 'tecnico';
+export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador';
 
 export interface User {
     id: string;

@@ -5,7 +5,7 @@ import { supabase } from './supabase';
 import { User } from '@supabase/supabase-js';
 
 // Types
-export type UserRole = 'admin' | 'supervisor' | 'tecnico';
+export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador';
 
 export interface AuthUser {
     id: string;
@@ -25,11 +25,11 @@ interface AuthContextType {
 // Fallback users para cuando no hay conexión a Supabase
 const FALLBACK_USERS: (AuthUser & { password: string })[] = [
     {
-        id: 'user-admin-1',
-        email: 'omar@aisa.cl',
-        password: 'admin123',
-        name: 'Omar Alexis',
-        role: 'admin',
+        id: 'user-dev-1',
+        email: 'dev@aisa.cl',
+        password: 'dev2026!',
+        name: 'Desarrollador AISA',
+        role: 'desarrollador',
     },
     {
         id: 'user-sup-1',
@@ -39,11 +39,11 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         role: 'supervisor',
     },
     {
-        id: 'user-tech-1',
-        email: 'tecnico@aisa.cl',
-        password: 'tech123',
-        name: 'Juan Pérez',
-        role: 'tecnico',
+        id: 'user-lub-1',
+        email: 'omar@aisa.cl',
+        password: 'omar123',
+        name: 'Omar Alexis',
+        role: 'lubricador',
     },
 ];
 
@@ -65,7 +65,7 @@ async function supabaseUserToAuthUser(supabaseUser: User): Promise<AuthUser> {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
         name: profile?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuario',
-        role: profile?.role || 'tecnico',
+        role: profile?.role || 'lubricador',
     };
 }
 
@@ -161,10 +161,10 @@ export function canAccess(role: UserRole, requiredRoles: UserRole[]): boolean {
     return requiredRoles.includes(role);
 }
 
-export function isAdmin(role: UserRole): boolean {
-    return role === 'admin';
+export function isDesarrollador(role: UserRole): boolean {
+    return role === 'desarrollador';
 }
 
-export function isAdminOrSupervisor(role: UserRole): boolean {
-    return role === 'admin' || role === 'supervisor';
+export function isDesarrolladorOrSupervisor(role: UserRole): boolean {
+    return role === 'desarrollador' || role === 'supervisor';
 }

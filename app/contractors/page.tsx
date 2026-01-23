@@ -107,7 +107,7 @@ export default function ContractorsPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['desarrollador']}>
       <div className="app-layout">
         <Sidebar />
 

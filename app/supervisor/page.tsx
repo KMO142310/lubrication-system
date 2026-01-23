@@ -264,7 +264,7 @@ export default function SupervisorDashboard() {
 
   if (loading) {
     return (
-      <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+      <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
         <div className="app-layout">
           <Sidebar />
           <main className="main-content">
@@ -281,7 +281,7 @@ export default function SupervisorDashboard() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+    <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
 

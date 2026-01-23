@@ -19,7 +19,7 @@ export default function InventoryPage() {
   const greases = lubricants.filter(l => l.type === 'grasa');
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+    <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
 

@@ -99,9 +99,9 @@ export default function AdminPage() {
                         <span style={{ fontWeight: 600, display: 'block' }}>{user.name}</span>
                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>{user.email}</span>
                       </div>
-                      <span className={`badge ${user.role === 'admin' ? 'badge-danger' : 'badge-primary'}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                      <span className={`badge ${user.role === 'desarrollador' ? 'badge-danger' : 'badge-primary'}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                         <Shield style={{ width: 12, height: 12 }} />
-                        {user.role === 'admin' ? 'Administrador' : 'Técnico'}
+                        {user.role === 'desarrollador' ? 'Administrador' : 'Técnico'}
                       </span>
                     </div>
                   ))}

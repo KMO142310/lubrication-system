@@ -134,7 +134,7 @@ export default function MetricsPage() {
   const maxTasks = Math.max(...weeklyData.map(d => d.total), 1);
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'supervisor']}>
+    <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
 
