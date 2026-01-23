@@ -7,7 +7,49 @@
  * 3. Historial de auditoría inmutable
  * 4. Bloqueo de reutilización de fotos
  * 5. Alertas para supervisores
+ * 6. GPS opcional (funciona sin señal)
+ * 7. Horario laboral configurable
+ * 8. Modo offline para mala señal
  */
+
+// ============================================================
+// CONFIGURACIÓN DE SEGURIDAD
+// ============================================================
+
+export const SECURITY_CONFIG = {
+  // Horario laboral permitido (24h format)
+  workingHours: {
+    start: 7,  // 7:00 AM
+    end: 19,   // 7:00 PM
+    enabled: true,
+    allowWeekends: false,
+  },
+  
+  // GPS
+  gps: {
+    enabled: true,
+    required: false, // No bloquear si no hay GPS (mala señal)
+    plantCoordinates: {
+      lat: -33.4489, // Coordenadas de la planta (ejemplo Santiago)
+      lng: -70.6693,
+      radiusKm: 5, // Radio permitido en km
+    },
+  },
+  
+  // Límites anti-abuso
+  limits: {
+    maxCorrectionsPerDay: 3,
+    minTaskCompletionSeconds: 20, // Reducido para equipos lentos
+    maxPhotosPerTask: 5,
+  },
+  
+  // Modo offline
+  offline: {
+    enabled: true,
+    syncOnReconnect: true,
+    maxOfflineHours: 24, // Máximo tiempo offline antes de alerta
+  },
+};
 
 // ============================================================
 // TIPOS
@@ -400,4 +442,232 @@ export function exportAuditData(): string {
   };
   
   return JSON.stringify(data, null, 2);
+}
+
+// ============================================================
+// GPS Y GEOLOCALIZACIÓN (Opcional - funciona sin señal)
+// ============================================================
+
+export interface LocationData {
+  lat: number;
+  lng: number;
+  accuracy: number;
+  timestamp: string;
+  source: 'gps' | 'network' | 'unavailable';
+}
+
+/**
+ * Intenta obtener ubicación GPS (no bloquea si falla)
+ * Timeout corto para equipos lentos/mala señal
+ */
+export async function getLocation(): Promise<LocationData | null> {
+  if (typeof window === 'undefined' || !navigator.geolocation) {
+    return null;
+  }
+
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      // Sin señal GPS - permitir continuar
+      resolve({
+        lat: 0,
+        lng: 0,
+        accuracy: -1,
+        timestamp: new Date().toISOString(),
+        source: 'unavailable',
+      });
+    }, 5000); // 5 segundos máximo para mala señal
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        clearTimeout(timeout);
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: new Date().toISOString(),
+          source: position.coords.accuracy < 100 ? 'gps' : 'network',
+        });
+      },
+      () => {
+        clearTimeout(timeout);
+        // Error de GPS - permitir continuar
+        resolve({
+          lat: 0,
+          lng: 0,
+          accuracy: -1,
+          timestamp: new Date().toISOString(),
+          source: 'unavailable',
+        });
+      },
+      {
+        enableHighAccuracy: false, // Más rápido para equipos lentos
+        timeout: 5000,
+        maximumAge: 60000, // Usar cache de 1 minuto
+      }
+    );
+  });
+}
+
+/**
+ * Calcula distancia entre dos puntos (Haversine)
+ */
+function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Radio de la Tierra en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+/**
+ * Verifica si la ubicación está dentro del radio de la planta
+ * Si no hay GPS, registra pero NO bloquea
+ */
+export function verifyLocation(location: LocationData | null, userId: string, taskId: string): {
+  valid: boolean;
+  warning: string | null;
+  distance?: number;
+} {
+  if (!SECURITY_CONFIG.gps.enabled) {
+    return { valid: true, warning: null };
+  }
+
+  // Sin GPS disponible - permitir pero registrar
+  if (!location || location.source === 'unavailable') {
+    logAuditAction({
+      userId,
+      userName: 'Sistema',
+      action: 'task_completed',
+      taskId,
+      details: 'GPS no disponible (mala señal o permiso denegado)',
+      metadata: { gpsStatus: 'unavailable' },
+    });
+    return { 
+      valid: true, 
+      warning: 'GPS no disponible. Tarea registrada sin ubicación.' 
+    };
+  }
+
+  const { lat, lng, radiusKm } = SECURITY_CONFIG.gps.plantCoordinates;
+  const distance = calculateDistance(location.lat, location.lng, lat, lng);
+
+  if (distance > radiusKm) {
+    // Fuera de rango - crear alerta pero NO bloquear (puede ser error de GPS)
+    createFraudAlert({
+      type: 'location_mismatch',
+      severity: distance > radiusKm * 2 ? 'high' : 'medium',
+      userId,
+      taskId,
+      description: `Ubicación a ${distance.toFixed(1)}km de la planta (máximo: ${radiusKm}km)`,
+    });
+    
+    return {
+      valid: true, // No bloquear, pero alertar
+      warning: `Ubicación detectada a ${distance.toFixed(1)}km de la planta`,
+      distance,
+    };
+  }
+
+  return { valid: true, warning: null, distance };
+}
+
+// ============================================================
+// HORARIO LABORAL
+// ============================================================
+
+/**
+ * Verifica si está dentro del horario laboral
+ * Funciona offline (usa hora del dispositivo)
+ */
+export function checkWorkingHours(): {
+  allowed: boolean;
+  message: string;
+  currentHour: number;
+} {
+  if (!SECURITY_CONFIG.workingHours.enabled) {
+    return { allowed: true, message: '', currentHour: new Date().getHours() };
+  }
+
+  const now = new Date();
+  const currentHour = now.getHours();
+  const dayOfWeek = now.getDay(); // 0=Dom, 6=Sáb
+  const { start, end, allowWeekends } = SECURITY_CONFIG.workingHours;
+
+  // Verificar fin de semana
+  if (!allowWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) {
+    return {
+      allowed: false,
+      message: 'No se permiten tareas en fin de semana',
+      currentHour,
+    };
+  }
+
+  // Verificar horario
+  if (currentHour < start || currentHour >= end) {
+    return {
+      allowed: false,
+      message: `Horario laboral: ${start}:00 - ${end}:00. Hora actual: ${currentHour}:${now.getMinutes().toString().padStart(2, '0')}`,
+      currentHour,
+    };
+  }
+
+  return { allowed: true, message: '', currentHour };
+}
+
+// ============================================================
+// RESUMEN PARA SUPERVISORES
+// ============================================================
+
+export interface SecuritySummary {
+  totalAlerts: number;
+  unresolvedAlerts: number;
+  alertsByType: Record<string, number>;
+  alertsBySeverity: Record<string, number>;
+  todayActions: number;
+  suspiciousUsers: { userId: string; alertCount: number }[];
+  pendingCorrections: number;
+}
+
+/**
+ * Genera resumen de seguridad para supervisores
+ */
+export function getSecuritySummary(): SecuritySummary {
+  const allAlerts = getFraudAlerts(true);
+  const unresolvedAlerts = allAlerts.filter(a => !a.resolved);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  
+  // Contar por tipo
+  const alertsByType: Record<string, number> = {};
+  const alertsBySeverity: Record<string, number> = {};
+  const userAlertCount: Record<string, number> = {};
+
+  unresolvedAlerts.forEach(alert => {
+    alertsByType[alert.type] = (alertsByType[alert.type] || 0) + 1;
+    alertsBySeverity[alert.severity] = (alertsBySeverity[alert.severity] || 0) + 1;
+    userAlertCount[alert.userId] = (userAlertCount[alert.userId] || 0) + 1;
+  });
+
+  // Usuarios sospechosos (más de 2 alertas)
+  const suspiciousUsers = Object.entries(userAlertCount)
+    .filter(([, count]) => count >= 2)
+    .map(([userId, alertCount]) => ({ userId, alertCount }))
+    .sort((a, b) => b.alertCount - a.alertCount);
+
+  // Acciones de hoy
+  const todayActions = getAuditLogs({ fromDate: todayStart.toISOString() }).length;
+
+  return {
+    totalAlerts: allAlerts.length,
+    unresolvedAlerts: unresolvedAlerts.length,
+    alertsByType,
+    alertsBySeverity,
+    todayActions,
+    suspiciousUsers,
+    pendingCorrections: getPendingCorrections().length,
+  };
 }
