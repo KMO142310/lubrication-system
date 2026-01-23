@@ -22,7 +22,7 @@ const STORAGE_KEYS = {
     tasks: 'aisa_tasks',
     anomalies: 'aisa_anomalies',
     users: 'aisa_users',
-    initialized: 'aisa_data_initialized_v8', // 64 tareas completas auditadas
+    initialized: 'aisa_data_initialized_v10', // Forzar recarga datos reales AISA
 };
 
 // ============================================================
