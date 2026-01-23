@@ -1,0 +1,320 @@
+'use client';
+
+import { useState, useRef, useCallback } from 'react';
+import { Camera, X, Upload, Image as ImageIcon } from 'lucide-react';
+
+interface PhotoUploadProps {
+    label: string;
+    onPhotoCapture: (dataUrl: string) => void;
+    existingPhoto?: string;
+    required?: boolean;
+}
+
+export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, required }: PhotoUploadProps) {
+    const [photo, setPhoto] = useState<string | null>(existingPhoto || null);
+    const [showCamera, setShowCamera] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
+            streamRef.current = stream;
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            setShowCamera(true);
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            // Fallback to file input if camera not available
+            fileInputRef.current?.click();
+        }
+    };
+
+    const stopCamera = useCallback(() => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setShowCamera(false);
+    }, []);
+
+    const capturePhoto = () => {
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const ctx = canvas.getContext('2d');
+
+            if (ctx) {
+                ctx.drawImage(videoRef.current, 0, 0);
+
+                // Add timestamp watermark
+                const timestamp = new Date().toLocaleString('es-CL', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                });
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(0, canvas.height - 36, canvas.width, 36);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Inter, sans-serif';
+                ctx.fillText(`AISA Lubricación | ${timestamp}`, 12, canvas.height - 12);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                setPhoto(dataUrl);
+                onPhotoCapture(dataUrl);
+            }
+
+            stopCamera();
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataUrl = event.target?.result as string;
+
+                // Add watermark to uploaded image too
+                const img = new window.Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0);
+
+                        const timestamp = new Date().toLocaleString('es-CL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        });
+
+                        const barHeight = Math.max(36, img.height * 0.05);
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                        ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
+                        ctx.fillStyle = 'white';
+                        ctx.font = `bold ${Math.max(14, img.height * 0.025)}px Inter, sans-serif`;
+                        ctx.fillText(`AISA Lubricación | ${timestamp}`, 12, canvas.height - barHeight / 3);
+
+                        const watermarkedUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        setPhoto(watermarkedUrl);
+                        onPhotoCapture(watermarkedUrl);
+                    }
+                };
+                img.src = dataUrl;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removePhoto = () => {
+        setPhoto(null);
+        onPhotoCapture('');
+    };
+
+    return (
+        <div className="photo-upload">
+            <div className="photo-upload-label">
+                <span>{label}</span>
+                {required && <span className="required-badge">Requerido</span>}
+            </div>
+
+            {photo ? (
+                <div className="photo-preview">
+                    <img src={photo} alt="Foto capturada" />
+                    <button className="photo-remove" onClick={removePhoto} type="button">
+                        <X style={{ width: 16, height: 16 }} />
+                    </button>
+                    <div className="photo-success">
+                        <ImageIcon style={{ width: 14, height: 14 }} />
+                        Foto adjunta
+                    </div>
+                </div>
+            ) : showCamera ? (
+                <div className="camera-container">
+                    <video ref={videoRef} autoPlay playsInline muted />
+                    <div className="camera-controls">
+                        <button className="btn btn-secondary" onClick={stopCamera} type="button">
+                            Cancelar
+                        </button>
+                        <button className="btn btn-primary capture-btn" onClick={capturePhoto} type="button">
+                            <Camera style={{ width: 20, height: 20 }} />
+                            Capturar
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="photo-actions">
+                    <button className="photo-btn camera" onClick={startCamera} type="button">
+                        <Camera style={{ width: 24, height: 24 }} />
+                        <span>Usar Cámara</span>
+                    </button>
+                    <button className="photo-btn upload" onClick={() => fileInputRef.current?.click()} type="button">
+                        <Upload style={{ width: 24, height: 24 }} />
+                        <span>Subir Archivo</span>
+                    </button>
+                </div>
+            )}
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+            />
+
+            <style jsx>{`
+        .photo-upload {
+          margin-bottom: var(--space-4);
+        }
+
+        .photo-upload-label {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          margin-bottom: var(--space-3);
+          font-weight: 600;
+          font-size: var(--text-sm);
+        }
+
+        .required-badge {
+          font-size: var(--text-xs);
+          padding: 2px 8px;
+          background: var(--accent-100);
+          color: var(--accent-600);
+          border-radius: var(--radius-full);
+          font-weight: 500;
+        }
+
+        .photo-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-3);
+        }
+
+        .photo-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-2);
+          padding: var(--space-6);
+          border: 2px dashed var(--border);
+          border-radius: var(--radius-lg);
+          background: var(--slate-50);
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all var(--duration-fast);
+        }
+
+        .photo-btn:hover {
+          border-color: var(--primary-400);
+          background: var(--primary-50);
+          color: var(--primary-600);
+        }
+
+        .photo-btn.camera:hover {
+          border-color: var(--accent-400);
+          background: var(--accent-100);
+          color: var(--accent-600);
+        }
+
+        .photo-btn span {
+          font-size: var(--text-sm);
+          font-weight: 500;
+        }
+
+        .camera-container {
+          position: relative;
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+          background: black;
+        }
+
+        .camera-container video {
+          width: 100%;
+          display: block;
+        }
+
+        .camera-controls {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          gap: var(--space-3);
+          padding: var(--space-4);
+          background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        }
+
+        .capture-btn {
+          min-width: 140px;
+        }
+
+        .photo-preview {
+          position: relative;
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+          border: 2px solid var(--success-400);
+        }
+
+        .photo-preview img {
+          width: 100%;
+          display: block;
+        }
+
+        .photo-remove {
+          position: absolute;
+          top: var(--space-2);
+          right: var(--space-2);
+          width: 32px;
+          height: 32px;
+          border-radius: var(--radius-full);
+          background: rgba(0,0,0,0.6);
+          border: none;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background var(--duration-fast);
+        }
+
+        .photo-remove:hover {
+          background: var(--accent-500);
+        }
+
+        .photo-success {
+          position: absolute;
+          bottom: var(--space-2);
+          left: var(--space-2);
+          display: flex;
+          align-items: center;
+          gap: var(--space-1);
+          padding: var(--space-1) var(--space-3);
+          background: var(--success-500);
+          color: white;
+          font-size: var(--text-xs);
+          font-weight: 600;
+          border-radius: var(--radius-full);
+        }
+      `}</style>
+        </div>
+    );
+}
