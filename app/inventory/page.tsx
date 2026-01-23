@@ -60,7 +60,7 @@ export default function InventoryPage() {
                   <span className="stat-label">Aceites</span>
                 </div>
                 <span style={{ marginLeft: 'auto', background: 'var(--slate-100)', padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
-                  {(totalOilUsage / 1000).toFixed(1)} L usados
+                  {totalOilUsage > 0 ? Math.round(totalOilUsage / 1000) : 0} L usados
                 </span>
               </div>
             </div>
@@ -72,7 +72,7 @@ export default function InventoryPage() {
                   <span className="stat-label">Grasas</span>
                 </div>
                 <span style={{ marginLeft: 'auto', background: 'var(--slate-100)', padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
-                  {(totalGreaseUsage / 1000).toFixed(1)} kg usados
+                  {totalGreaseUsage > 0 ? Math.round(totalGreaseUsage / 1000) : 0} kg usados
                 </span>
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function InventoryPage() {
                           <td className="cell-primary">{lub.name}</td>
                           <td>{lub.viscosity || '-'}</td>
                           <td>{lub.pointCount}</td>
-                          <td>{(lub.usage / 1000).toFixed(2)} L</td>
+                          <td>{lub.usage > 0 ? Math.round(lub.usage / 1000) : 0} L</td>
                         </tr>
                       ))}
                     </tbody>
@@ -126,7 +126,7 @@ export default function InventoryPage() {
                           <td className="cell-primary">{lub.name}</td>
                           <td>{lub.nlgiGrade || '-'}</td>
                           <td>{lub.pointCount}</td>
-                          <td>{(lub.usage / 1000).toFixed(2)} kg</td>
+                          <td>{lub.usage > 0 ? Math.round(lub.usage / 1000) : 0} kg</td>
                         </tr>
                       ))}
                     </tbody>
