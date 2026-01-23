@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Camera, X, Upload, Image as ImageIcon, AlertTriangle } from 'lucide-react';
+import { Camera, X, Upload, Image as ImageIcon, AlertTriangle, Loader2 } from 'lucide-react';
 import { generateImageHash, checkDuplicatePhoto, registerPhoto, createFraudAlert } from '@/lib/anti-fraud';
+import { uploadPhotoToStorage } from '@/lib/data-sync';
 
 interface PhotoUploadProps {
     label: string;
@@ -26,6 +27,7 @@ export default function PhotoUpload({
     const [photo, setPhoto] = useState<string | null>(existingPhoto || null);
     const [showCamera, setShowCamera] = useState(false);
     const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -151,7 +153,13 @@ export default function PhotoUpload({
                 
                 if (isValid) {
                     setPhoto(dataUrl);
-                    onPhotoCapture(dataUrl);
+                    setIsUploading(true);
+                    
+                    // Subir a Supabase Storage
+                    const uploadedUrl = await uploadPhotoToStorage(dataUrl, taskId, photoType);
+                    setIsUploading(false);
+                    
+                    onPhotoCapture(uploadedUrl || dataUrl);
                 }
             }
 
@@ -202,7 +210,13 @@ export default function PhotoUpload({
                         
                         if (isValid) {
                             setPhoto(watermarkedUrl);
-                            onPhotoCapture(watermarkedUrl);
+                            setIsUploading(true);
+                            
+                            // Subir a Supabase Storage
+                            const uploadedUrl = await uploadPhotoToStorage(watermarkedUrl, taskId, photoType);
+                            setIsUploading(false);
+                            
+                            onPhotoCapture(uploadedUrl || watermarkedUrl);
                         }
                     }
                 };
@@ -251,12 +265,24 @@ export default function PhotoUpload({
             {photo ? (
                 <div className="photo-preview">
                     <img src={photo} alt="Foto capturada" />
-                    <button className="photo-remove" onClick={removePhoto} type="button">
+                    <button className="photo-remove" onClick={removePhoto} type="button" disabled={isUploading}>
                         <X style={{ width: 16, height: 16 }} />
                     </button>
-                    <div className="photo-success">
-                        <ImageIcon style={{ width: 14, height: 14 }} />
-                        Foto adjunta
+                    <div className="photo-success" style={{
+                        background: isUploading ? 'var(--warning-100)' : 'var(--success-100)',
+                        color: isUploading ? 'var(--warning-700)' : 'var(--success-700)',
+                    }}>
+                        {isUploading ? (
+                            <>
+                                <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+                                Subiendo...
+                            </>
+                        ) : (
+                            <>
+                                <ImageIcon style={{ width: 14, height: 14 }} />
+                                Foto adjunta
+                            </>
+                        )}
                     </div>
                 </div>
             ) : showCamera ? (
