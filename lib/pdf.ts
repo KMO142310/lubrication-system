@@ -3,6 +3,14 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+interface TaskPhoto {
+    taskCode: string;
+    taskDescription: string;
+    photoUrl: string;
+    capturedAt: string;
+    type: 'antes' | 'despues';
+}
+
 interface WorkOrderPDFData {
     code: string;
     date: string;
@@ -14,11 +22,14 @@ interface WorkOrderPDFData {
         component: string;
         lubricant: string;
         method: string;
-        quantityRequired?: string; // Solo si está en plan detallado
-        quantityUsed?: string; // Lo que realmente se usó
+        quantityRequired?: string;
+        quantityUsed?: string;
         status: string;
         observations?: string;
+        photoUrl?: string;
+        completedAt?: string;
     }[];
+    photos?: TaskPhoto[];
     signature?: string;
     completedAt?: string;
     totalTasks?: number;
@@ -151,19 +162,125 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
         doc.text(`Completado: ${data.completedAt}`, pageWidth - 14, finalY + 32, { align: 'right' });
     }
 
-    // Footer
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.setFillColor(245, 245, 245);
-    doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    // ANEXO DE EVIDENCIA FOTOGRÁFICA (Anti-Fraude)
+    const tasksWithPhotos = data.tasks.filter(t => t.photoUrl && t.status === 'completado');
+    
+    if (tasksWithPhotos.length > 0 || (data.photos && data.photos.length > 0)) {
+        doc.addPage();
+        
+        // Header del anexo
+        doc.setFillColor(30, 58, 138);
+        doc.rect(0, 0, pageWidth, 30, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ANEXO: EVIDENCIA FOTOGRÁFICA', 14, 18);
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Sistema Anti-Fraude AISA', pageWidth - 14, 18, { align: 'right' });
+        
+        let photoY = 45;
+        const photoWidth = 80;
+        const photoHeight = 60;
+        
+        // Fotos de tareas completadas
+        tasksWithPhotos.forEach((task, index) => {
+            if (photoY > 220) {
+                doc.addPage();
+                photoY = 20;
+            }
+            
+            // Info de la tarea
+            doc.setTextColor(30, 58, 138);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Tarea ${task.code} - ${task.component}`, 14, photoY);
+            
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Máquina: ${task.machine} | Lubricante: ${task.lubricant}`, 14, photoY + 6);
+            
+            if (task.completedAt) {
+                doc.text(`Capturada: ${task.completedAt}`, 14, photoY + 11);
+            }
+            
+            // Foto
+            if (task.photoUrl) {
+                try {
+                    doc.addImage(task.photoUrl, 'JPEG', 14, photoY + 15, photoWidth, photoHeight);
+                    
+                    // Marco de verificación
+                    doc.setDrawColor(34, 197, 94);
+                    doc.setLineWidth(1);
+                    doc.rect(14, photoY + 15, photoWidth, photoHeight);
+                    
+                    // Badge de verificado
+                    doc.setFillColor(34, 197, 94);
+                    doc.rect(14, photoY + 15, 25, 8, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(6);
+                    doc.text('VERIFICADO', 16, photoY + 21);
+                } catch (e) {
+                    doc.setTextColor(200, 100, 100);
+                    doc.text('[Foto no disponible]', 14, photoY + 40);
+                }
+            }
+            
+            photoY += photoHeight + 30;
+        });
+        
+        // Fotos adicionales del array photos
+        if (data.photos && data.photos.length > 0) {
+            data.photos.forEach((photo) => {
+                if (photoY > 220) {
+                    doc.addPage();
+                    photoY = 20;
+                }
+                
+                doc.setTextColor(30, 58, 138);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${photo.type === 'antes' ? 'ANTES' : 'DESPUÉS'} - Tarea ${photo.taskCode}`, 14, photoY);
+                
+                doc.setTextColor(100, 100, 100);
+                doc.setFontSize(8);
+                doc.text(`${photo.taskDescription}`, 14, photoY + 6);
+                doc.text(`Capturada: ${photo.capturedAt}`, 14, photoY + 11);
+                
+                try {
+                    doc.addImage(photo.photoUrl, 'JPEG', 14, photoY + 15, photoWidth, photoHeight);
+                    doc.setDrawColor(30, 58, 138);
+                    doc.setLineWidth(0.5);
+                    doc.rect(14, photoY + 15, photoWidth, photoHeight);
+                } catch (e) {
+                    doc.text('[Foto no disponible]', 14, photoY + 40);
+                }
+                
+                photoY += photoHeight + 30;
+            });
+        }
+    }
 
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text(
-        `Generado el ${new Date().toLocaleString('es-CL')} | Sistema AISA Lubricación`,
-        pageWidth / 2,
-        pageHeight - 6,
-        { align: 'center' }
-    );
+    // Footer en cada página
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        const pageHeight = doc.internal.pageSize.getHeight();
+        doc.setFillColor(245, 245, 245);
+        doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+        
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(
+            `Generado el ${new Date().toLocaleString('es-CL')} | Sistema AISA Lubricación | Página ${i} de ${totalPages}`,
+            pageWidth / 2,
+            pageHeight - 6,
+            { align: 'center' }
+        );
+    }
 
     // Save
     doc.save(`orden-trabajo-${data.code}.pdf`);

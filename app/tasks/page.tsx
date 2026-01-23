@@ -135,7 +135,7 @@ export default function TasksPage() {
         completedAt: new Date().toISOString(),
       });
 
-      // Generate PDF
+      // Generate PDF with photo evidence
       const pdfData = {
         code: `OT-${workOrder.id.slice(-4).toUpperCase()}`,
         date: new Date(workOrder.scheduledDate).toLocaleDateString('es-CL'),
@@ -152,6 +152,8 @@ export default function TasksPage() {
           quantityUsed: t.quantityUsed ? `${t.quantityUsed} ${t.lubricant.type === 'grasa' ? 'g' : 'ml'}` : undefined,
           status: t.status,
           observations: t.observations,
+          photoUrl: t.photoUrl,
+          completedAt: t.completedAt ? new Date(t.completedAt).toLocaleString('es-CL') : undefined,
         })),
         signature: signatureUrl,
         completedAt: new Date().toLocaleString('es-CL'),
