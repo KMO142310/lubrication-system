@@ -178,39 +178,36 @@ export default function MetricsPage() {
                 </div>
               ))}
 
-              {/* Contractor Compliance Section */}
+              {/* Resumen del Programa */}
               <div className="col-span-12">
                 <div className="card" style={{ background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)', color: 'white' }}>
                   <div className="card-header" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                      <Building2 style={{ width: 20, height: 20 }} />
-                      <span className="card-title" style={{ color: 'white' }}>Cumplimiento Contratistas Externos</span>
+                      <FileCheck style={{ width: 20, height: 20 }} />
+                      <span className="card-title" style={{ color: 'white' }}>Resumen del Programa AISA</span>
                     </div>
-                    <Link href="/contractors" className="btn btn-ghost" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
-                      Ver Detalle
-                    </Link>
                   </div>
                   <div className="card-body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-6)' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>94.5%</div>
-                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>SLA Promedio</div>
-                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Meta: 95%</div>
+                    <div className="metrics-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+                      <div style={{ textAlign: 'center', padding: '16px' }}>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>64</div>
+                        <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Puntos de Lubricación</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Auditados</div>
                       </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>2</div>
-                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>Empresas Activas</div>
-                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Contratos vigentes</div>
+                      <div style={{ textAlign: 'center', padding: '16px' }}>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>8</div>
+                        <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Equipos</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Activos</div>
                       </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>2,139</div>
-                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>Tareas Ejecutadas</div>
-                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Este período</div>
+                      <div style={{ textAlign: 'center', padding: '16px' }}>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>7</div>
+                        <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Frecuencias</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>Configuradas</div>
                       </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>12</div>
-                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>Auditorías</div>
-                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Realizadas</div>
+                      <div style={{ textAlign: 'center', padding: '16px' }}>
+                        <div style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px', lineHeight: 1 }}>6</div>
+                        <div style={{ fontSize: '14px', opacity: 0.8, marginTop: '4px' }}>Lubricantes</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6, marginTop: '4px' }}>En uso</div>
                       </div>
                     </div>
                   </div>

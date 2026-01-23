@@ -130,7 +130,7 @@ export default function AdminPage() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3)', background: 'var(--slate-50)', borderRadius: 'var(--radius-md)' }}>
                       <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Entorno</span>
-                      <span className="badge badge-success">Demo</span>
+                      <span className="badge badge-success">Producción</span>
                     </div>
                   </div>
                 </div>
@@ -143,12 +143,12 @@ export default function AdminPage() {
                 <div className="card-header">
                   <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <RefreshCw style={{ width: 20, height: 20, color: 'var(--accent-500)' }} />
-                    <span className="card-title">Datos de Demostración</span>
+                    <span className="card-title">Reiniciar Datos</span>
                   </span>
                 </div>
                 <div className="card-body">
                   <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
-                    Esta aplicación utiliza datos de demostración almacenados en tu navegador. Puedes restaurar los datos a su estado inicial en cualquier momento.
+                    Puedes restaurar los datos del sistema a su estado inicial. Esta acción reiniciará todas las tareas, órdenes de trabajo y configuraciones.
                   </p>
                   {!resetConfirm ? (
                     <button className="btn btn-primary" style={{ background: 'var(--accent-500)' }} onClick={() => setResetConfirm(true)}>

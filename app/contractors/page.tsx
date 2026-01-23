@@ -35,38 +35,8 @@ interface Contractor {
   tasksTotal?: number;
 }
 
-const DEMO_CONTRACTORS: Contractor[] = [
-  {
-    id: 'contractor-1',
-    name: 'Lubricación Profesional Ltda.',
-    rut: '76.123.456-7',
-    contactName: 'Juan Pérez',
-    contactEmail: 'juan@lubricacion.cl',
-    contactPhone: '+56 9 1234 5678',
-    contractStart: '2026-01-01',
-    contractEnd: '2026-12-31',
-    status: 'active',
-    certifications: ['ISO 9001:2015', 'ISO 14001:2015', 'OHSAS 18001'],
-    complianceRate: 94.5,
-    tasksCompleted: 1247,
-    tasksTotal: 1320,
-  },
-  {
-    id: 'contractor-2',
-    name: 'Mantenimiento Industrial del Sur SpA',
-    rut: '76.987.654-3',
-    contactName: 'Carlos González',
-    contactEmail: 'cgonzalez@midsur.cl',
-    contactPhone: '+56 9 8765 4321',
-    contractStart: '2025-06-01',
-    contractEnd: '2026-05-31',
-    status: 'active',
-    certifications: ['ISO 9001:2015'],
-    complianceRate: 89.2,
-    tasksCompleted: 892,
-    tasksTotal: 1000,
-  },
-];
+// Contratistas reales - inicialmente vacío hasta que se agreguen empresas reales
+const INITIAL_CONTRACTORS: Contractor[] = [];
 
 export default function ContractorsPage() {
   const [contractors, setContractors] = useState<Contractor[]>([]);
@@ -84,7 +54,7 @@ export default function ContractorsPage() {
 
   const loadContractors = useCallback(() => {
     // In production, this would fetch from Supabase
-    setContractors(DEMO_CONTRACTORS);
+    setContractors(INITIAL_CONTRACTORS);
   }, []);
 
   useEffect(() => {

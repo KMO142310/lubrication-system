@@ -1515,4 +1515,107 @@ h3 {
     gap: 8px !important;
     padding: 12px 16px !important;
   }
+
+  /* Metrics page responsive */
+  .metrics-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Dashboard grid responsive */
+  .dashboard-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .col-span-3,
+  .col-span-4,
+  .col-span-6,
+  .col-span-8,
+  .col-span-12 {
+    grid-column: span 1 !important;
+  }
+
+  /* Stat cards responsive */
+  .stat-card {
+    padding: 16px !important;
+  }
+
+  .stat-value {
+    font-size: 28px !important;
+  }
+
+  .stat-label {
+    font-size: 12px !important;
+    margin-top: 4px !important;
+    display: block !important;
+  }
+
+  /* Page header responsive */
+  .page-header {
+    padding: 16px !important;
+  }
+
+  .page-title {
+    font-size: 20px !important;
+  }
+
+  .page-subtitle {
+    font-size: 13px !important;
+  }
+
+  .page-header-top {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+
+  /* Cards responsive */
+  .card {
+    border-radius: 8px !important;
+  }
+
+  .card-header {
+    padding: 12px 16px !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+
+  .card-body {
+    padding: 16px !important;
+  }
+
+  /* Tables responsive */
+  .data-table-container {
+    overflow-x: auto !important;
+  }
+
+  .data-table {
+    min-width: 600px !important;
+  }
+
+  /* Breadcrumb hide on mobile */
+  .breadcrumb {
+    display: none !important;
+  }
+
+  /* Buttons responsive */
+  .btn {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* Modal responsive */
+  .modal {
+    margin: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+    max-height: calc(100vh - 32px) !important;
+  }
+
+  /* Weekly chart responsive */
+  .card-body > div[style*="height: 200"] {
+    height: 150px !important;
+  }
 }
