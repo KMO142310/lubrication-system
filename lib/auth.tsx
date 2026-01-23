@@ -82,7 +82,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (stored) {
                 try {
                     const parsedUser = JSON.parse(stored);
-                    setUser(parsedUser);
+                    // FORZAR LOGOUT si tiene rol antiguo (admin/tecnico)
+                    if (parsedUser.role === 'admin' || parsedUser.role === 'tecnico') {
+                        console.log('⚠️ Sesión con rol antiguo, forzando logout');
+                        localStorage.removeItem(AUTH_STORAGE_KEY);
+                        localStorage.removeItem('aisa_data_initialized_v12');
+                        setUser(null);
+                    } else {
+                        setUser(parsedUser);
+                    }
                 } catch {
                     localStorage.removeItem(AUTH_STORAGE_KEY);
                 }
