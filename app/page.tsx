@@ -124,204 +124,391 @@ export default function Dashboard() {
         <Sidebar />
 
         <main className="main-content">
-          <div className="page-container">
-            {/* Hero Header */}
+          <div className="page-container" style={{ background: '#0c1222', minHeight: '100vh', padding: 0 }}>
+            
+            {/* Industrial Header Bar */}
             <header style={{
-              background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)',
-              borderRadius: 'var(--radius-xl)',
-              padding: 'var(--space-8)',
-              marginBottom: 'var(--space-8)',
-              color: 'white',
-              position: 'relative',
-              overflow: 'hidden',
+              background: 'linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+              borderBottom: '3px solid #f59e0b',
+              padding: '24px 32px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <p style={{ fontSize: 'var(--text-sm)', opacity: 0.8, marginBottom: 'var(--space-2)' }}>
-                  {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-                <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, marginBottom: 'var(--space-2)' }}>
-                  {getGreeting()}, {user?.name?.split(' ')[0] || 'Usuario'}
-                </h1>
-                <p style={{ fontSize: 'var(--text-base)', opacity: 0.9 }}>
-                  Sistema de Gestión de Lubricación Industrial — Aserradero AISA
-                </p>
-
-                <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
-                  <Link href="/tasks" className="btn" style={{
-                    background: 'white',
-                    color: 'var(--primary-800)',
-                    fontWeight: 600,
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '20px',
+                    color: '#0f172a',
+                    letterSpacing: '-1px',
                   }}>
-                    <Play style={{ width: 16, height: 16 }} />
-                    Iniciar Tareas del Día
-                  </Link>
-                  <Link href="/schedule" className="btn" style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    color: 'white',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                  }}>
-                    <Calendar style={{ width: 16, height: 16 }} />
-                    Ver Planificación
-                  </Link>
+                    A
+                  </div>
+                  <div>
+                    <h1 style={{ 
+                      fontSize: '28px', 
+                      fontWeight: 800, 
+                      color: '#ffffff',
+                      letterSpacing: '-0.5px',
+                      margin: 0,
+                    }}>
+                      AISA LUBRICACIÓN
+                    </h1>
+                    <p style={{ 
+                      fontSize: '13px', 
+                      color: '#94a3b8',
+                      margin: 0,
+                      textTransform: 'uppercase',
+                      letterSpacing: '2px',
+                    }}>
+                      Sistema de Gestión Industrial
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              {/* Background decoration */}
-              <div style={{
-                position: 'absolute',
-                right: -50,
-                top: -50,
-                width: 300,
-                height: 300,
-                background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-                borderRadius: '50%',
-              }} />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '14px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {new Date().toLocaleDateString('es-CL', { weekday: 'long' })}
+                  </div>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+                    {new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </div>
+                </div>
+                <div style={{
+                  padding: '12px 20px',
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  borderRadius: '8px',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                }}>
+                  ● OPERATIVO
+                </div>
+              </div>
             </header>
 
-            {/* Stats Cards */}
-            <section style={{ marginBottom: 'var(--space-8)' }}>
+            {/* Industrial KPI Cards */}
+            <section style={{ marginBottom: '32px' }}>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: 'var(--space-4)',
+                gap: '16px',
               }}>
-                {/* Compliance */}
-                <article className="stat-card" style={{ borderLeft: '4px solid var(--accent-500)' }}>
-                  <div className="stat-header">
-                    <div className="stat-icon primary">
-                      <Target style={{ width: 24, height: 24 }} />
+                {/* Compliance KPI */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  border: '1px solid #334155',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: stats.compliance >= 80 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f59e0b, #d97706)',
+                  }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      background: stats.compliance >= 80 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <Target style={{ width: 22, height: 22, color: stats.compliance >= 80 ? '#22c55e' : '#f59e0b' }} />
                     </div>
-                    <span className={`stat-trend ${stats.compliance >= 90 ? 'up' : 'down'}`}>
-                      {stats.compliance >= 90 ? 'Meta cumplida' : 'Por mejorar'}
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: stats.compliance >= 80 ? '#22c55e' : '#f59e0b',
+                      background: stats.compliance >= 80 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      padding: '4px 10px',
+                      borderRadius: '20px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}>
+                      {stats.compliance >= 80 ? '● OK' : '● BAJO'}
                     </span>
                   </div>
-                  <div>
-                    <span className="stat-value">{stats.compliance}%</span>
-                    <span className="stat-label">Cumplimiento SLA</span>
+                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                    {stats.compliance}<span style={{ fontSize: '20px', opacity: 0.6 }}>%</span>
                   </div>
-                </article>
+                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Cumplimiento SLA
+                  </div>
+                </div>
 
-                {/* Today Progress */}
-                <article className="stat-card" style={{ borderLeft: '4px solid var(--success-500)' }}>
-                  <div className="stat-header">
-                    <div className="stat-icon success">
-                      <CheckCircle2 style={{ width: 24, height: 24 }} />
+                {/* Today Tasks KPI */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  border: '1px solid #334155',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: 'linear-gradient(90deg, #3b82f6, #2563eb)',
+                  }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      background: 'rgba(59, 130, 246, 0.15)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <CheckCircle2 style={{ width: 22, height: 22, color: '#3b82f6' }} />
                     </div>
-                    <span className="stat-trend up">
-                      <TrendingUp style={{ width: 12, height: 12 }} />
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: '#3b82f6',
+                      background: 'rgba(59, 130, 246, 0.15)',
+                      padding: '4px 10px',
+                      borderRadius: '20px',
+                    }}>
+                      <TrendingUp style={{ width: 12, height: 12, display: 'inline', marginRight: '4px' }} />
                       {todayProgress}%
                     </span>
                   </div>
-                  <div>
-                    <span className="stat-value">{stats.todayCompleted}/{stats.todayTasks}</span>
-                    <span className="stat-label">Tareas Hoy</span>
+                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                    {stats.todayCompleted}<span style={{ fontSize: '20px', opacity: 0.6 }}>/{stats.todayTasks}</span>
                   </div>
-                </article>
+                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Tareas Hoy
+                  </div>
+                </div>
 
-                {/* Anomalies */}
-                <article className="stat-card" style={{ borderLeft: `4px solid ${stats.openAnomalies > 0 ? 'var(--warning-500)' : 'var(--success-500)'}` }}>
-                  <div className="stat-header">
-                    <div className={`stat-icon ${stats.openAnomalies > 0 ? 'warning' : 'success'}`}>
-                      <AlertTriangle style={{ width: 24, height: 24 }} />
+                {/* Anomalies KPI */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  border: '1px solid #334155',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: stats.openAnomalies > 0 ? 'linear-gradient(90deg, #ef4444, #dc2626)' : 'linear-gradient(90deg, #22c55e, #16a34a)',
+                  }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      background: stats.openAnomalies > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <AlertTriangle style={{ width: 22, height: 22, color: stats.openAnomalies > 0 ? '#ef4444' : '#22c55e' }} />
                     </div>
                     {stats.criticalAnomalies > 0 && (
-                      <span className="stat-trend down">{stats.criticalAnomalies} urgentes</span>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#ef4444',
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                      }}>
+                        ⚠ {stats.criticalAnomalies} CRÍTICAS
+                      </span>
                     )}
                   </div>
-                  <div>
-                    <span className="stat-value">{stats.openAnomalies}</span>
-                    <span className="stat-label">Anomalías Abiertas</span>
+                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                    {stats.openAnomalies}
                   </div>
-                </article>
+                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Anomalías Abiertas
+                  </div>
+                </div>
 
-                {/* Assets */}
-                <article className="stat-card" style={{ borderLeft: '4px solid var(--primary-500)' }}>
-                  <div className="stat-header">
-                    <div className="stat-icon primary">
-                      <Cog style={{ width: 24, height: 24 }} />
+                {/* Equipment KPI */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  border: '1px solid #334155',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: 'linear-gradient(90deg, #8b5cf6, #7c3aed)',
+                  }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      background: 'rgba(139, 92, 246, 0.15)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <Cog style={{ width: 22, height: 22, color: '#8b5cf6' }} />
                     </div>
                   </div>
-                  <div>
-                    <span className="stat-value">{stats.totalMachines}</span>
-                    <span className="stat-label">Equipos Activos</span>
+                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                    {stats.totalMachines}
                   </div>
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-2)' }}>
+                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Equipos Activos
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                     {stats.totalPoints} puntos de lubricación
                   </div>
-                </article>
+                </div>
               </div>
             </section>
 
             {/* Main Content Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
               {/* Today's Tasks */}
               <section>
-                <div className="card">
-                  <div className="card-header">
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #334155',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    padding: '20px 24px',
+                    borderBottom: '1px solid #334155',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
                     <div>
-                      <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <ClipboardCheck style={{ width: 18, height: 18, color: 'var(--accent-500)' }} />
-                        Tareas de Lubricación — Hoy
+                      <h2 style={{ 
+                        fontSize: '18px', 
+                        fontWeight: 700, 
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        margin: 0,
+                      }}>
+                        <ClipboardCheck style={{ width: 20, height: 20, color: '#f59e0b' }} />
+                        TAREAS DE LUBRICACIÓN
                       </h2>
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-1)' }}>
-                        Programa de lubricación diario según Plan Detallado Cap. 9
+                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                        Programa diario según Plan Detallado Cap. 9
                       </p>
                     </div>
-                    <Link href="/tasks" className="btn btn-primary btn-sm">
+                    <Link href="/tasks" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}>
                       Ver Todas
                       <ArrowRight style={{ width: 14, height: 14 }} />
                     </Link>
                   </div>
 
-                  <div className="card-body" style={{ padding: 0 }}>
+                  <div>
                     {todayTasksList.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div>
                         {todayTasksList.map((task, idx) => (
                           <div
                             key={task.id}
                             style={{
                               display: 'grid',
-                              gridTemplateColumns: '80px 1fr auto',
-                              gap: 'var(--space-4)',
-                              padding: 'var(--space-4) var(--space-5)',
-                              borderBottom: idx < todayTasksList.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                              gridTemplateColumns: '90px 1fr auto',
+                              gap: '16px',
+                              padding: '16px 24px',
+                              borderBottom: idx < todayTasksList.length - 1 ? '1px solid #1e293b' : 'none',
                               alignItems: 'center',
+                              background: idx % 2 === 0 ? 'transparent' : 'rgba(15, 23, 42, 0.3)',
                             }}
                           >
                             <code style={{
                               fontFamily: 'var(--font-mono)',
-                              fontSize: 'var(--text-sm)',
-                              fontWeight: 600,
-                              color: 'var(--primary-700)',
-                              background: 'var(--primary-50)',
-                              padding: 'var(--space-1) var(--space-2)',
-                              borderRadius: 'var(--radius-sm)',
+                              fontSize: '14px',
+                              fontWeight: 700,
+                              color: '#f59e0b',
+                              background: 'rgba(245, 158, 11, 0.1)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(245, 158, 11, 0.2)',
                             }}>
                               {task.code}
                             </code>
                             <div>
-                              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+                              <div style={{ fontWeight: 600, color: '#ffffff', marginBottom: '2px', fontSize: '14px' }}>
                                 {task.component}
                               </div>
-                              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
+                              <div style={{ fontSize: '12px', color: '#64748b' }}>
                                 {task.machine} • {task.lubricant}
                               </div>
                             </div>
-                            <span className={`badge ${task.status === 'completado' ? 'badge-success' : 'badge-warning'}`}>
-                              {task.status === 'completado' ? 'Completado' : 'Pendiente'}
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              color: task.status === 'completado' ? '#22c55e' : '#f59e0b',
+                              background: task.status === 'completado' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                              padding: '6px 12px',
+                              borderRadius: '20px',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                            }}>
+                              {task.status === 'completado' ? '✓ COMPLETADO' : '● PENDIENTE'}
                             </span>
                           </div>
                         ))}
                       </div>
                     ) : (
                       <div style={{
-                        padding: 'var(--space-12)',
+                        padding: '48px',
                         textAlign: 'center',
-                        color: 'var(--text-muted)',
                       }}>
-                        <Clock style={{ width: 48, height: 48, margin: '0 auto var(--space-4)', opacity: 0.3 }} />
-                        <p style={{ fontWeight: 500, marginBottom: 'var(--space-2)' }}>No hay tareas programadas para hoy</p>
-                        <p style={{ fontSize: 'var(--text-sm)' }}>Las tareas se generan automáticamente según el programa de lubricación</p>
+                        <Clock style={{ width: 48, height: 48, margin: '0 auto 16px', color: '#334155' }} />
+                        <p style={{ fontWeight: 600, color: '#94a3b8', marginBottom: '8px' }}>Sin tareas programadas</p>
+                        <p style={{ fontSize: '13px', color: '#64748b' }}>Las tareas se generan automáticamente</p>
                       </div>
                     )}
                   </div>
@@ -329,128 +516,152 @@ export default function Dashboard() {
               </section>
 
               {/* Sidebar */}
-              <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                {/* Quick Navigation */}
-                <nav className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">Navegación Rápida</h3>
-                  </div>
-                  <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <aside style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Quick Actions */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #334155',
+                  padding: '20px',
+                }}>
+                  <h3 style={{ 
+                    fontSize: '14px', 
+                    fontWeight: 700, 
+                    color: '#94a3b8', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '1px',
+                    marginBottom: '16px',
+                  }}>
+                    Acciones Rápidas
+                  </h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <Link href="/tasks" style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 'var(--space-3)',
-                      padding: 'var(--space-3)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      transition: 'background var(--duration-fast)',
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      background: 'rgba(245, 158, 11, 0.1)',
+                      border: '1px solid rgba(245, 158, 11, 0.2)',
                     }}>
                       <div style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--accent-100)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}>
-                        <ClipboardCheck style={{ width: 18, height: 18, color: 'var(--accent-600)' }} />
+                        <Play style={{ width: 18, height: 18, color: '#0f172a' }} />
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Ejecutar Tareas</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Lubricación diaria</div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>Ejecutar Tareas</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>Lubricación diaria</div>
                       </div>
                     </Link>
 
                     <Link href="/anomalies" style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 'var(--space-3)',
-                      padding: 'var(--space-3)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
                     }}>
                       <div style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--warning-100)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        background: 'rgba(239, 68, 68, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}>
-                        <AlertTriangle style={{ width: 18, height: 18, color: 'var(--warning-600)' }} />
+                        <AlertTriangle style={{ width: 18, height: 18, color: '#ef4444' }} />
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Reportar Anomalía</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Problemas detectados</div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>Reportar Anomalía</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>Problemas detectados</div>
                       </div>
                     </Link>
 
                     <Link href="/metrics" style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 'var(--space-3)',
-                      padding: 'var(--space-3)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.2)',
                     }}>
                       <div style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--primary-100)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        background: 'rgba(59, 130, 246, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}>
-                        <BarChart3 style={{ width: 18, height: 18, color: 'var(--primary-600)' }} />
+                        <BarChart3 style={{ width: 18, height: 18, color: '#3b82f6' }} />
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Ver Indicadores</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>KPIs y métricas</div>
-                      </div>
-                    </Link>
-
-                    <Link href="/assets" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--space-3)',
-                      padding: 'var(--space-3)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                    }}>
-                      <div style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--slate-100)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <Building2 style={{ width: 18, height: 18, color: 'var(--slate-600)' }} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Gestionar Activos</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Equipos y puntos</div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>Ver Indicadores</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>KPIs y métricas</div>
                       </div>
                     </Link>
                   </div>
-                </nav>
+                </div>
 
-                {/* System Info */}
-                <div className="card" style={{ background: 'var(--slate-50)' }}>
-                  <div className="card-body">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
-                      <Droplets style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
-                      <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Lubricantes en Uso</span>
+                {/* Lubricants Info */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #334155',
+                  padding: '20px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <Droplets style={{ width: 18, height: 18, color: '#3b82f6' }} />
+                    <span style={{ fontWeight: 700, fontSize: '14px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Lubricantes
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#22c55e', background: 'rgba(34, 197, 94, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>Grasa I y II</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>KP2K</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>Aceite 150</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '6px 12px', borderRadius: '20px' }}>NBU 15</span>
+                  </div>
+                </div>
+
+                {/* User Info */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #334155',
+                  padding: '20px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '18px',
+                      color: '#0f172a',
+                    }}>
+                      {user?.name?.charAt(0) || 'U'}
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                      <span className="badge badge-primary">Grasa I y II</span>
-                      <span className="badge badge-primary">KP2K</span>
-                      <span className="badge badge-primary">Aceite 150</span>
-                      <span className="badge badge-primary">NBU 15</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>{user?.name || 'Usuario'}</div>
+                      <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>{user?.role || 'Técnico'}</div>
                     </div>
                   </div>
                 </div>
