@@ -415,6 +415,9 @@ h3 {
 .user-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .user-name {
@@ -424,11 +427,16 @@ h3 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: block;
+  line-height: 1.2;
 }
 
 .user-role {
   font-size: var(--text-xs);
   color: var(--text-muted);
+  display: block;
+  line-height: 1.2;
+  text-transform: capitalize;
 }
 
 /* Main Content Area */

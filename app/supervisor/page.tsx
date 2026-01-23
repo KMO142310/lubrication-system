@@ -70,22 +70,33 @@ export default function SupervisorDashboard() {
     
     // Suscripción en tiempo real a cambios en tareas
     const channel = supabase
-      .channel('supervisor-tasks')
+      .channel('supervisor-realtime')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'tasks' },
+        { event: 'INSERT', schema: 'public', table: 'tasks' },
         (payload) => {
-          console.log('📡 Cambio detectado:', payload);
-          toast.success('🔄 Nueva actividad detectada');
-          loadSupervisorData(); // Recargar datos
+          console.log('📡 NUEVA TAREA:', payload);
+          toast.success('✅ Nueva tarea completada!', { duration: 3000 });
+          loadSupervisorData();
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'tasks' },
+        (payload) => {
+          console.log('📡 TAREA ACTUALIZADA:', payload);
+          toast.success('🔄 Tarea actualizada', { duration: 2000 });
+          loadSupervisorData();
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Realtime status:', status);
+      });
 
-    // Auto-refresh cada 15 segundos
+    // Auto-refresh cada 5 segundos (más frecuente)
     const interval = setInterval(() => {
       loadSupervisorData();
-    }, 15000);
+    }, 5000);
 
     return () => {
       supabase.removeChannel(channel);
