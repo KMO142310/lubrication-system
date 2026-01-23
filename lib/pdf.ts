@@ -16,6 +16,8 @@ interface WorkOrderPDFData {
     date: string;
     technician: string;
     company?: string;
+    plant?: string;
+    shift?: string;
     tasks: {
         code: string;
         machine: string;
@@ -28,6 +30,7 @@ interface WorkOrderPDFData {
         observations?: string;
         photoUrl?: string;
         completedAt?: string;
+        frequency?: string;
     }[];
     photos?: TaskPhoto[];
     signature?: string;
@@ -39,127 +42,197 @@ interface WorkOrderPDFData {
 export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Header
-    doc.setFillColor(30, 58, 138); // Primary blue
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    // ============================================================
+    // PÁGINA 1: INFORME DE LUBRICACIÓN (ISO 55001 / ICML)
+    // ============================================================
+
+    // Header con logo y título
+    doc.setFillColor(30, 58, 138);
+    doc.rect(0, 0, pageWidth, 45, 'F');
 
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('AISA Lubricación', 14, 20);
+    doc.text('INFORME DE LUBRICACIÓN', 14, 18);
 
-    doc.setFontSize(12);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Orden de Trabajo', 14, 30);
+    doc.text('Conforme ISO 55001 - Gestión de Activos', 14, 26);
+    doc.text('Sistema de Control de Lubricación Industrial', 14, 33);
 
-    // Work Order Info Box
-    doc.setTextColor(30, 58, 138);
+    // Código de orden
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.code, pageWidth - 14, 20, { align: 'right' });
-
-    doc.setTextColor(200, 200, 200);
+    doc.text(data.code, pageWidth - 14, 18, { align: 'right' });
     doc.setFontSize(10);
-    doc.text(data.date, pageWidth - 14, 30, { align: 'right' });
-
-    // Info Section
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    let y = 55;
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Técnico:', 14, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(data.technician, 50, y);
+    doc.text(`Fecha: ${data.date}`, pageWidth - 14, 28, { align: 'right' });
 
-    if (data.company) {
-        y += 8;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Empresa:', 14, y);
-        doc.setFont('helvetica', 'normal');
-        doc.text(data.company, 50, y);
-    }
+    // Información general en recuadro
+    let y = 55;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.rect(14, y - 5, pageWidth - 28, 35, 'S');
+
+    doc.setTextColor(30, 58, 138);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DATOS DE LA RUTA', 16, y + 2);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    
+    const col1 = 16;
+    const col2 = pageWidth / 2 + 5;
+    
+    y += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Técnico Responsable:', col1, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.technician, col1 + 38, y);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Empresa:', col2, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.company || 'AISA', col2 + 20, y);
 
     y += 8;
     doc.setFont('helvetica', 'bold');
-    doc.text('Fecha:', 14, y);
+    doc.text('Planta:', col1, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(data.date, 50, y);
+    doc.text(data.plant || 'AISA - Aserraderos Industriales', col1 + 18, y);
 
-    // Summary
-    y += 15;
-    if (data.totalTasks && data.completedTasks !== undefined) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text(`Resumen: ${data.completedTasks} de ${data.totalTasks} tareas completadas`, 14, y);
-        y += 5;
-    }
-
-    // Tasks Table
-    y += 10;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.text('Tareas Ejecutadas', 14, y);
+    doc.text('Turno:', col2, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.shift || 'Diurno', col2 + 15, y);
 
-    const tableData = data.tasks.map(task => [
+    // Resumen de cumplimiento
+    y += 20;
+    const compliance = data.totalTasks && data.totalTasks > 0 
+        ? Math.round((data.completedTasks || 0) / data.totalTasks * 100) 
+        : 0;
+    
+    doc.setFillColor(compliance >= 90 ? 34 : compliance >= 70 ? 234 : 239, 
+                     compliance >= 90 ? 197 : compliance >= 70 ? 179 : 68, 
+                     compliance >= 90 ? 94 : compliance >= 70 ? 8 : 68);
+    doc.rect(14, y, pageWidth - 28, 20, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`CUMPLIMIENTO: ${compliance}%`, 20, y + 8);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${data.completedTasks || 0} de ${data.totalTasks || 0} tareas ejecutadas`, 20, y + 15);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(compliance >= 90 ? 'CONFORME' : compliance >= 70 ? 'PARCIAL' : 'NO CONFORME', 
+             pageWidth - 20, y + 12, { align: 'right' });
+
+    // Tabla de tareas
+    y += 30;
+    doc.setTextColor(30, 58, 138);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETALLE DE TAREAS EJECUTADAS', 14, y);
+
+    const tableData = data.tasks.map((task, idx) => [
+        String(idx + 1),
         task.code,
-        task.machine,
-        task.component,
-        task.lubricant,
+        task.machine.substring(0, 20),
+        task.component.substring(0, 18),
+        task.lubricant.substring(0, 18),
         task.method,
-        task.quantityUsed || task.quantityRequired || '-',
-        task.status === 'completado' ? '✓' : task.status === 'omitido' ? '—' : '○',
-        task.observations || '-',
+        task.quantityUsed || '-',
+        task.status === 'completado' ? '✓' : task.status === 'omitido' ? '✗' : '○',
     ]);
 
     autoTable(doc, {
         startY: y + 5,
-        head: [['Código', 'Máquina', 'Componente', 'Lubricante', 'Método', 'Cant. Usada', 'Estado', 'Obs.']],
+        head: [['#', 'Código', 'Equipo', 'Componente', 'Lubricante', 'Método', 'Cant.', 'OK']],
         body: tableData,
-        theme: 'striped',
+        theme: 'grid',
         headStyles: {
             fillColor: [30, 58, 138],
             textColor: [255, 255, 255],
             fontSize: 7,
             fontStyle: 'bold',
+            halign: 'center',
         },
         bodyStyles: {
             fontSize: 6,
+            halign: 'center',
         },
         columnStyles: {
-            0: { cellWidth: 18 },
-            1: { cellWidth: 28 },
-            2: { cellWidth: 25 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 20 },
-            5: { cellWidth: 18 },
-            6: { cellWidth: 12, halign: 'center' },
-            7: { cellWidth: 30 },
+            0: { cellWidth: 8 },
+            1: { cellWidth: 22, halign: 'left' },
+            2: { cellWidth: 30, halign: 'left' },
+            3: { cellWidth: 28, halign: 'left' },
+            4: { cellWidth: 28, halign: 'left' },
+            5: { cellWidth: 20 },
+            6: { cellWidth: 15 },
+            7: { cellWidth: 10 },
         },
         margin: { left: 14, right: 14 },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
     });
 
-    // Signature Section
-    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
-
-    if (data.signature) {
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(14, finalY + 25, 80, finalY + 25);
-
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Firma del Técnico', 14, finalY + 32);
-
-        // Add signature image
-        doc.addImage(data.signature, 'PNG', 14, finalY, 60, 25);
+    // Observaciones si hay
+    const tasksWithObs = data.tasks.filter(t => t.observations);
+    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+    
+    if (tasksWithObs.length > 0 && finalY < pageHeight - 80) {
+        finalY += 10;
+        doc.setTextColor(30, 58, 138);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('OBSERVACIONES:', 14, finalY);
+        
+        finalY += 6;
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        
+        tasksWithObs.slice(0, 5).forEach(task => {
+            doc.text(`• ${task.code}: ${task.observations?.substring(0, 80)}`, 14, finalY);
+            finalY += 5;
+        });
     }
 
+    // Sección de firmas
+    finalY = Math.max(finalY + 15, pageHeight - 50);
+    
+    doc.setDrawColor(100, 100, 100);
+    doc.setLineWidth(0.3);
+    
+    // Firma técnico
+    doc.line(14, finalY + 20, 80, finalY + 20);
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Firma Técnico Ejecutor', 14, finalY + 26);
+    doc.text(data.technician, 14, finalY + 32);
+
+    if (data.signature) {
+        try {
+            doc.addImage(data.signature, 'PNG', 14, finalY - 5, 60, 25);
+        } catch (e) {
+            // Firma no disponible
+        }
+    }
+
+    // Firma supervisor (espacio)
+    doc.line(pageWidth - 80, finalY + 20, pageWidth - 14, finalY + 20);
+    doc.text('Firma Supervisor', pageWidth - 80, finalY + 26);
+    doc.text('_________________', pageWidth - 80, finalY + 32);
+
+    // Hora de cierre
     if (data.completedAt) {
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Completado: ${data.completedAt}`, pageWidth - 14, finalY + 32, { align: 'right' });
+        doc.setFontSize(8);
+        doc.text(`Cerrado: ${data.completedAt}`, pageWidth / 2, finalY + 32, { align: 'center' });
     }
 
     // ANEXO DE EVIDENCIA FOTOGRÁFICA (Anti-Fraude)
