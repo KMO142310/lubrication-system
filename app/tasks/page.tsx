@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import SignaturePad from '@/components/SignaturePad';
 import PhotoUpload from '@/components/PhotoUpload';
+import DailyReport from '@/components/DailyReport';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
@@ -49,6 +50,7 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [executionMode, setExecutionMode] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
+  const [showDailyReport, setShowDailyReport] = useState(false);
   const [execution, setExecution] = useState<TaskExecution>({
     photoBefore: '',
     photoAfter: '',
@@ -255,6 +257,10 @@ export default function TasksPage() {
 
                   {/* Action Buttons */}
                   <div className="progress-actions">
+                    <button className="btn btn-secondary" onClick={() => setShowDailyReport(true)}>
+                      <FileText style={{ width: 16, height: 16 }} />
+                      Ver Informe
+                    </button>
                     {allCompleted ? (
                       <button className="btn btn-primary sign-btn" onClick={() => setShowSignature(true)}>
                         <PenTool style={{ width: 18, height: 18 }} />
@@ -262,7 +268,7 @@ export default function TasksPage() {
                       </button>
                     ) : (
                       <button className="btn btn-secondary" disabled>
-                        <FileText style={{ width: 16, height: 16 }} />
+                        <Clock style={{ width: 16, height: 16 }} />
                         Complete todas las tareas para firmar
                       </button>
                     )}
@@ -895,6 +901,47 @@ export default function TasksPage() {
           }
         }
       `}</style>
+
+      {/* Daily Report Modal */}
+      {showDailyReport && (
+        <DailyReport
+          date={workOrder?.scheduledDate || new Date().toISOString().split('T')[0]}
+          technician={user?.name || 'Técnico'}
+          tasks={tasks.map(t => ({
+            id: t.id,
+            code: t.lubricationPoint.code,
+            component: t.component.name,
+            machine: t.machine.name,
+            lubricant: t.lubricant.name,
+            quantity: t.lubricationPoint.quantity,
+            unit: t.lubricant.type === 'grasa' ? 'g' : 'ml',
+            status: t.status as 'completado' | 'pendiente' | 'omitido',
+            completedAt: t.completedAt,
+            observations: t.observations
+          }))}
+          onClose={() => setShowDailyReport(false)}
+          onDownload={() => {
+            if (workOrder) {
+              generateWorkOrderPDF({
+                code: `OT-${workOrder.id.slice(-4).toUpperCase()}`,
+                date: new Date(workOrder.scheduledDate).toLocaleDateString('es-CL'),
+                technician: user?.name || 'Técnico',
+                company: 'AISA',
+                tasks: tasks.map(t => ({
+                  code: t.lubricationPoint.code,
+                  machine: t.machine.name,
+                  component: t.component.name,
+                  lubricant: t.lubricant.name,
+                  quantity: `${t.lubricationPoint.quantity} ${t.lubricant.type === 'grasa' ? 'g' : 'ml'}`,
+                  status: t.status,
+                  observations: t.observations,
+                })),
+                signature: ''
+              });
+            }
+          }}
+        />
+      )}
     </ProtectedRoute>
   );
 }

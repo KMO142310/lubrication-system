@@ -142,69 +142,47 @@ export default function SchedulePage() {
                   </div>
 
                   <div className="card-body" style={{ padding: 0 }}>
-                    {/* Day Headers */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
-                      {dayNames.map(day => (
-                        <div key={day} style={{
-                          padding: 'var(--space-4)',
-                          textAlign: 'center',
-                          fontSize: 'var(--text-xs)',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: 'var(--text-muted)',
-                          background: 'var(--slate-50)',
-                        }}>
-                          {day}
-                        </div>
-                      ))}
-                    </div>
+                    <div className="calendar-container">
+                      <div className="calendar-grid">
+                        {/* Day Headers */}
+                        {dayNames.map(day => (
+                          <div key={day} className="calendar-day-header">
+                            {day}
+                          </div>
+                        ))}
 
-                    {/* Calendar Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-                      {calendarDays.map((day, i) => (
-                        <div
-                          key={i}
-                          onClick={() => day.workOrder && setSelectedDay(day)}
-                          style={{
-                            aspectRatio: '1',
-                            padding: 'var(--space-3)',
-                            borderRight: (i + 1) % 7 !== 0 ? '1px solid var(--border-subtle)' : 'none',
-                            borderBottom: '1px solid var(--border-subtle)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: 'var(--space-1)',
-                            cursor: day.workOrder ? 'pointer' : 'default',
-                            opacity: day.isCurrentMonth ? 1 : 0.3,
-                            background: day.isToday ? 'var(--accent-100)' : 'transparent',
-                            transition: 'background var(--duration-fast)',
-                          }}
-                          onMouseEnter={e => day.workOrder && (e.currentTarget.style.background = 'var(--slate-50)')}
-                          onMouseLeave={e => e.currentTarget.style.background = day.isToday ? 'var(--accent-100)' : 'transparent'}
-                        >
-                          <span style={{
-                            fontSize: 'var(--text-sm)',
-                            fontWeight: day.isToday ? 700 : 500,
-                            width: 28,
-                            height: 28,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: 'var(--radius-full)',
-                            background: day.isToday ? 'var(--accent-500)' : 'transparent',
-                            color: day.isToday ? 'white' : 'var(--text-primary)',
-                          }}>
-                            {day.date.getDate()}
-                          </span>
-                          {getStatusIndicator(day)}
-                          {day.tasks.length > 0 && (
-                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                              {day.tasks.length} pts
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                        {/* Calendar Days */}
+                        {calendarDays.map((day, i) => {
+                          const completed = day.tasks.filter(t => t.status === 'completado').length;
+                          const total = day.tasks.length;
+                          const allCompleted = total > 0 && completed === total;
+                          
+                          return (
+                            <div
+                              key={i}
+                              onClick={() => day.workOrder && setSelectedDay(day)}
+                              className={`calendar-day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''} ${allCompleted ? 'completed' : total > 0 ? 'has-tasks' : ''}`}
+                            >
+                              <span className="calendar-day-number">
+                                {day.date.getDate()}
+                              </span>
+                              {total > 0 && (
+                                <div className="calendar-day-tasks">
+                                  {day.tasks.slice(0, 5).map((t, idx) => (
+                                    <span 
+                                      key={idx} 
+                                      className={`calendar-task-dot ${t.status === 'completado' ? 'completed' : ''}`}
+                                    />
+                                  ))}
+                                  {total > 5 && (
+                                    <span style={{ fontSize: '9px', color: 'var(--text-muted)' }}>+{total - 5}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
