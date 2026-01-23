@@ -63,14 +63,9 @@ export default function Dashboard() {
     const todayTasks = todayWO ? allTasks.filter(t => t.workOrderId === todayWO.id) : [];
     const todayCompleted = todayTasks.filter(t => t.status === 'completado').length;
 
-    const completedTasks = allTasks.filter(t => t.status === 'completado');
-    const dueTasks = allTasks.filter(t => {
-      const wo = workOrders.find(w => w.id === t.workOrderId);
-      return wo && new Date(wo.scheduledDate) <= new Date();
-    });
-
-    const compliance = dueTasks.length > 0
-      ? Math.round((completedTasks.length / dueTasks.length) * 100)
+    // Cumplimiento SLA: solo cuenta las tareas de HOY
+    const compliance = todayTasks.length > 0
+      ? Math.round((todayCompleted / todayTasks.length) * 100)
       : 100;
 
     setStats({
