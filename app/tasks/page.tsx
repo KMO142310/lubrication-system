@@ -64,8 +64,21 @@ export default function TasksPage() {
     dataService.init();
     
     // Cargar tareas completadas desde Supabase
+    let serverTasksMap: Record<string, any> = {};
     if (isOnline()) {
       const serverTasks = await getCompletedTasksFromServer();
+      console.log('📥 Tareas de Supabase:', serverTasks.length);
+      
+      // Crear mapa para búsqueda rápida
+      serverTasks.forEach(st => {
+        serverTasksMap[st.id] = st;
+        // También mapear por lubricationPointId para matching alternativo
+        if (st.lubricationPointId) {
+          serverTasksMap[`lp-${st.lubricationPointId}`] = st;
+        }
+      });
+      
+      // Actualizar tareas locales con datos del servidor
       serverTasks.forEach(st => {
         dataService.updateTask(st.id, {
           status: st.status as 'completado',
@@ -95,9 +108,28 @@ export default function TasksPage() {
         const lub = lubricants.find(l => l.id === lp?.lubricantId)!;
         const freq = frequencies.find(f => f.id === lp?.frequencyId)!;
 
+        // Merge con datos del servidor si existe
+        const serverData = serverTasksMap[task.id] || serverTasksMap[`lp-${task.lubricationPointId}`];
+        if (serverData && serverData.status === 'completado') {
+          return { 
+            ...task, 
+            status: 'completado' as const,
+            quantityUsed: serverData.quantityUsed,
+            observations: serverData.observations,
+            photoUrl: serverData.photoUrl,
+            completedAt: serverData.completedAt,
+            lubricationPoint: lp, 
+            component: comp, 
+            machine: mach, 
+            lubricant: lub, 
+            frequency: freq 
+          };
+        }
+
         return { ...task, lubricationPoint: lp, component: comp, machine: mach, lubricant: lub, frequency: freq };
       }).filter(t => t.lubricationPoint && t.machine && t.lubricant);
 
+      console.log('📊 Tareas enriquecidas:', enriched.filter(t => t.status === 'completado').length, 'completadas de', enriched.length);
       setTasks(enriched);
     }
     setLoading(false);
