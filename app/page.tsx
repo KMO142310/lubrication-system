@@ -49,6 +49,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadDashboard = async () => {
+      // Inicializar datos locales primero
+      dataService.init();
+      
+      // Cargar tareas completadas del servidor PRIMERO
+      let serverTasksByPoint: Record<string, any> = {};
+      if (isOnline()) {
+        const serverTasks = await getCompletedTasksFromServer();
+        console.log('📥 Dashboard - Tareas servidor:', serverTasks.length, serverTasks.map(t => t.lubricationPointId));
+        serverTasks.forEach(st => {
+          if (st.lubricationPointId) {
+            serverTasksByPoint[st.lubricationPointId] = st;
+          }
+        });
+      }
+      
       const workOrders = dataService.getWorkOrders();
       const allTasks = dataService.getTasks();
       const anomalies = dataService.getAnomalies();
@@ -57,17 +72,8 @@ export default function Dashboard() {
       const components = dataService.getComponents();
       const lubricants = dataService.getLubricants();
       const frequencies = dataService.getFrequencies();
-
-      // Cargar tareas completadas del servidor
-      let serverTasksByPoint: Record<string, any> = {};
-      if (isOnline()) {
-        const serverTasks = await getCompletedTasksFromServer();
-        serverTasks.forEach(st => {
-          if (st.lubricationPointId) {
-            serverTasksByPoint[st.lubricationPointId] = st;
-          }
-        });
-      }
+      
+      console.log('📊 Dashboard - Tareas locales:', allTasks.length, 'Puntos:', points.length);
 
       const completedWOs = workOrders.filter(wo => wo.status === 'completado');
       const totalWOs = workOrders.filter(wo => new Date(wo.scheduledDate) <= new Date());
