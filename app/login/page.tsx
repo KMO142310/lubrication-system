@@ -36,23 +36,23 @@ export default function LoginPage() {
         setError('');
         setIsLoading(true);
 
-        // Primero intentar con Supabase Auth
-        const { data, error: supabaseError } = await signInWithEmail(email, password);
-        
-        if (data?.user) {
-            router.push('/');
-            return;
+        try {
+            // Usar auth local (usuarios hardcodeados) - funciona offline
+            const result = await login(email, password);
+            
+            if (result.success) {
+                // Pequeño delay para asegurar que el estado se guarde
+                await new Promise(resolve => setTimeout(resolve, 100));
+                router.push('/');
+                return;
+            }
+            
+            setError(result.error || 'Credenciales inválidas');
+        } catch (err) {
+            setError('Error al iniciar sesión');
+        } finally {
+            setIsLoading(false);
         }
-
-        // Si falla Supabase, intentar con auth local (usuarios hardcodeados)
-        const result = await login(email, password);
-        if (result.success) {
-            router.push('/');
-        } else {
-            setError(supabaseError?.message || result.error || 'Credenciales inválidas');
-        }
-
-        setIsLoading(false);
     };
 
     const handleRegister = async (e: React.FormEvent) => {
