@@ -85,12 +85,15 @@ function generateWeeklyWorkOrders(): void {
     const frequencies = FRECUENCIAS;
 
     const today = new Date();
-
-    for (let i = -1; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() + i);
+    
+    // Generar desde el 1 de enero hasta el 31 de enero 2026
+    const startDate = new Date(2026, 0, 1); // 1 enero 2026
+    const endDate = new Date(2026, 0, 31);  // 31 enero 2026
+    
+    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dateStr = date.toISOString().split('T')[0];
         const dayOfWeek = date.getDay();
+        const isPast = date < today;
 
         const dailyPoints = points.filter((p: LubricationPoint) => {
             const freq = frequencies.find((f: Frequency) => f.id === p.frequencyId);
@@ -119,10 +122,10 @@ function generateWeeklyWorkOrders(): void {
             workOrders.push({
                 id: woId,
                 scheduledDate: dateStr,
-                status: i < 0 ? 'completado' : 'pendiente',
+                status: isPast ? 'completado' : 'pendiente',
                 technicianId: 'user-2',
                 createdAt: new Date().toISOString(),
-                completedAt: i < 0 ? new Date().toISOString() : undefined,
+                completedAt: isPast ? new Date().toISOString() : undefined,
             });
 
             dailyPoints.forEach((point: LubricationPoint) => {
@@ -130,9 +133,9 @@ function generateWeeklyWorkOrders(): void {
                     id: `task-${woId}-${point.id}`,
                     workOrderId: woId,
                     lubricationPointId: point.id,
-                    status: i < 0 ? 'completado' : 'pendiente',
-                    quantityUsed: i < 0 ? point.quantity : undefined,
-                    completedAt: i < 0 ? new Date().toISOString() : undefined,
+                    status: isPast ? 'completado' : 'pendiente',
+                    quantityUsed: isPast ? point.quantity : undefined,
+                    completedAt: isPast ? new Date().toISOString() : undefined,
                     createdAt: new Date().toISOString(),
                 });
             });

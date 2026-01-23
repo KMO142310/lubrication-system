@@ -19,16 +19,32 @@ export default function PhotoUpload({ label, onPhotoCapture, existingPhoto, requ
 
     const startCamera = async () => {
         try {
+            // Primero mostrar el contenedor de la cámara
+            setShowCamera(true);
+            
+            // Esperar un momento para que el DOM se actualice
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                video: { 
+                    facingMode: 'environment', 
+                    width: { ideal: 1280 }, 
+                    height: { ideal: 720 } 
+                }
             });
+            
             streamRef.current = stream;
+            
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+                // Esperar a que el video esté listo
+                videoRef.current.onloadedmetadata = () => {
+                    videoRef.current?.play().catch(console.error);
+                };
             }
-            setShowCamera(true);
         } catch (err) {
             console.error('Error accessing camera:', err);
+            setShowCamera(false);
             // Fallback to file input if camera not available
             fileInputRef.current?.click();
         }
