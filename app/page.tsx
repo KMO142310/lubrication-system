@@ -124,17 +124,10 @@ export default function Dashboard() {
         <Sidebar />
 
         <main className="main-content">
-          <div className="page-container" style={{ background: '#0c1222', minHeight: '100vh', padding: 0 }}>
+          <div className="page-container dashboard-container">
             
             {/* Industrial Header Bar */}
-            <header style={{
-              background: 'linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-              borderBottom: '3px solid #f59e0b',
-              padding: '24px 32px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
+            <header className="dashboard-header">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
                   <div style={{
@@ -200,12 +193,8 @@ export default function Dashboard() {
             </header>
 
             {/* Industrial KPI Cards */}
-            <section style={{ marginBottom: '32px' }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '16px',
-              }}>
+            <section className="dashboard-content">
+              <div className="kpi-grid">
                 {/* Compliance KPI */}
                 <div style={{
                   background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
@@ -399,7 +388,7 @@ export default function Dashboard() {
             </section>
 
             {/* Main Content Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+            <div className="main-grid">
               {/* Today's Tasks */}
               <section>
                 <div style={{
