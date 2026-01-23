@@ -39,7 +39,7 @@ export interface LubricationPoint {
     code: string;           // Unique identifier, e.g., "LG-SP-SH1-CR-01"
     description: string;
     lubricantId: string;
-    method: 'manual' | 'automatico' | 'centralizado';
+    method: 'manual' | 'automatico' | 'centralizado' | 'verificar' | 'engrasado' | 'nivel';
     quantity: number;       // ml or grams
     frequencyId: string;
     createdAt: string;
@@ -124,5 +124,105 @@ export interface User {
     name: string;
     email: string;
     role: UserRole;
+    contractorId?: string;  // Link to external contractor company
+    createdAt: string;
+}
+
+// ============================================================
+// CONTRACTOR MANAGEMENT (Enterprise Feature)
+// ============================================================
+
+export interface Contractor {
+    id: string;
+    name: string;               // Company name, e.g., "Lubricación Profesional Ltda."
+    rut: string;                // Chilean tax ID
+    contactName: string;
+    contactEmail: string;
+    contactPhone: string;
+    address?: string;
+    contractStart: string;      // ISO date
+    contractEnd: string;        // ISO date
+    status: 'active' | 'inactive' | 'suspended';
+    certifications?: string[];  // ISO certifications, safety certs
+    createdAt: string;
+}
+
+export interface Contract {
+    id: string;
+    contractorId: string;
+    plantId: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    value?: number;             // Contract value in CLP
+    slaCompliance: number;      // Target SLA percentage (e.g., 95)
+    status: 'draft' | 'active' | 'completed' | 'terminated';
+    createdAt: string;
+}
+
+// ============================================================
+// COMPLIANCE & AUDIT (Enterprise Feature)
+// ============================================================
+
+export type AuditType = 'routine' | 'compliance' | 'incident' | 'certification';
+export type AuditResult = 'passed' | 'failed' | 'conditional' | 'pending';
+
+export interface ComplianceAudit {
+    id: string;
+    contractorId: string;
+    auditorId: string;          // User who performed the audit
+    auditType: AuditType;
+    scheduledDate: string;
+    completedDate?: string;
+    result: AuditResult;
+    score?: number;             // 0-100 score
+    findings: string;
+    correctiveActions?: string;
+    nextAuditDate?: string;
+    attachments?: string[];     // URLs to audit documents
+    createdAt: string;
+}
+
+// ============================================================
+// CONSUMPTION TRACKING (Enterprise Feature)
+// ============================================================
+
+export interface LubricantConsumption {
+    id: string;
+    lubricantId: string;
+    workOrderId: string;
+    quantityUsed: number;
+    unitCost?: number;
+    recordedBy: string;         // User ID
+    recordedAt: string;
+}
+
+export interface InventoryMovement {
+    id: string;
+    lubricantId: string;
+    type: 'entrada' | 'salida' | 'ajuste';
+    quantity: number;
+    reason: string;
+    reference?: string;         // Purchase order, work order, etc.
+    recordedBy: string;
+    createdAt: string;
+}
+
+// ============================================================
+// KPI & METRICS (Enterprise Feature)
+// ============================================================
+
+export interface KPIMetric {
+    id: string;
+    period: string;             // YYYY-MM format
+    contractorId?: string;
+    plantId?: string;
+    tasksCompleted: number;
+    tasksTotal: number;
+    complianceRate: number;     // Percentage
+    avgResponseTime: number;    // Hours
+    anomaliesReported: number;
+    anomaliesResolved: number;
+    lubricantCost: number;      // Total cost in CLP
     createdAt: string;
 }

@@ -10,14 +10,20 @@ import {
   AlertTriangle,
   TrendingUp,
   Clock,
-  ArrowUpRight,
+  ArrowRight,
   Droplets,
-  Wrench,
+  Cog,
   ClipboardCheck,
+  Calendar,
+  BarChart3,
+  Building2,
+  Play,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
+import { useAuth } from '@/lib/auth';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     compliance: 0,
     completedOrders: 0,
@@ -27,22 +33,28 @@ export default function Dashboard() {
     todayTasks: 0,
     todayCompleted: 0,
     totalPoints: 0,
+    totalMachines: 0,
   });
 
-  const [recentTasks, setRecentTasks] = useState<Array<{
+  const [todayTasksList, setTodayTasksList] = useState<Array<{
     id: string;
     code: string;
+    component: string;
     machine: string;
+    frequency: string;
     status: string;
-    time: string;
+    lubricant: string;
   }>>([]);
 
   useEffect(() => {
-    // Calculate stats
     const workOrders = dataService.getWorkOrders();
     const allTasks = dataService.getTasks();
     const anomalies = dataService.getAnomalies();
     const points = dataService.getLubricationPoints();
+    const machines = dataService.getMachines();
+    const components = dataService.getComponents();
+    const lubricants = dataService.getLubricants();
+    const frequencies = dataService.getFrequencies();
 
     const completedWOs = workOrders.filter(wo => wo.status === 'completado');
     const totalWOs = workOrders.filter(wo => new Date(wo.scheduledDate) <= new Date());
@@ -70,35 +82,41 @@ export default function Dashboard() {
       todayTasks: todayTasks.length,
       todayCompleted,
       totalPoints: points.length,
+      totalMachines: machines.length,
     });
 
-    // Get recent tasks for activity feed
-    const machines = dataService.getMachines();
-    const components = dataService.getComponents();
-    const lubPoints = dataService.getLubricationPoints();
-
-    const recent = todayTasks.slice(0, 5).map(task => {
-      const point = lubPoints.find(p => p.id === task.lubricationPointId);
+    // Build today's tasks list with full info
+    const tasksList = todayTasks.slice(0, 6).map(task => {
+      const point = points.find(p => p.id === task.lubricationPointId);
       const comp = point ? components.find(c => c.id === point.componentId) : null;
       const machine = comp ? machines.find(m => m.id === comp.machineId) : null;
+      const lub = point ? lubricants.find(l => l.id === point.lubricantId) : null;
+      const freq = point ? frequencies.find(f => f.id === point.frequencyId) : null;
 
       return {
         id: task.id,
-        code: point?.code || '',
-        machine: machine?.name || '',
+        code: point?.code || 'N/A',
+        component: comp?.name || 'N/A',
+        machine: machine?.name || 'N/A',
+        frequency: freq?.name || 'N/A',
         status: task.status,
-        time: task.completedAt
-          ? new Date(task.completedAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
-          : '-',
+        lubricant: lub?.name || 'N/A',
       };
     });
 
-    setRecentTasks(recent);
+    setTodayTasksList(tasksList);
   }, []);
 
   const todayProgress = stats.todayTasks > 0
     ? Math.round((stats.todayCompleted / stats.todayTasks) * 100)
     : 0;
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Buenos días';
+    if (hour < 18) return 'Buenas tardes';
+    return 'Buenas noches';
+  };
 
   return (
     <ProtectedRoute>
@@ -107,205 +125,336 @@ export default function Dashboard() {
 
         <main className="main-content">
           <div className="page-container">
-            {/* Page Header */}
-            <header className="page-header">
-              <div className="page-header-top">
-                <div>
-                  <h1 className="page-title">Dashboard</h1>
-                  <p className="page-subtitle">
-                    {new Date().toLocaleDateString('es-CL', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-                <div className="page-actions">
-                  <Link href="/tasks" className="btn btn-primary">
-                    <ClipboardCheck style={{ width: 16, height: 16 }} />
-                    Ver Tareas de Hoy
+            {/* Hero Header */}
+            <header style={{
+              background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)',
+              borderRadius: 'var(--radius-xl)',
+              padding: 'var(--space-8)',
+              marginBottom: 'var(--space-8)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <p style={{ fontSize: 'var(--text-sm)', opacity: 0.8, marginBottom: 'var(--space-2)' }}>
+                  {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+                <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, marginBottom: 'var(--space-2)' }}>
+                  {getGreeting()}, {user?.name?.split(' ')[0] || 'Usuario'}
+                </h1>
+                <p style={{ fontSize: 'var(--text-base)', opacity: 0.9 }}>
+                  Sistema de Gestión de Lubricación Industrial — Aserradero AISA
+                </p>
+
+                <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
+                  <Link href="/tasks" className="btn" style={{
+                    background: 'white',
+                    color: 'var(--primary-800)',
+                    fontWeight: 600,
+                  }}>
+                    <Play style={{ width: 16, height: 16 }} />
+                    Iniciar Tareas del Día
+                  </Link>
+                  <Link href="/schedule" className="btn" style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    color: 'white',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                  }}>
+                    <Calendar style={{ width: 16, height: 16 }} />
+                    Ver Planificación
                   </Link>
                 </div>
               </div>
+
+              {/* Background decoration */}
+              <div style={{
+                position: 'absolute',
+                right: -50,
+                top: -50,
+                width: 300,
+                height: 300,
+                background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                borderRadius: '50%',
+              }} />
             </header>
 
-            {/* Stats Grid */}
-            <div className="dashboard-grid">
-              {/* Compliance Card */}
-              <div className="col-span-3">
-                <div className="stat-card">
+            {/* Stats Cards */}
+            <section style={{ marginBottom: 'var(--space-8)' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: 'var(--space-4)',
+              }}>
+                {/* Compliance */}
+                <article className="stat-card" style={{ borderLeft: '4px solid var(--accent-500)' }}>
                   <div className="stat-header">
                     <div className="stat-icon primary">
                       <Target style={{ width: 24, height: 24 }} />
                     </div>
-                    <span className={`stat-trend ${stats.compliance >= 90 ? 'up' : stats.compliance >= 70 ? 'neutral' : 'down'}`}>
-                      {stats.compliance >= 90 ? 'Excelente' : stats.compliance >= 70 ? 'Aceptable' : 'Bajo'}
+                    <span className={`stat-trend ${stats.compliance >= 90 ? 'up' : 'down'}`}>
+                      {stats.compliance >= 90 ? 'Meta cumplida' : 'Por mejorar'}
                     </span>
                   </div>
                   <div>
                     <span className="stat-value">{stats.compliance}%</span>
-                    <span className="stat-label">Cumplimiento del Plan</span>
+                    <span className="stat-label">Cumplimiento SLA</span>
                   </div>
-                </div>
-              </div>
+                </article>
 
-              {/* Completed Orders */}
-              <div className="col-span-3">
-                <div className="stat-card">
+                {/* Today Progress */}
+                <article className="stat-card" style={{ borderLeft: '4px solid var(--success-500)' }}>
                   <div className="stat-header">
                     <div className="stat-icon success">
                       <CheckCircle2 style={{ width: 24, height: 24 }} />
                     </div>
                     <span className="stat-trend up">
                       <TrendingUp style={{ width: 12, height: 12 }} />
-                      {stats.totalOrders > 0 ? Math.round((stats.completedOrders / stats.totalOrders) * 100) : 100}%
+                      {todayProgress}%
                     </span>
                   </div>
                   <div>
-                    <span className="stat-value">{stats.completedOrders}</span>
-                    <span className="stat-label">Órdenes Completadas</span>
+                    <span className="stat-value">{stats.todayCompleted}/{stats.todayTasks}</span>
+                    <span className="stat-label">Tareas Hoy</span>
                   </div>
-                </div>
-              </div>
+                </article>
 
-              {/* Anomalies */}
-              <div className="col-span-3">
-                <div className="stat-card">
+                {/* Anomalies */}
+                <article className="stat-card" style={{ borderLeft: `4px solid ${stats.openAnomalies > 0 ? 'var(--warning-500)' : 'var(--success-500)'}` }}>
                   <div className="stat-header">
-                    <div className="stat-icon warning">
+                    <div className={`stat-icon ${stats.openAnomalies > 0 ? 'warning' : 'success'}`}>
                       <AlertTriangle style={{ width: 24, height: 24 }} />
                     </div>
                     {stats.criticalAnomalies > 0 && (
-                      <span className="stat-trend down">
-                        {stats.criticalAnomalies} críticas
-                      </span>
+                      <span className="stat-trend down">{stats.criticalAnomalies} urgentes</span>
                     )}
                   </div>
                   <div>
                     <span className="stat-value">{stats.openAnomalies}</span>
                     <span className="stat-label">Anomalías Abiertas</span>
                   </div>
-                </div>
-              </div>
+                </article>
 
-              {/* Total Points */}
-              <div className="col-span-3">
-                <div className="stat-card">
+                {/* Assets */}
+                <article className="stat-card" style={{ borderLeft: '4px solid var(--primary-500)' }}>
                   <div className="stat-header">
-                    <div className="stat-icon accent">
-                      <Droplets style={{ width: 24, height: 24 }} />
+                    <div className="stat-icon primary">
+                      <Cog style={{ width: 24, height: 24 }} />
                     </div>
                   </div>
                   <div>
-                    <span className="stat-value">{stats.totalPoints}</span>
-                    <span className="stat-label">Puntos de Lubricación</span>
+                    <span className="stat-value">{stats.totalMachines}</span>
+                    <span className="stat-label">Equipos Activos</span>
                   </div>
-                </div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-2)' }}>
+                    {stats.totalPoints} puntos de lubricación
+                  </div>
+                </article>
               </div>
+            </section>
 
-              {/* Today's Progress */}
-              <div className="col-span-8">
-                <div className="progress-container">
-                  <div className="progress-header">
+            {/* Main Content Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)' }}>
+              {/* Today's Tasks */}
+              <section>
+                <div className="card">
+                  <div className="card-header">
                     <div>
-                      <span className="progress-title">Progreso de Hoy</span>
+                      <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                        <ClipboardCheck style={{ width: 18, height: 18, color: 'var(--accent-500)' }} />
+                        Tareas de Lubricación — Hoy
+                      </h2>
                       <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-1)' }}>
-                        Tareas de lubricación completadas
+                        Programa de lubricación diario según Plan Detallado Cap. 9
                       </p>
                     </div>
-                    <span className="progress-value">{stats.todayCompleted}/{stats.todayTasks}</span>
+                    <Link href="/tasks" className="btn btn-primary btn-sm">
+                      Ver Todas
+                      <ArrowRight style={{ width: 14, height: 14 }} />
+                    </Link>
                   </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${todayProgress}%` }} />
-                  </div>
-                  <div className="progress-labels">
-                    <span>0%</span>
-                    <span>50%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Quick Actions */}
-              <div className="col-span-4">
-                <div className="card">
-                  <div className="card-header">
-                    <span className="card-title">Acciones Rápidas</span>
-                  </div>
-                  <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                    <Link href="/tasks" className="btn btn-secondary" style={{ justifyContent: 'space-between' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <Clock style={{ width: 16, height: 16 }} />
-                        Tareas Pendientes
-                      </span>
-                      <ArrowUpRight style={{ width: 16, height: 16 }} />
-                    </Link>
-                    <Link href="/anomalies" className="btn btn-secondary" style={{ justifyContent: 'space-between' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <AlertTriangle style={{ width: 16, height: 16 }} />
-                        Reportar Anomalía
-                      </span>
-                      <ArrowUpRight style={{ width: 16, height: 16 }} />
-                    </Link>
-                    <Link href="/assets" className="btn btn-secondary" style={{ justifyContent: 'space-between' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <Wrench style={{ width: 16, height: 16 }} />
-                        Ver Equipos
-                      </span>
-                      <ArrowUpRight style={{ width: 16, height: 16 }} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="col-span-12">
-                <div className="card">
-                  <div className="card-header">
-                    <span className="card-title">Actividad Reciente</span>
-                    <Link href="/tasks" className="btn btn-ghost btn-sm">
-                      Ver todo
-                      <ArrowUpRight style={{ width: 14, height: 14 }} />
-                    </Link>
-                  </div>
-                  <div className="data-table-container" style={{ border: 'none', borderRadius: 0 }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Código</th>
-                          <th>Máquina</th>
-                          <th>Estado</th>
-                          <th>Hora</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recentTasks.map(task => (
-                          <tr key={task.id}>
-                            <td>
-                              <span className="cell-mono">{task.code}</span>
-                            </td>
-                            <td className="cell-primary">{task.machine}</td>
-                            <td>
-                              <span className={`badge ${task.status === 'completado' ? 'badge-success' : 'badge-warning'}`}>
-                                {task.status === 'completado' ? 'Completado' : 'Pendiente'}
-                              </span>
-                            </td>
-                            <td style={{ color: 'var(--text-muted)' }}>{task.time}</td>
-                          </tr>
+                  <div className="card-body" style={{ padding: 0 }}>
+                    {todayTasksList.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {todayTasksList.map((task, idx) => (
+                          <div
+                            key={task.id}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: '80px 1fr auto',
+                              gap: 'var(--space-4)',
+                              padding: 'var(--space-4) var(--space-5)',
+                              borderBottom: idx < todayTasksList.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <code style={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: 'var(--text-sm)',
+                              fontWeight: 600,
+                              color: 'var(--primary-700)',
+                              background: 'var(--primary-50)',
+                              padding: 'var(--space-1) var(--space-2)',
+                              borderRadius: 'var(--radius-sm)',
+                            }}>
+                              {task.code}
+                            </code>
+                            <div>
+                              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+                                {task.component}
+                              </div>
+                              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
+                                {task.machine} • {task.lubricant}
+                              </div>
+                            </div>
+                            <span className={`badge ${task.status === 'completado' ? 'badge-success' : 'badge-warning'}`}>
+                              {task.status === 'completado' ? 'Completado' : 'Pendiente'}
+                            </span>
+                          </div>
                         ))}
-                        {recentTasks.length === 0 && (
-                          <tr>
-                            <td colSpan={4} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-muted)' }}>
-                              No hay tareas programadas para hoy
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                      </div>
+                    ) : (
+                      <div style={{
+                        padding: 'var(--space-12)',
+                        textAlign: 'center',
+                        color: 'var(--text-muted)',
+                      }}>
+                        <Clock style={{ width: 48, height: 48, margin: '0 auto var(--space-4)', opacity: 0.3 }} />
+                        <p style={{ fontWeight: 500, marginBottom: 'var(--space-2)' }}>No hay tareas programadas para hoy</p>
+                        <p style={{ fontSize: 'var(--text-sm)' }}>Las tareas se generan automáticamente según el programa de lubricación</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              </section>
+
+              {/* Sidebar */}
+              <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                {/* Quick Navigation */}
+                <nav className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">Navegación Rápida</h3>
+                  </div>
+                  <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    <Link href="/tasks" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      transition: 'background var(--duration-fast)',
+                    }}>
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 'var(--radius-md)',
+                        background: 'var(--accent-100)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <ClipboardCheck style={{ width: 18, height: 18, color: 'var(--accent-600)' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Ejecutar Tareas</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Lubricación diaria</div>
+                      </div>
+                    </Link>
+
+                    <Link href="/anomalies" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                    }}>
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 'var(--radius-md)',
+                        background: 'var(--warning-100)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <AlertTriangle style={{ width: 18, height: 18, color: 'var(--warning-600)' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Reportar Anomalía</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Problemas detectados</div>
+                      </div>
+                    </Link>
+
+                    <Link href="/metrics" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                    }}>
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 'var(--radius-md)',
+                        background: 'var(--primary-100)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <BarChart3 style={{ width: 18, height: 18, color: 'var(--primary-600)' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Ver Indicadores</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>KPIs y métricas</div>
+                      </div>
+                    </Link>
+
+                    <Link href="/assets" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                    }}>
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 'var(--radius-md)',
+                        background: 'var(--slate-100)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Building2 style={{ width: 18, height: 18, color: 'var(--slate-600)' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Gestionar Activos</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Equipos y puntos</div>
+                      </div>
+                    </Link>
+                  </div>
+                </nav>
+
+                {/* System Info */}
+                <div className="card" style={{ background: 'var(--slate-50)' }}>
+                  <div className="card-body">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                      <Droplets style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
+                      <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Lubricantes en Uso</span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                      <span className="badge badge-primary">Grasa I y II</span>
+                      <span className="badge badge-primary">KP2K</span>
+                      <span className="badge badge-primary">Aceite 150</span>
+                      <span className="badge badge-primary">NBU 15</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
             </div>
           </div>
         </main>

@@ -52,6 +52,7 @@ export default function Sidebar() {
     const management = [
         { name: 'Activos', href: '/assets', icon: Database, roles: ['admin', 'supervisor'] },
         { name: 'Nuevo Activo', href: '/assets/new', icon: PlusCircle, roles: ['admin'] },
+        { name: 'Contratistas', href: '/contractors', icon: Users, roles: ['admin'] },
         { name: 'Anomalías', href: '/anomalies', icon: AlertTriangle, roles: ['admin', 'supervisor', 'tecnico'] },
         { name: 'Inventario', href: '/inventory', icon: Package, roles: ['admin', 'supervisor'] },
     ];

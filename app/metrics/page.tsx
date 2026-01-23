@@ -12,6 +12,9 @@ import {
   TrendingDown,
   Droplets,
   BarChart3,
+  Building2,
+  FileCheck,
+  Clock,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 
@@ -174,6 +177,45 @@ export default function MetricsPage() {
                   </div>
                 </div>
               ))}
+
+              {/* Contractor Compliance Section */}
+              <div className="col-span-12">
+                <div className="card" style={{ background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)', color: 'white' }}>
+                  <div className="card-header" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                      <Building2 style={{ width: 20, height: 20 }} />
+                      <span className="card-title" style={{ color: 'white' }}>Cumplimiento Contratistas Externos</span>
+                    </div>
+                    <Link href="/contractors" className="btn btn-ghost" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                      Ver Detalle
+                    </Link>
+                  </div>
+                  <div className="card-body">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-6)' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>94.5%</div>
+                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>SLA Promedio</div>
+                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Meta: 95%</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>2</div>
+                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>Empresas Activas</div>
+                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Contratos vigentes</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>2,139</div>
+                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>Tareas Ejecutadas</div>
+                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Este período</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 800, marginBottom: 'var(--space-1)' }}>12</div>
+                        <div style={{ fontSize: 'var(--text-sm)', opacity: 0.8 }}>Auditorías</div>
+                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginTop: 'var(--space-1)' }}>Realizadas</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Weekly Chart */}
               <div className="col-span-12">

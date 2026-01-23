@@ -304,6 +304,146 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- ============================================================
+-- CONTRACTOR MANAGEMENT (Enterprise Feature)
+-- ============================================================
+
+-- Empresas Contratistas
+CREATE TABLE contractors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    rut TEXT UNIQUE NOT NULL,           -- Chilean tax ID (e.g., 76.XXX.XXX-X)
+    contact_name TEXT NOT NULL,
+    contact_email TEXT NOT NULL,
+    contact_phone TEXT,
+    address TEXT,
+    contract_start DATE NOT NULL,
+    contract_end DATE NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+    certifications TEXT[],              -- ISO 9001, ISO 14001, etc.
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Contratos de Servicio
+CREATE TABLE contracts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contractor_id UUID NOT NULL REFERENCES contractors(id) ON DELETE CASCADE,
+    plant_id UUID NOT NULL REFERENCES plants(id),
+    code TEXT UNIQUE,
+    description TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    value DECIMAL(15,2),                -- Contract value in CLP
+    sla_compliance INTEGER DEFAULT 95, -- Target SLA percentage
+    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'completed', 'terminated')),
+    terms_url TEXT,                     -- URL to contract document
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID REFERENCES profiles(id)
+);
+
+-- Auditorías de Cumplimiento
+CREATE TABLE compliance_audits (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contractor_id UUID NOT NULL REFERENCES contractors(id),
+    auditor_id UUID NOT NULL REFERENCES profiles(id),
+    audit_type TEXT NOT NULL CHECK (audit_type IN ('routine', 'compliance', 'incident', 'certification')),
+    scheduled_date DATE NOT NULL,
+    completed_date DATE,
+    result TEXT DEFAULT 'pending' CHECK (result IN ('passed', 'failed', 'conditional', 'pending')),
+    score INTEGER CHECK (score >= 0 AND score <= 100),
+    findings TEXT,
+    corrective_actions TEXT,
+    next_audit_date DATE,
+    attachments TEXT[],
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Consumo de Lubricantes (Tracking detallado)
+CREATE TABLE lubricant_consumption (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    lubricant_id UUID NOT NULL REFERENCES lubricants(id),
+    work_order_id UUID NOT NULL REFERENCES work_orders(id),
+    task_id UUID REFERENCES tasks(id),
+    quantity_used DECIMAL(10,2) NOT NULL,
+    unit_cost DECIMAL(10,2),
+    recorded_by UUID NOT NULL REFERENCES profiles(id),
+    recorded_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Movimientos de Inventario
+CREATE TABLE inventory_movements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    lubricant_id UUID NOT NULL REFERENCES lubricants(id),
+    movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste')),
+    quantity DECIMAL(10,2) NOT NULL,
+    reason TEXT NOT NULL,
+    reference TEXT,                     -- PO number, WO number, etc.
+    recorded_by UUID NOT NULL REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- KPIs Mensuales
+CREATE TABLE kpi_metrics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    period TEXT NOT NULL,               -- YYYY-MM format
+    contractor_id UUID REFERENCES contractors(id),
+    plant_id UUID REFERENCES plants(id),
+    tasks_completed INTEGER DEFAULT 0,
+    tasks_total INTEGER DEFAULT 0,
+    compliance_rate DECIMAL(5,2) DEFAULT 0,
+    avg_response_time DECIMAL(10,2) DEFAULT 0,  -- Hours
+    anomalies_reported INTEGER DEFAULT 0,
+    anomalies_resolved INTEGER DEFAULT 0,
+    lubricant_cost DECIMAL(15,2) DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(period, contractor_id, plant_id)
+);
+
+-- Indexes for contractor tables
+CREATE INDEX idx_contractors_status ON contractors(status);
+CREATE INDEX idx_contracts_contractor ON contracts(contractor_id);
+CREATE INDEX idx_contracts_plant ON contracts(plant_id);
+CREATE INDEX idx_audits_contractor ON compliance_audits(contractor_id);
+CREATE INDEX idx_consumption_lubricant ON lubricant_consumption(lubricant_id);
+CREATE INDEX idx_consumption_workorder ON lubricant_consumption(work_order_id);
+CREATE INDEX idx_inventory_lubricant ON inventory_movements(lubricant_id);
+CREATE INDEX idx_kpi_period ON kpi_metrics(period);
+
+-- RLS for contractor tables
+ALTER TABLE contractors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE compliance_audits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lubricant_consumption ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kpi_metrics ENABLE ROW LEVEL SECURITY;
+
+-- Policies for contractor tables
+CREATE POLICY "Authenticated users can read contractors" ON contractors FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin can manage contractors" ON contractors FOR ALL TO authenticated 
+    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "Authenticated users can read contracts" ON contracts FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin can manage contracts" ON contracts FOR ALL TO authenticated 
+    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "Authenticated users can read audits" ON compliance_audits FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin/Supervisor can manage audits" ON compliance_audits FOR ALL TO authenticated 
+    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'supervisor')));
+
+CREATE POLICY "Authenticated users can read consumption" ON lubricant_consumption FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Technicians can insert consumption" ON lubricant_consumption FOR INSERT TO authenticated 
+    WITH CHECK (recorded_by = auth.uid());
+
+CREATE POLICY "Authenticated users can read inventory" ON inventory_movements FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin/Supervisor can manage inventory" ON inventory_movements FOR ALL TO authenticated 
+    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'supervisor')));
+
+CREATE POLICY "Authenticated users can read KPIs" ON kpi_metrics FOR SELECT TO authenticated USING (true);
+
+-- Trigger for contractors updated_at
+CREATE TRIGGER contractors_updated_at BEFORE UPDATE ON contractors FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================
 -- SEED DATA
 -- ============================================================
 
@@ -316,3 +456,7 @@ INSERT INTO frequencies (name, days) VALUES
     ('Trimestral', 90),
     ('Semestral', 180),
     ('Anual', 365);
+
+-- Insert sample contractor for demo
+INSERT INTO contractors (name, rut, contact_name, contact_email, contact_phone, contract_start, contract_end, status, certifications) VALUES
+    ('Lubricación Profesional Ltda.', '76.123.456-7', 'Juan Pérez', 'juan@lubricacion.cl', '+56 9 1234 5678', '2026-01-01', '2026-12-31', 'active', ARRAY['ISO 9001:2015', 'ISO 14001:2015']);

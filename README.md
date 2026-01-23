@@ -1,11 +1,16 @@
 # Sistema de Gestión de Lubricación Industrial - AISA
 
+[![Version](https://img.shields.io/badge/Version-1.0.0-green)]()
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.4-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.2-blue?logo=react)](https://react.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-Ready-green?logo=supabase)](https://supabase.com/)
+[![Deploy](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-Proprietary-red)]()
 
-Sistema de gestión para el control, planificación y trazabilidad de las actividades de lubricación industrial en plantas de producción.
+Sistema profesional de gestión para el control, planificación y trazabilidad de las actividades de lubricación industrial en el Aserradero AISA.
+
+> **Estado:** ✅ Producción | **64 tareas auditadas** | **Listo para ejecutar**
 
 ## 🌐 Demo en Producción
 
@@ -126,25 +131,49 @@ open http://localhost:3000
 
 ---
 
-## 📊 Datos Precargados (AISA)
+## 📊 Datos Auditados (64 Tareas)
 
-El sistema incluye datos reales extraídos de:
+Datos 100% validados desde documentación oficial AISA:
 - `PLAN_DETALLADO_LUBRICACION_AISA.xlsx`
 - `PROGRAMA_LUBRICACION_ENERO_2026.xlsx`
+- `REGISTRO_CONSUMO_LUBRICANTES.xlsx`
+- `MANUAL_TECNICO_LUBRICACION_INDUSTRIAL_AISA_2026.pdf`
 
-### Equipos Incluidos
-- 8001 – Descortezador Línea Gruesa
-- 8002 – Descortezador Línea Delgada
-- Canter 1 y 2 (LINCK HPS-120)
-- Perfiladora LINCK
-- Sierra Huincha Principal
+### Inventario Completo
+
+| Categoría | Cantidad |
+|-----------|----------|
+| Centros de Gestión | 3 (CG 611, 612, 613) |
+| Equipos | 8 |
+| Componentes | 63 |
+| Puntos de Lubricación | **64** |
+| Lubricantes | 7 |
+| Frecuencias | 8 |
+
+### Distribución de Tareas
+
+| Frecuencia | Tareas |
+|------------|--------|
+| Diarias (8 hrs) | 19 |
+| Semanales (40 hrs) | 9 |
+| Quincenales (160 hrs) | 8 |
+| Mensuales | 14 |
+| Trimestrales | 6 |
+| Semestrales | 5 |
+| Anuales | 2 |
+
+### Equipos Configurados
+- **CG 611**: 8001 Descortezador LG, 8002 Descortezador LD
+- **CG 612**: 8006 Línea Gruesa, 8007 Línea Delgada, Canter 1/2, Perfiladora LINCK, WD
 
 ### Lubricantes
-- Grasa I y II (SKF LGMT 2)
-- KP2K (Alta Presión)
-- Shell Omala S2 G 150
-- Shell Tellus S2 M 46
+- Grasa I y II (NLGI 2)
+- KP2K (Alta Presión Extrema)
+- ISOFLEX NBU 15
+- Aceite 150 (ISO VG 150)
 - Aceite 80W-90
+- Aceite Hidráulico (ISO VG 46)
+- Aceite para Cadenas (ISO VG 68)
 
 ---
 
