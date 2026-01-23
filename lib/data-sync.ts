@@ -178,15 +178,71 @@ async function syncPendingChanges(): Promise<number> {
 }
 
 // ============================================================
+// CARGAR DATOS DESDE SUPABASE
+// ============================================================
+
+async function fetchTasksFromSupabase(): Promise<void> {
+  if (!isOnline) return;
+
+  try {
+    // Obtener tareas de hoy desde Supabase
+    const today = new Date().toISOString().split('T')[0];
+    
+    const { data: tasks, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error || !tasks) {
+      console.log('No tasks in Supabase yet');
+      return;
+    }
+
+    // Actualizar localStorage con datos de Supabase
+    const localTasks = dataService.getTasks();
+    
+    tasks.forEach(remoteTask => {
+      const localTask = localTasks.find(t => t.id === remoteTask.id);
+      
+      // Si la tarea remota está más actualizada, actualizar local
+      if (remoteTask.status === 'completado' && (!localTask || localTask.status !== 'completado')) {
+        dataService.updateTask(remoteTask.id, {
+          status: remoteTask.status,
+          quantityUsed: remoteTask.quantity_used,
+          observations: remoteTask.observations,
+          photoUrl: remoteTask.photo_url,
+          completedAt: remoteTask.completed_at,
+        });
+      }
+    });
+
+    lastSync = new Date();
+    notifyListeners();
+  } catch (error) {
+    console.error('Error fetching from Supabase:', error);
+  }
+}
+
+// ============================================================
 // SERVICIO DE DATOS SINCRONIZADO
 // ============================================================
 
 export const syncDataService = {
-  // Inicializar datos locales + intentar sync
+  // Inicializar datos locales + cargar desde Supabase
   init: async () => {
     dataService.init();
     if (isOnline) {
+      // Primero enviar cambios pendientes
       await syncPendingChanges();
+      // Luego cargar datos remotos
+      await fetchTasksFromSupabase();
+    }
+  },
+
+  // Forzar recarga desde Supabase
+  refreshFromServer: async () => {
+    if (isOnline) {
+      await fetchTasksFromSupabase();
     }
   },
 

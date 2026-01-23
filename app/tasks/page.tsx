@@ -59,7 +59,10 @@ export default function TasksPage() {
     observations: '',
   });
 
-  const loadData = () => {
+  const loadData = async () => {
+    // Primero inicializar y sincronizar con Supabase
+    await syncDataService.init();
+    
     const wo = dataService.getTodayWorkOrder();
     if (wo) {
       setWorkOrder(wo);
@@ -88,6 +91,14 @@ export default function TasksPage() {
 
   useEffect(() => {
     loadData();
+    
+    // Refrescar cada 30 segundos para sincronizar
+    const interval = setInterval(async () => {
+      await syncDataService.refreshFromServer();
+      loadData();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const openTaskExecution = (task: EnrichedTask) => {
