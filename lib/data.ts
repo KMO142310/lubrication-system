@@ -57,16 +57,23 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v3.1.0-sabado-3tareas';
+const DATA_VERSION = 'v3.2.0-grimme-fix';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
 
     const storedVersion = localStorage.getItem('aisa_data_version');
     
-    // Si la versión cambió, resetear solo datos de trabajo (NO la sesión de auth)
+    // Si la versión cambió, resetear TODOS los datos (excepto auth)
     if (storedVersion !== DATA_VERSION) {
-        // Solo limpiar datos de trabajo, NO la sesión de usuario
+        // Limpiar TODOS los datos para forzar recarga de equipos y puntos
+        localStorage.removeItem(STORAGE_KEYS.plants);
+        localStorage.removeItem(STORAGE_KEYS.areas);
+        localStorage.removeItem(STORAGE_KEYS.machines);
+        localStorage.removeItem(STORAGE_KEYS.components);
+        localStorage.removeItem(STORAGE_KEYS.lubricants);
+        localStorage.removeItem(STORAGE_KEYS.frequencies);
+        localStorage.removeItem(STORAGE_KEYS.lubricationPoints);
         localStorage.removeItem(STORAGE_KEYS.workOrders);
         localStorage.removeItem(STORAGE_KEYS.tasks);
         localStorage.removeItem(STORAGE_KEYS.anomalies);
