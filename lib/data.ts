@@ -90,77 +90,49 @@ function generateWeeklyWorkOrders(): void {
     const workOrders: WorkOrder[] = [];
     const tasks: Task[] = [];
     const points = PUNTOS_LUBRICACION;
-    const frequencies = FRECUENCIAS;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const dateStr = today.toISOString().split('T')[0];
     
-    // Generar desde hoy hasta 7 días adelante (solo tareas futuras/actuales)
-    const startDate = new Date(today);
-    const endDate = new Date(today);
-    endDate.setDate(endDate.getDate() + 7);
-    
-    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-        const dateStr = date.toISOString().split('T')[0];
-        const dayOfWeek = date.getDay();
+    // HOY: Crear orden de trabajo con las 3 tareas específicas
+    const woId = `wo-${dateStr}`;
+    workOrders.push({
+        id: woId,
+        scheduledDate: dateStr,
+        status: 'pendiente',
+        technicianId: 'user-lub-1',
+        createdAt: new Date().toISOString(),
+    });
 
-        const dailyPoints = points.filter((p: LubricationPoint) => {
-            const freq = frequencies.find((f: Frequency) => f.id === p.frequencyId);
-            if (!freq) return false;
-            
-            // SÁBADO: 3 tareas específicas
-            if (dayOfWeek === 6) {
-                const sabadoTasks = [
-                    'lp-3000-rotor',      // Cambio aceite rotor descortezador LG
-                    'lp-grimme-ejes',     // Engrasar ejes Grimme
-                    'lp-8001-rodamientos' // Engrasar rodamientos y soportes LG
-                ];
-                return sabadoTasks.includes(p.id);
-            }
-            
-            // Diario (cada 8 horas)
-            if (freq.days === 1) return true;
-            
-            // Día por medio
-            if (freq.days === 2 && date.getDate() % 2 === 1) return true;
-            
-            // Semanal (cada 40 horas) - Lunes
-            if (freq.days === 7 && dayOfWeek === 1) return true;
-            
-            // Quincenal (cada 160 horas) - 1er y 15to día del mes
-            if (freq.days === 14 && (date.getDate() === 1 || date.getDate() === 15)) return true;
-            
-            // Mensual - 1er día del mes
-            if (freq.days === 30 && date.getDate() === 1) return true;
-            
-            return false;
-        });
+    // 3 TAREAS DEL SÁBADO 24 ENERO 2026
+    const tareasHoy = [
+        'lp-3000-rotor',      // Cambio aceite rotor descortezador LG
+        'lp-grimme-ejes',     // Engrasar ejes Grimme
+        'lp-8001-rodamientos' // Engrasar rodamientos y soportes LG
+    ];
 
-        if (dailyPoints.length > 0) {
-            const woId = `wo-${dateStr}`;
-            workOrders.push({
-                id: woId,
-                scheduledDate: dateStr,
+    tareasHoy.forEach(pointId => {
+        const point = points.find((p: LubricationPoint) => p.id === pointId);
+        if (point) {
+            tasks.push({
+                id: `task-${woId}-${point.id}`,
+                workOrderId: woId,
+                lubricationPointId: point.id,
                 status: 'pendiente',
-                technicianId: 'user-2',
                 createdAt: new Date().toISOString(),
             });
-
-            dailyPoints.forEach((point: LubricationPoint) => {
-                tasks.push({
-                    id: `task-${woId}-${point.id}`,
-                    workOrderId: woId,
-                    lubricationPointId: point.id,
-                    status: 'pendiente',
-                    createdAt: new Date().toISOString(),
-                });
-            });
+            console.log('✅ Tarea creada:', point.id, point.description);
+        } else {
+            console.log('❌ Punto no encontrado:', pointId);
         }
-    }
+    });
 
     saveToStorage(STORAGE_KEYS.workOrders, workOrders);
     saveToStorage(STORAGE_KEYS.tasks, tasks);
     saveToStorage(STORAGE_KEYS.anomalies, []);
+    
+    console.log('📋 Orden de trabajo creada:', woId, 'con', tasks.length, 'tareas');
 }
 
 export const dataService = {
