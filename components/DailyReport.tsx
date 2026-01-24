@@ -1,11 +1,9 @@
 'use client';
-
-import { useState } from 'react';
-import { 
-  FileText, 
-  Download, 
-  CheckCircle2, 
-  Clock, 
+import {
+  FileText,
+  Download,
+  CheckCircle2,
+  Clock,
   AlertTriangle,
   Droplets,
   Calendar,
@@ -40,13 +38,13 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
   const completed = tasks.filter(t => t.status === 'completado');
   const pending = tasks.filter(t => t.status === 'pendiente');
   const skipped = tasks.filter(t => t.status === 'omitido');
-  
+
   const totalLubricant = completed.reduce((acc, t) => {
     return acc + (t.quantityUsed || 0);
   }, 0);
 
-  const compliance = tasks.length > 0 
-    ? Math.round((completed.length / tasks.length) * 100) 
+  const compliance = tasks.length > 0
+    ? Math.round((completed.length / tasks.length) * 100)
     : 0;
 
   const formatDate = (dateStr: string) => {
@@ -68,15 +66,15 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal daily-report-modal" onClick={e => e.stopPropagation()} style={{ 
-        maxWidth: '700px', 
+      <div className="modal daily-report-modal" onClick={e => e.stopPropagation()} style={{
+        maxWidth: '700px',
         width: '95vw',
         maxHeight: '90vh',
         overflow: 'auto',
         margin: '16px'
       }}>
         {/* Header */}
-        <div className="modal-header" style={{ 
+        <div className="modal-header" style={{
           background: 'linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%)',
           color: 'white',
           borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
@@ -102,7 +100,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             style={{
               background: 'rgba(255,255,255,0.15)',
@@ -125,8 +123,8 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
           background: 'var(--border)',
           borderBottom: '1px solid var(--border)'
         }}>
-          <div style={{ 
-            padding: '12px 16px', 
+          <div style={{
+            padding: '12px 16px',
             background: 'var(--slate-50)',
             display: 'flex',
             alignItems: 'center',
@@ -138,8 +136,8 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               <div style={{ fontSize: '13px', fontWeight: 600 }}>{formatDate(date)}</div>
             </div>
           </div>
-          <div style={{ 
-            padding: '12px 16px', 
+          <div style={{
+            padding: '12px 16px',
             background: 'var(--slate-50)',
             display: 'flex',
             alignItems: 'center',
@@ -151,8 +149,8 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               <div style={{ fontSize: '13px', fontWeight: 600 }}>{technician}</div>
             </div>
           </div>
-          <div style={{ 
-            padding: '12px 16px', 
+          <div style={{
+            padding: '12px 16px',
             background: 'var(--slate-50)',
             display: 'flex',
             alignItems: 'center',
@@ -187,7 +185,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               Completadas
             </div>
           </div>
-          
+
           <div style={{
             background: 'var(--warning-100)',
             borderRadius: '8px',
@@ -202,7 +200,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               Pendientes
             </div>
           </div>
-          
+
           <div style={{
             background: 'var(--accent-100)',
             borderRadius: '8px',
@@ -217,30 +215,30 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               Omitidas
             </div>
           </div>
-          
+
           <div style={{
             background: compliance >= 80 ? 'var(--success-100)' : 'var(--warning-100)',
             borderRadius: '8px',
             padding: '12px',
             textAlign: 'center'
           }}>
-            <Droplets style={{ 
-              width: 20, 
-              height: 20, 
-              color: compliance >= 80 ? 'var(--success-600)' : 'var(--warning-600)', 
-              margin: '0 auto 4px' 
+            <Droplets style={{
+              width: 20,
+              height: 20,
+              color: compliance >= 80 ? 'var(--success-600)' : 'var(--warning-600)',
+              margin: '0 auto 4px'
             }} />
-            <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 700, 
-              color: compliance >= 80 ? 'var(--success-600)' : 'var(--warning-600)' 
+            <div style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: compliance >= 80 ? 'var(--success-600)' : 'var(--warning-600)'
             }}>
               {compliance}%
             </div>
-            <div style={{ 
-              fontSize: '11px', 
-              color: compliance >= 80 ? 'var(--success-600)' : 'var(--warning-600)', 
-              textTransform: 'uppercase' 
+            <div style={{
+              fontSize: '11px',
+              color: compliance >= 80 ? 'var(--success-600)' : 'var(--warning-600)',
+              textTransform: 'uppercase'
             }}>
               Cumplimiento
             </div>
@@ -249,9 +247,9 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
 
         {/* Task List */}
         <div style={{ padding: '0 16px 16px' }}>
-          <h3 style={{ 
-            fontSize: '13px', 
-            fontWeight: 600, 
+          <h3 style={{
+            fontSize: '13px',
+            fontWeight: 600,
             color: 'var(--text-muted)',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
@@ -259,9 +257,9 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
           }}>
             Detalle de Tareas ({tasks.length})
           </h3>
-          
-          <div style={{ 
-            maxHeight: '250px', 
+
+          <div style={{
+            maxHeight: '250px',
             overflowY: 'auto',
             border: '1px solid var(--border)',
             borderRadius: '8px'
@@ -279,13 +277,13 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
               </thead>
               <tbody>
                 {tasks.map((task, idx) => (
-                  <tr key={task.id} style={{ 
+                  <tr key={task.id} style={{
                     background: idx % 2 === 0 ? 'white' : 'var(--slate-50)',
                     borderTop: '1px solid var(--border-subtle)'
                   }}>
                     <td style={{ padding: '8px 12px' }}>
-                      <code style={{ 
-                        fontFamily: 'var(--font-mono)', 
+                      <code style={{
+                        fontFamily: 'var(--font-mono)',
                         fontSize: '11px',
                         background: 'var(--slate-100)',
                         padding: '2px 6px',
@@ -307,10 +305,10 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
                         fontSize: '10px',
                         fontWeight: 600,
                         textTransform: 'uppercase',
-                        background: task.status === 'completado' ? 'var(--success-100)' : 
-                                   task.status === 'omitido' ? 'var(--accent-100)' : 'var(--warning-100)',
-                        color: task.status === 'completado' ? 'var(--success-600)' : 
-                               task.status === 'omitido' ? 'var(--accent-600)' : 'var(--warning-600)'
+                        background: task.status === 'completado' ? 'var(--success-100)' :
+                          task.status === 'omitido' ? 'var(--accent-100)' : 'var(--warning-100)',
+                        color: task.status === 'completado' ? 'var(--success-600)' :
+                          task.status === 'omitido' ? 'var(--accent-600)' : 'var(--warning-600)'
                       }}>
                         {task.status === 'completado' ? '✓' : task.status === 'omitido' ? '✕' : '○'} {task.status}
                       </span>
@@ -326,7 +324,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
         </div>
 
         {/* Consumo Total */}
-        <div style={{ 
+        <div style={{
           padding: '12px 16px',
           background: 'var(--slate-50)',
           borderTop: '1px solid var(--border)',

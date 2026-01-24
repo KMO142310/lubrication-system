@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Calendar,
   CheckCircle2,
@@ -18,7 +19,6 @@ import {
   Camera,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
-import { getAuditLogs } from '@/lib/anti-fraud';
 import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
 
 interface CompletedTask {
@@ -41,11 +41,7 @@ export default function HistorialPage() {
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
   const [dates, setDates] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadCompletedTasks();
-  }, []);
-
-  const loadCompletedTasks = async () => {
+  const loadCompletedTasks = useCallback(async () => {
     const points = dataService.getLubricationPoints();
     const components = dataService.getComponents();
     const machines = dataService.getMachines();
@@ -53,10 +49,10 @@ export default function HistorialPage() {
 
     // Cargar tareas completadas DESDE SUPABASE (fuente de verdad)
     let completed: CompletedTask[] = [];
-    
+
     if (isOnline()) {
       const serverTasks = await getCompletedTasksFromServer();
-      
+
       completed = serverTasks.map(task => {
         const point = points.find(p => p.id === task.lubricationPointId);
         const comp = point ? components.find(c => c.id === point.componentId) : null;
@@ -84,10 +80,11 @@ export default function HistorialPage() {
     // Obtener fechas únicas
     const uniqueDates = [...new Set(completed.map(t => t.date))].sort().reverse();
     setDates(uniqueDates);
-    if (uniqueDates.length > 0 && !selectedDate) {
-      setSelectedDate(uniqueDates[0]);
-    }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCompletedTasks();
+  }, [loadCompletedTasks]);
 
   const filteredTasks = selectedDate
     ? completedTasks.filter(t => t.date === selectedDate)
@@ -380,15 +377,18 @@ export default function HistorialPage() {
                                 padding: '8px',
                                 display: 'inline-block',
                               }}>
-                                <img
+                                <Image
                                   src={task.photo}
                                   alt="Evidencia"
+                                  width={400}
+                                  height={300}
                                   style={{
                                     maxWidth: '100%',
-                                    maxHeight: '300px',
+                                    height: 'auto',
                                     borderRadius: '8px',
                                     display: 'block',
                                   }}
+                                  unoptimized
                                 />
                               </div>
                             </div>

@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { Plant, Area, Machine, Component, Lubricant, Frequency, LubricationPoint, WorkOrder, Task, Anomaly, User } from './types';
-import { PLANTA_AISA, CENTROS_GESTION, EQUIPOS, COMPONENTES, LUBRICANTES, FRECUENCIAS, PUNTOS_LUBRICACION, getTareasPorFecha } from './datos_completos_aisa';
+import { PLANTA_AISA, CENTROS_GESTION, EQUIPOS, COMPONENTES, LUBRICANTES, FRECUENCIAS, PUNTOS_LUBRICACION } from './datos_completos_aisa';
 
 // ============================================================
 // STORAGE KEYS
@@ -94,7 +94,7 @@ function generateWeeklyWorkOrders(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dateStr = today.toISOString().split('T')[0];
-    
+
     // HOY: Crear orden de trabajo con las 3 tareas específicas
     const woId = `wo-${dateStr}`;
     workOrders.push({
@@ -131,7 +131,7 @@ function generateWeeklyWorkOrders(): void {
     saveToStorage(STORAGE_KEYS.workOrders, workOrders);
     saveToStorage(STORAGE_KEYS.tasks, tasks);
     saveToStorage(STORAGE_KEYS.anomalies, []);
-    
+
     console.log('📋 Orden de trabajo creada:', woId, 'con', tasks.length, 'tareas');
 }
 

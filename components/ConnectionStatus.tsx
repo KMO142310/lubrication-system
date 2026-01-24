@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw, Cloud, CloudOff } from 'lucide-react';
-import { getSyncStatus, onSyncStatusChange, syncDataService, SyncStatus } from '@/lib/data-sync';
+import { getSyncStatus, onSyncStatusChange, syncDataService, SyncStatus } from '@/lib/sync';
 
 export default function ConnectionStatus() {
   const [status, setStatus] = useState<SyncStatus>({ isOnline: true, lastSync: null, isSyncing: false });
@@ -46,10 +46,10 @@ export default function ConnectionStatus() {
           padding: '6px 10px',
           borderRadius: '20px',
           border: 'none',
-          background: status.isOnline 
+          background: status.isOnline
             ? (pendingCount > 0 ? 'var(--warning-100)' : 'var(--success-100)')
             : 'var(--error-100)',
-          color: status.isOnline 
+          color: status.isOnline
             ? (pendingCount > 0 ? 'var(--warning-700)' : 'var(--success-700)')
             : 'var(--error-700)',
           fontSize: '12px',
@@ -66,9 +66,9 @@ export default function ConnectionStatus() {
           <WifiOff size={14} />
         )}
         <span>
-          {status.isSyncing 
-            ? 'Sincronizando...' 
-            : status.isOnline 
+          {status.isSyncing
+            ? 'Sincronizando...'
+            : status.isOnline
               ? (pendingCount > 0 ? `${pendingCount} pendiente${pendingCount > 1 ? 's' : ''}` : 'Conectado')
               : 'Sin conexión'
           }
@@ -107,9 +107,9 @@ export default function ConnectionStatus() {
           </div>
 
           {pendingCount > 0 && (
-            <div style={{ 
-              padding: '8px', 
-              background: 'var(--warning-50)', 
+            <div style={{
+              padding: '8px',
+              background: 'var(--warning-50)',
               borderRadius: '6px',
               marginBottom: '8px',
               fontSize: '12px',

@@ -84,16 +84,16 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    
+
     const col1 = 16;
     const col2 = pageWidth / 2 + 5;
-    
+
     y += 10;
     doc.setFont('helvetica', 'bold');
     doc.text('Técnico Responsable:', col1, y);
     doc.setFont('helvetica', 'normal');
     doc.text(data.technician, col1 + 38, y);
-    
+
     doc.setFont('helvetica', 'bold');
     doc.text('Empresa:', col2, y);
     doc.setFont('helvetica', 'normal');
@@ -112,15 +112,15 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
 
     // Resumen de cumplimiento
     y += 20;
-    const compliance = data.totalTasks && data.totalTasks > 0 
-        ? Math.round((data.completedTasks || 0) / data.totalTasks * 100) 
+    const compliance = data.totalTasks && data.totalTasks > 0
+        ? Math.round((data.completedTasks || 0) / data.totalTasks * 100)
         : 0;
-    
-    doc.setFillColor(compliance >= 90 ? 34 : compliance >= 70 ? 234 : 239, 
-                     compliance >= 90 ? 197 : compliance >= 70 ? 179 : 68, 
-                     compliance >= 90 ? 94 : compliance >= 70 ? 8 : 68);
+
+    doc.setFillColor(compliance >= 90 ? 34 : compliance >= 70 ? 234 : 239,
+        compliance >= 90 ? 197 : compliance >= 70 ? 179 : 68,
+        compliance >= 90 ? 94 : compliance >= 70 ? 8 : 68);
     doc.rect(14, y, pageWidth - 28, 20, 'F');
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -130,8 +130,8 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
     doc.text(`${data.completedTasks || 0} de ${data.totalTasks || 0} tareas ejecutadas`, 20, y + 15);
 
     doc.setFont('helvetica', 'bold');
-    doc.text(compliance >= 90 ? 'CONFORME' : compliance >= 70 ? 'PARCIAL' : 'NO CONFORME', 
-             pageWidth - 20, y + 12, { align: 'right' });
+    doc.text(compliance >= 90 ? 'CONFORME' : compliance >= 70 ? 'PARCIAL' : 'NO CONFORME',
+        pageWidth - 20, y + 12, { align: 'right' });
 
     // Tabla de tareas
     y += 30;
@@ -184,19 +184,19 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
     // Observaciones si hay
     const tasksWithObs = data.tasks.filter(t => t.observations);
     let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-    
+
     if (tasksWithObs.length > 0 && finalY < pageHeight - 80) {
         finalY += 10;
         doc.setTextColor(30, 58, 138);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text('OBSERVACIONES:', 14, finalY);
-        
+
         finalY += 6;
         doc.setTextColor(0, 0, 0);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        
+
         tasksWithObs.slice(0, 5).forEach(task => {
             doc.text(`• ${task.code}: ${task.observations?.substring(0, 80)}`, 14, finalY);
             finalY += 5;
@@ -205,10 +205,10 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
 
     // Sección de firmas
     finalY = Math.max(finalY + 15, pageHeight - 50);
-    
+
     doc.setDrawColor(100, 100, 100);
     doc.setLineWidth(0.3);
-    
+
     // Firma técnico
     doc.line(14, finalY + 20, 80, finalY + 20);
     doc.setFontSize(8);
@@ -219,7 +219,7 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
     if (data.signature) {
         try {
             doc.addImage(data.signature, 'PNG', 14, finalY - 5, 60, 25);
-        } catch (e) {
+        } catch (_e) {
             // Firma no disponible
         }
     }
@@ -237,74 +237,74 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
 
     // ANEXO DE EVIDENCIA FOTOGRÁFICA (Anti-Fraude)
     const tasksWithPhotos = data.tasks.filter(t => t.photoUrl && t.status === 'completado');
-    
+
     if (tasksWithPhotos.length > 0 || (data.photos && data.photos.length > 0)) {
         doc.addPage();
-        
+
         // Header del anexo
         doc.setFillColor(30, 58, 138);
         doc.rect(0, 0, pageWidth, 30, 'F');
-        
+
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         doc.text('ANEXO: EVIDENCIA FOTOGRÁFICA', 14, 18);
-        
+
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.text('Sistema Anti-Fraude AISA', pageWidth - 14, 18, { align: 'right' });
-        
+
         let photoY = 45;
         const photoWidth = 80;
         const photoHeight = 60;
-        
+
         // Fotos de tareas completadas
-        tasksWithPhotos.forEach((task, index) => {
+        tasksWithPhotos.forEach((task, _index) => {
             if (photoY > 220) {
                 doc.addPage();
                 photoY = 20;
             }
-            
+
             // Info de la tarea
             doc.setTextColor(30, 58, 138);
             doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
             doc.text(`Tarea ${task.code} - ${task.component}`, 14, photoY);
-            
+
             doc.setTextColor(100, 100, 100);
             doc.setFontSize(8);
             doc.setFont('helvetica', 'normal');
             doc.text(`Máquina: ${task.machine} | Lubricante: ${task.lubricant}`, 14, photoY + 6);
-            
+
             if (task.completedAt) {
                 doc.text(`Capturada: ${task.completedAt}`, 14, photoY + 11);
             }
-            
+
             // Foto
             if (task.photoUrl) {
                 try {
                     doc.addImage(task.photoUrl, 'JPEG', 14, photoY + 15, photoWidth, photoHeight);
-                    
+
                     // Marco de verificación
                     doc.setDrawColor(34, 197, 94);
                     doc.setLineWidth(1);
                     doc.rect(14, photoY + 15, photoWidth, photoHeight);
-                    
+
                     // Badge de verificado
                     doc.setFillColor(34, 197, 94);
                     doc.rect(14, photoY + 15, 25, 8, 'F');
                     doc.setTextColor(255, 255, 255);
                     doc.setFontSize(6);
                     doc.text('VERIFICADO', 16, photoY + 21);
-                } catch (e) {
+                } catch (_e) {
                     doc.setTextColor(200, 100, 100);
                     doc.text('[Foto no disponible]', 14, photoY + 40);
                 }
             }
-            
+
             photoY += photoHeight + 30;
         });
-        
+
         // Fotos adicionales del array photos
         if (data.photos && data.photos.length > 0) {
             data.photos.forEach((photo) => {
@@ -312,26 +312,26 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
                     doc.addPage();
                     photoY = 20;
                 }
-                
+
                 doc.setTextColor(30, 58, 138);
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
                 doc.text(`${photo.type === 'antes' ? 'ANTES' : 'DESPUÉS'} - Tarea ${photo.taskCode}`, 14, photoY);
-                
+
                 doc.setTextColor(100, 100, 100);
                 doc.setFontSize(8);
                 doc.text(`${photo.taskDescription}`, 14, photoY + 6);
                 doc.text(`Capturada: ${photo.capturedAt}`, 14, photoY + 11);
-                
+
                 try {
                     doc.addImage(photo.photoUrl, 'JPEG', 14, photoY + 15, photoWidth, photoHeight);
                     doc.setDrawColor(30, 58, 138);
                     doc.setLineWidth(0.5);
                     doc.rect(14, photoY + 15, photoWidth, photoHeight);
-                } catch (e) {
+                } catch (_e) {
                     doc.text('[Foto no disponible]', 14, photoY + 40);
                 }
-                
+
                 photoY += photoHeight + 30;
             });
         }
@@ -344,7 +344,7 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
         const pageHeight = doc.internal.pageSize.getHeight();
         doc.setFillColor(245, 245, 245);
         doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
-        
+
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
         doc.text(

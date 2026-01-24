@@ -16,7 +16,6 @@ import {
     LogOut,
     ChevronRight,
     Users,
-    PlusCircle,
     Menu,
     X,
     History,

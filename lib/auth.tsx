@@ -60,7 +60,7 @@ async function supabaseUserToAuthUser(supabaseUser: User): Promise<AuthUser> {
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
-    
+
     return {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
                 return { success: true };
             }
-        } catch (e) {
+        } catch (_e) {
             console.log('Supabase auth failed, trying local fallback');
         }
 

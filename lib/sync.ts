@@ -7,16 +7,78 @@
 
 import { supabase } from './supabase';
 
+// ============================================================
+// SYNC STATUS MANAGEMENT
+// ============================================================
+
+export interface SyncStatus {
+  isOnline: boolean;
+  lastSync: Date | null;
+  isSyncing: boolean;
+}
+
+const currentSyncStatus: SyncStatus = {
+  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+  lastSync: null,
+  isSyncing: false,
+};
+
+const syncStatusListeners: ((status: SyncStatus) => void)[] = [];
+
+export function getSyncStatus(): SyncStatus {
+  return currentSyncStatus;
+}
+
+export function onSyncStatusChange(listener: (status: SyncStatus) => void): () => void {
+  syncStatusListeners.push(listener);
+  return () => {
+    const index = syncStatusListeners.indexOf(listener);
+    if (index > -1) syncStatusListeners.splice(index, 1);
+  };
+}
+
+function notifyListeners() {
+  syncStatusListeners.forEach(listener => listener(currentSyncStatus));
+}
+
+export const syncDataService = {
+  getPendingCount(): number {
+    return getPendingQueue().length;
+  },
+  async syncNow(): Promise<void> {
+    currentSyncStatus.isSyncing = true;
+    notifyListeners();
+    await syncPendingQueue();
+    currentSyncStatus.isSyncing = false;
+    currentSyncStatus.lastSync = new Date();
+    notifyListeners();
+  },
+};
+
 // Cola de tareas pendientes (para modo offline)
 const PENDING_QUEUE_KEY = 'aisa_pending_tasks_queue';
 
-function getPendingQueue(): any[] {
+interface PendingTask {
+  id: string;
+  work_order_id: string;
+  lubrication_point_id: string;
+  status: string;
+  quantity_used: number;
+  observations: string;
+  photo_url: string;
+  completed_at: string;
+  created_at: string;
+  updated_at: string;
+  queuedAt?: string;
+}
+
+function getPendingQueue(): PendingTask[] {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(PENDING_QUEUE_KEY);
   return stored ? JSON.parse(stored) : [];
 }
 
-function savePendingQueue(queue: any[]): void {
+function savePendingQueue(queue: PendingTask[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(PENDING_QUEUE_KEY, JSON.stringify(queue));
 }
@@ -35,7 +97,7 @@ export async function saveCompletedTask(task: {
   photoUrl?: string;
   completedAt?: string;
 }): Promise<{ success: boolean; error?: string; queued?: boolean }> {
-  
+
   const taskData = {
     id: task.id,
     work_order_id: task.workOrderId,
@@ -53,12 +115,12 @@ export async function saveCompletedTask(task: {
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       console.log(`📤 Intento ${attempt}/3 - Guardando tarea:`, task.id);
-      
+
       const { error } = await supabase
         .from('tasks')
-        .upsert(taskData, { 
+        .upsert(taskData, {
           onConflict: 'id',
-          ignoreDuplicates: false 
+          ignoreDuplicates: false
         });
 
       if (!error) {
@@ -70,7 +132,7 @@ export async function saveCompletedTask(task: {
       }
 
       console.error(`❌ Intento ${attempt} falló:`, error.message);
-      
+
       if (attempt < 3) {
         await new Promise(r => setTimeout(r, 1000 * attempt)); // Esperar antes de reintentar
       }
@@ -89,7 +151,7 @@ export async function saveCompletedTask(task: {
     queue.push({ ...taskData, queuedAt: new Date().toISOString() });
     savePendingQueue(queue);
   }
-  
+
   return { success: false, error: 'Guardado en cola offline', queued: true };
 }
 
@@ -102,10 +164,10 @@ export async function syncPendingQueue(): Promise<{ synced: number; failed: numb
   if (queue.length === 0) return { synced: 0, failed: 0 };
 
   console.log(`🔄 Sincronizando ${queue.length} tareas pendientes...`);
-  
+
   let synced = 0;
   let failed = 0;
-  const newQueue: any[] = [];
+  const newQueue: PendingTask[] = [];
 
   for (const task of queue) {
     try {
@@ -145,10 +207,10 @@ export async function getCompletedTasksFromServer(): Promise<{
   photoUrl?: string;
   completedAt?: string;
 }[]> {
-  
+
   try {
     console.log('📥 Cargando tareas desde Supabase...');
-    
+
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
@@ -160,7 +222,7 @@ export async function getCompletedTasksFromServer(): Promise<{
     }
 
     console.log(`✅ ${data?.length || 0} tareas cargadas`);
-    
+
     return (data || []).map(t => ({
       id: t.id,
       status: t.status,
@@ -171,7 +233,7 @@ export async function getCompletedTasksFromServer(): Promise<{
       photoUrl: t.photo_url,
       completedAt: t.completed_at,
     }));
-    
+
   } catch (e) {
     console.error('❌ Error de red:', e);
     return [];
@@ -186,7 +248,7 @@ export async function uploadPhoto(
   dataUrl: string,
   taskId: string
 ): Promise<string> {
-  
+
   try {
     // Convertir base64 a blob
     const base64Data = dataUrl.split(',')[1];
@@ -223,7 +285,7 @@ export async function uploadPhoto(
 
     console.log('✅ Foto subida:', urlData.publicUrl);
     return urlData.publicUrl;
-    
+
   } catch (e) {
     console.error('❌ Error:', e);
     return dataUrl;
@@ -240,16 +302,31 @@ export function downloadPhotoToGallery(dataUrl: string, fileName: string): void 
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = fileName;
-    
+
     // Forzar descarga
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     console.log('✅ Foto guardada:', fileName);
   } catch (e) {
     console.error('❌ Error guardando foto:', e);
   }
+}
+
+// ============================================================
+// SUBIR FOTO A STORAGE (stub - por ahora retorna dataUrl)
+// ============================================================
+
+export async function uploadPhotoToStorage(
+  dataUrl: string,
+  _taskId: string,
+  _photoType: string
+): Promise<string | null> {
+  // Por ahora, simplemente retornar la dataUrl
+  // En producción, esto subiría a Supabase Storage
+  console.log('📷 Foto procesada localmente');
+  return dataUrl;
 }
 
 // ============================================================

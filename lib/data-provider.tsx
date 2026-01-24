@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -100,7 +101,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Cargar tareas
   const refreshTasks = useCallback(async () => {
     const today = new Date().toISOString().split('T')[0];
-    
+
     if (isSupabaseConnected) {
       // Usar Supabase
       const { data, error } = await supabase
@@ -182,7 +183,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const areas = dataService.getAreas();
       const lubricants = dataService.getLubricants();
       const frequencies = dataService.getFrequencies();
-      
+
       const localTasks = allTasks.map((t: any) => {
         const point = points.find((p: any) => p.id === t.lubricationPointId);
         const component = components.find((c: any) => c.id === point?.componentId);
@@ -192,7 +193,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const frequency = frequencies.find((f: any) => f.id === point?.frequencyId);
         return { ...t, lubricationPoint: point, component, machine, area, lubricant, frequency };
       });
-      
+
       const mappedTasks: Task[] = localTasks.map((t: any) => ({
         id: t.id,
         lubricationPointId: t.lubricationPoint?.id || '',
@@ -249,7 +250,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           completed_at: new Date().toISOString()
         })
         .eq('id', taskId);
-      
+
       if (!error) {
         await refreshTasks();
         await refreshStats();
@@ -280,7 +281,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           observations: reason
         })
         .eq('id', taskId);
-      
+
       if (!error) {
         await refreshTasks();
         return true;
@@ -299,7 +300,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Cargar estadísticas
   const refreshStats = useCallback(async () => {
     const today = new Date().toISOString().split('T')[0];
-    
+
     if (isSupabaseConnected) {
       const [
         { count: total },
@@ -325,12 +326,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const todayWO = dataService.getTodayWorkOrder();
       const allTasks = todayWO ? dataService.getTasks(todayWO.id) : [];
       const anomalies = dataService.getAnomalies();
-      
+
       const total = allTasks.length;
       const completed = allTasks.filter((t: any) => t.status === 'completado').length;
       const pending = allTasks.filter((t: any) => t.status === 'pendiente').length;
       const openAnom = anomalies.filter((a: any) => a.status === 'abierta').length;
-      
+
       setStats({
         totalTasks: total,
         completedTasks: completed,

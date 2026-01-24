@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
-import { Users, Shield, Plus, X, Check, Pencil, Trash2 } from 'lucide-react';
+import { Plus, X, Check, Pencil, Trash2 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { User } from '@/lib/types';
 
@@ -29,11 +29,11 @@ export default function UsersPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (editingUser) {
       // Actualizar usuario existente
-      const updatedUsers = users.map(u => 
-        u.id === editingUser.id 
+      const updatedUsers = users.map(u =>
+        u.id === editingUser.id
           ? { ...u, name: formData.name, email: formData.email, role: formData.role }
           : u
       );
@@ -53,7 +53,7 @@ export default function UsersPage() {
       localStorage.setItem('aisa_users', JSON.stringify(updatedUsers));
       setUsers(updatedUsers);
     }
-    
+
     setShowForm(false);
     setFormData({ name: '', email: '', role: 'lubricador' });
   };
@@ -119,11 +119,11 @@ export default function UsersPage() {
             </header>
 
             {/* Stats - Premium Design */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(3, 1fr)', 
-              gap: '16px', 
-              marginBottom: '32px' 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '16px',
+              marginBottom: '32px'
             }}>
               {[
                 { value: users.length, label: 'Total', color: '#64748b' },
@@ -137,17 +137,17 @@ export default function UsersPage() {
                   border: '1px solid rgba(0,0,0,0.06)',
                   textAlign: 'center',
                 }}>
-                  <div style={{ 
-                    fontSize: '36px', 
-                    fontWeight: 600, 
+                  <div style={{
+                    fontSize: '36px',
+                    fontWeight: 600,
                     color: stat.color,
                     lineHeight: 1,
                     marginBottom: '8px',
                   }}>
                     {stat.value}
                   </div>
-                  <div style={{ 
-                    fontSize: '13px', 
+                  <div style={{
+                    fontSize: '13px',
                     color: '#64748b',
                     fontWeight: 500,
                     textTransform: 'uppercase',
@@ -333,8 +333,8 @@ export default function UsersPage() {
                 <button className="btn btn-secondary" onClick={() => setShowDeleteConfirm(null)}>
                   Cancelar
                 </button>
-                <button 
-                  className="btn" 
+                <button
+                  className="btn"
                   style={{ background: '#ef4444', color: 'white' }}
                   onClick={() => handleDelete(showDeleteConfirm)}
                 >

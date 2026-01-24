@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
@@ -21,7 +21,6 @@ import {
   getFraudAlerts,
   resolveFraudAlert,
   getSecuritySummary,
-  getAuditLogs,
   type FraudAlert,
   type SecuritySummary,
 } from '@/lib/anti-fraud';
@@ -34,14 +33,14 @@ export default function AlertasPage() {
   const [showResolved, setShowResolved] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<FraudAlert | null>(null);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setAlerts(getFraudAlerts(showResolved));
     setSummary(getSecuritySummary());
-  };
+  }, [showResolved]);
 
   useEffect(() => {
     loadData();
-  }, [showResolved]);
+  }, [loadData]);
 
   const handleResolve = (alertId: string) => {
     if (user) {
@@ -261,7 +260,7 @@ export default function AlertasPage() {
                             }}>
                               {getAlertIcon(alert.type)}
                             </div>
-                            
+
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                 <span style={{ fontWeight: 700, color: colors.text }}>
@@ -291,11 +290,11 @@ export default function AlertasPage() {
                                   </span>
                                 )}
                               </div>
-                              
+
                               <p style={{ margin: '4px 0', fontSize: '14px', color: '#475569' }}>
                                 {alert.description}
                               </p>
-                              
+
                               <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                   <User style={{ width: 12, height: 12 }} />
@@ -320,8 +319,8 @@ export default function AlertasPage() {
 
             {/* Alert Detail Modal */}
             {selectedAlert && (
-              <div 
-                className="modal-overlay" 
+              <div
+                className="modal-overlay"
                 onClick={() => setSelectedAlert(null)}
                 style={{
                   position: 'fixed',
@@ -334,7 +333,7 @@ export default function AlertasPage() {
                   padding: '16px',
                 }}
               >
-                <div 
+                <div
                   onClick={e => e.stopPropagation()}
                   style={{
                     background: 'white',
@@ -355,13 +354,13 @@ export default function AlertasPage() {
                       {getAlertTypeName(selectedAlert.type)}
                     </h3>
                   </div>
-                  
+
                   <div style={{ padding: '20px' }}>
                     <div style={{ marginBottom: '16px' }}>
                       <label style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Descripción</label>
                       <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{selectedAlert.description}</p>
                     </div>
-                    
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                       <div>
                         <label style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Usuario</label>

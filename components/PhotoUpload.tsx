@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Camera, X, Upload, Image as ImageIcon, AlertTriangle, Loader2 } from 'lucide-react';
 import { generateImageHash, checkDuplicatePhoto, registerPhoto, createFraudAlert } from '@/lib/anti-fraud';
-import { uploadPhotoToStorage } from '@/lib/data-sync';
+import { uploadPhotoToStorage } from '@/lib/sync';
 
 interface PhotoUploadProps {
     label: string;
@@ -15,10 +15,10 @@ interface PhotoUploadProps {
     photoType?: 'before' | 'after';
 }
 
-export default function PhotoUpload({ 
-    label, 
-    onPhotoCapture, 
-    existingPhoto, 
+export default function PhotoUpload({
+    label,
+    onPhotoCapture,
+    existingPhoto,
     required,
     taskId = 'unknown',
     userId = 'unknown',
@@ -35,18 +35,18 @@ export default function PhotoUpload({
     // Verificar foto duplicada y registrar
     const processPhoto = async (dataUrl: string) => {
         setDuplicateWarning(null);
-        
+
         try {
             const hash = await generateImageHash(dataUrl);
             const duplicate = checkDuplicatePhoto(hash);
-            
+
             if (duplicate) {
                 // ¡FOTO DUPLICADA DETECTADA!
                 const duplicateDate = new Date(duplicate.timestamp).toLocaleString('es-CL');
                 setDuplicateWarning(
                     `⚠️ Esta foto ya fue usada el ${duplicateDate} en otra tarea. Por favor tome una foto nueva.`
                 );
-                
+
                 // Crear alerta de fraude
                 createFraudAlert({
                     type: 'duplicate_photo',
@@ -55,11 +55,11 @@ export default function PhotoUpload({
                     taskId,
                     description: `Intento de reutilizar foto del ${duplicateDate} (Tarea original: ${duplicate.taskId})`,
                 });
-                
+
                 // NO registrar la foto, devolver null
                 return false;
             }
-            
+
             // Registrar foto nueva
             registerPhoto({
                 hash,
@@ -69,7 +69,7 @@ export default function PhotoUpload({
                 userId,
                 type: photoType,
             });
-            
+
             return true;
         } catch (error) {
             console.error('Error processing photo:', error);
@@ -81,20 +81,20 @@ export default function PhotoUpload({
         try {
             // Primero mostrar el contenedor de la cámara
             setShowCamera(true);
-            
+
             // Esperar un momento para que el DOM se actualice
             await new Promise(resolve => setTimeout(resolve, 100));
-            
+
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                    facingMode: 'environment', 
-                    width: { ideal: 1280 }, 
-                    height: { ideal: 720 } 
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
                 }
             });
-            
+
             streamRef.current = stream;
-            
+
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
                 // Esperar a que el video esté listo
@@ -147,18 +147,18 @@ export default function PhotoUpload({
                 ctx.fillText(`Tarea: ${taskId} | Usuario: ${userId}`, 12, canvas.height - 10);
 
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                
+
                 // Verificar si la foto es duplicada
                 const isValid = await processPhoto(dataUrl);
-                
+
                 if (isValid) {
                     setPhoto(dataUrl);
                     setIsUploading(true);
-                    
+
                     // Subir a Supabase Storage
                     const uploadedUrl = await uploadPhotoToStorage(dataUrl, taskId, photoType);
                     setIsUploading(false);
-                    
+
                     onPhotoCapture(uploadedUrl || dataUrl);
                 }
             }
@@ -204,18 +204,18 @@ export default function PhotoUpload({
                         ctx.fillText(`Tarea: ${taskId} | Usuario: ${userId}`, 12, canvas.height - barHeight * 0.2);
 
                         const watermarkedUrl = canvas.toDataURL('image/jpeg', 0.8);
-                        
+
                         // Verificar si la foto es duplicada
                         const isValid = await processPhoto(watermarkedUrl);
-                        
+
                         if (isValid) {
                             setPhoto(watermarkedUrl);
                             setIsUploading(true);
-                            
+
                             // Subir a Supabase Storage
                             const uploadedUrl = await uploadPhotoToStorage(watermarkedUrl, taskId, photoType);
                             setIsUploading(false);
-                            
+
                             onPhotoCapture(uploadedUrl || watermarkedUrl);
                         }
                     }

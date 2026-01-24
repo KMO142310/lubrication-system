@@ -8,25 +8,25 @@ import type { NextRequest } from 'next/server';
  * - Request logging
  */
 
-export function middleware(request: NextRequest) {
+export function middleware(_request: NextRequest) {
   const response = NextResponse.next();
 
   // ============================================================
   // SECURITY HEADERS (OWASP Recommendations)
   // ============================================================
-  
+
   // Prevent clickjacking
   response.headers.set('X-Frame-Options', 'DENY');
-  
+
   // Prevent MIME type sniffing
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  
+
   // Enable XSS protection
   response.headers.set('X-XSS-Protection', '1; mode=block');
-  
+
   // Referrer policy
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
+
   // Permissions policy
   response.headers.set(
     'Permissions-Policy',
@@ -59,7 +59,7 @@ export function middleware(request: NextRequest) {
   // ============================================================
   // REQUEST METADATA
   // ============================================================
-  
+
   // Add request ID for tracing
   const requestId = crypto.randomUUID();
   response.headers.set('X-Request-ID', requestId);

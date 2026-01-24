@@ -14,9 +14,7 @@ import {
   Droplets,
   Cog,
   ClipboardCheck,
-  Calendar,
   BarChart3,
-  Building2,
   Play,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
@@ -47,13 +45,20 @@ export default function Dashboard() {
     lubricant: string;
   }>>([]);
 
+  interface ServerTaskData {
+    id: string;
+    status: string;
+    lubricationPointId?: string;
+    completedAt?: string;
+  }
+
   useEffect(() => {
     const loadDashboard = async () => {
       // Inicializar datos locales primero
       dataService.init();
-      
+
       // Cargar tareas completadas del servidor PRIMERO
-      let serverTasksByPoint: Record<string, any> = {};
+      const serverTasksByPoint: Record<string, ServerTaskData> = {};
       if (isOnline()) {
         const serverTasks = await getCompletedTasksFromServer();
         console.log('📥 Dashboard - Tareas servidor:', serverTasks.length, serverTasks.map(t => t.lubricationPointId));
@@ -63,7 +68,7 @@ export default function Dashboard() {
           }
         });
       }
-      
+
       const workOrders = dataService.getWorkOrders();
       const allTasks = dataService.getTasks();
       const anomalies = dataService.getAnomalies();
@@ -72,7 +77,7 @@ export default function Dashboard() {
       const components = dataService.getComponents();
       const lubricants = dataService.getLubricants();
       const frequencies = dataService.getFrequencies();
-      
+
       console.log('📊 Dashboard - Tareas locales:', allTasks.length, 'Puntos:', points.length);
 
       const completedWOs = workOrders.filter(wo => wo.status === 'completado');
@@ -80,7 +85,7 @@ export default function Dashboard() {
 
       const todayWO = dataService.getTodayWorkOrder();
       const todayTasks = todayWO ? allTasks.filter(t => t.workOrderId === todayWO.id) : [];
-      
+
       // Contar completadas: local + servidor
       const todayCompleted = todayTasks.filter(t => {
         if (t.status === 'completado') return true;
@@ -92,40 +97,40 @@ export default function Dashboard() {
         ? Math.round((todayCompleted / todayTasks.length) * 100)
         : 0;
 
-    setStats({
-      compliance,
-      completedOrders: completedWOs.length,
-      totalOrders: totalWOs.length,
-      openAnomalies: anomalies.filter(a => a.status !== 'resuelta').length,
-      criticalAnomalies: anomalies.filter(a => a.severity === 'critica' || a.severity === 'alta').length,
-      todayTasks: todayTasks.length,
-      todayCompleted,
-      totalPoints: points.length,
-      totalMachines: machines.length,
-    });
+      setStats({
+        compliance,
+        completedOrders: completedWOs.length,
+        totalOrders: totalWOs.length,
+        openAnomalies: anomalies.filter(a => a.status !== 'resuelta').length,
+        criticalAnomalies: anomalies.filter(a => a.severity === 'critica' || a.severity === 'alta').length,
+        todayTasks: todayTasks.length,
+        todayCompleted,
+        totalPoints: points.length,
+        totalMachines: machines.length,
+      });
 
-    // Build today's tasks list with full info
-    const tasksList = todayTasks.slice(0, 6).map(task => {
-      const point = points.find(p => p.id === task.lubricationPointId);
-      const comp = point ? components.find(c => c.id === point.componentId) : null;
-      const machine = comp ? machines.find(m => m.id === comp.machineId) : null;
-      const lub = point ? lubricants.find(l => l.id === point.lubricantId) : null;
-      const freq = point ? frequencies.find(f => f.id === point.frequencyId) : null;
+      // Build today's tasks list with full info
+      const tasksList = todayTasks.slice(0, 6).map(task => {
+        const point = points.find(p => p.id === task.lubricationPointId);
+        const comp = point ? components.find(c => c.id === point.componentId) : null;
+        const machine = comp ? machines.find(m => m.id === comp.machineId) : null;
+        const lub = point ? lubricants.find(l => l.id === point.lubricantId) : null;
+        const freq = point ? frequencies.find(f => f.id === point.frequencyId) : null;
 
-      return {
-        id: task.id,
-        code: point?.code || 'N/A',
-        component: comp?.name || 'N/A',
-        machine: machine?.name || 'N/A',
-        frequency: freq?.name || 'N/A',
-        status: task.status,
-        lubricant: lub?.name || 'N/A',
-      };
-    });
+        return {
+          id: task.id,
+          code: point?.code || 'N/A',
+          component: comp?.name || 'N/A',
+          machine: machine?.name || 'N/A',
+          frequency: freq?.name || 'N/A',
+          status: task.status,
+          lubricant: lub?.name || 'N/A',
+        };
+      });
 
-    setTodayTasksList(tasksList);
+      setTodayTasksList(tasksList);
     };
-    
+
     loadDashboard();
     const interval = setInterval(loadDashboard, 10000); // Refresh cada 10s
     return () => clearInterval(interval);
@@ -135,12 +140,7 @@ export default function Dashboard() {
     ? Math.round((stats.todayCompleted / stats.todayTasks) * 100)
     : 0;
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Buenos días';
-    if (hour < 18) return 'Buenas tardes';
-    return 'Buenas noches';
-  };
+
 
   return (
     <ProtectedRoute>
@@ -149,7 +149,7 @@ export default function Dashboard() {
 
         <main className="main-content">
           <div className="page-container dashboard-container">
-            
+
             {/* Industrial Header Bar */}
             <header className="dashboard-header">
               <div>
@@ -170,17 +170,17 @@ export default function Dashboard() {
                     A
                   </div>
                   <div>
-                    <h1 style={{ 
-                      fontSize: '28px', 
-                      fontWeight: 800, 
+                    <h1 style={{
+                      fontSize: '28px',
+                      fontWeight: 800,
                       color: '#ffffff',
                       letterSpacing: '-0.5px',
                       margin: 0,
                     }}>
                       AISA LUBRICACIÓN
                     </h1>
-                    <p style={{ 
-                      fontSize: '13px', 
+                    <p style={{
+                      fontSize: '13px',
                       color: '#94a3b8',
                       margin: 0,
                       textTransform: 'uppercase',
@@ -191,7 +191,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '14px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -352,40 +352,40 @@ export default function Dashboard() {
                       height: '4px',
                       background: stats.openAnomalies > 0 ? 'linear-gradient(90deg, #ef4444, #dc2626)' : 'linear-gradient(90deg, #22c55e, #16a34a)',
                     }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                    <div style={{
-                      width: '44px',
-                      height: '44px',
-                      background: stats.openAnomalies > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <AlertTriangle style={{ width: 22, height: 22, color: stats.openAnomalies > 0 ? '#ef4444' : '#22c55e' }} />
-                    </div>
-                    {stats.criticalAnomalies > 0 && (
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: '#ef4444',
-                        background: 'rgba(239, 68, 68, 0.15)',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                      <div style={{
+                        width: '44px',
+                        height: '44px',
+                        background: stats.openAnomalies > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}>
-                        ⚠ {stats.criticalAnomalies} CRÍTICAS
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
-                    {stats.openAnomalies}
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Anomalías Abiertas
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    Ver anomalías <ArrowRight style={{ width: 12, height: 12 }} />
-                  </div>
+                        <AlertTriangle style={{ width: 22, height: 22, color: stats.openAnomalies > 0 ? '#ef4444' : '#22c55e' }} />
+                      </div>
+                      {stats.criticalAnomalies > 0 && (
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: '#ef4444',
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          padding: '4px 10px',
+                          borderRadius: '20px',
+                        }}>
+                          ⚠ {stats.criticalAnomalies} CRÍTICAS
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                      {stats.openAnomalies}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Anomalías Abiertas
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      Ver anomalías <ArrowRight style={{ width: 12, height: 12 }} />
+                    </div>
                   </div>
                 </Link>
 
@@ -454,9 +454,9 @@ export default function Dashboard() {
                     alignItems: 'center',
                   }}>
                     <div>
-                      <h2 style={{ 
-                        fontSize: '18px', 
-                        fontWeight: 700, 
+                      <h2 style={{
+                        fontSize: '18px',
+                        fontWeight: 700,
                         color: '#ffffff',
                         display: 'flex',
                         alignItems: 'center',
@@ -562,17 +562,17 @@ export default function Dashboard() {
                   border: '1px solid #334155',
                   padding: '20px',
                 }}>
-                  <h3 style={{ 
-                    fontSize: '14px', 
-                    fontWeight: 700, 
-                    color: '#94a3b8', 
-                    textTransform: 'uppercase', 
+                  <h3 style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#94a3b8',
+                    textTransform: 'uppercase',
                     letterSpacing: '1px',
                     marginBottom: '16px',
                   }}>
                     Acciones Rápidas
                   </h3>
-                  
+
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <Link href="/tasks" style={{
                       display: 'flex',

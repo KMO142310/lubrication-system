@@ -80,20 +80,7 @@ export default function SchedulePage() {
     setCurrentDate(new Date());
   };
 
-  const getStatusIndicator = (day: DayData) => {
-    if (!day.workOrder || day.tasks.length === 0) return null;
 
-    const completed = day.tasks.filter(t => t.status === 'completado').length;
-    const total = day.tasks.length;
-
-    if (completed === total) {
-      return <CheckCircle2 style={{ width: 14, height: 14, color: 'var(--success-500)' }} />;
-    } else if (completed > 0) {
-      return <Clock style={{ width: 14, height: 14, color: 'var(--warning-500)' }} />;
-    } else {
-      return <AlertCircle style={{ width: 14, height: 14, color: 'var(--accent-500)' }} />;
-    }
-  };
 
   const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -156,7 +143,7 @@ export default function SchedulePage() {
                           const completed = day.tasks.filter(t => t.status === 'completado').length;
                           const total = day.tasks.length;
                           const allCompleted = total > 0 && completed === total;
-                          
+
                           return (
                             <div
                               key={i}
@@ -169,8 +156,8 @@ export default function SchedulePage() {
                               {total > 0 && (
                                 <div className="calendar-day-tasks">
                                   {day.tasks.slice(0, 5).map((t, idx) => (
-                                    <span 
-                                      key={idx} 
+                                    <span
+                                      key={idx}
                                       className={`calendar-task-dot ${t.status === 'completado' ? 'completed' : ''}`}
                                     />
                                   ))}

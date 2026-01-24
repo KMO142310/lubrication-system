@@ -12,9 +12,7 @@ import {
   TrendingDown,
   Droplets,
   BarChart3,
-  Building2,
   FileCheck,
-  Clock,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 
@@ -55,7 +53,7 @@ export default function MetricsPage() {
     const openAnomalies = anomalies.filter(a => a.status !== 'resuelta');
     const criticalAnomalies = anomalies.filter(a => a.severity === 'critica' || a.severity === 'alta');
 
-    const totalConsumption = completedTasks.reduce((acc, task) => acc + (task.quantityUsed || 0), 0);
+
 
     setMetrics([
       {

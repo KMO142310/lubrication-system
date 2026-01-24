@@ -3,24 +3,14 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Link from 'next/link';
-import { Users, Shield, Database, RefreshCw, Check } from 'lucide-react';
+import { Users, Shield, Database, Check } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { User } from '@/lib/types';
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [resetConfirm, setResetConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
   useEffect(() => { setUsers(dataService.getUsers()); }, []);
-
-  const handleReset = () => {
-    dataService.resetData();
-    setUsers(dataService.getUsers());
-    setResetConfirm(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
-  };
 
   return (
     <div className="app-layout">

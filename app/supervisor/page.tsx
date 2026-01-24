@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
 import { getCompletedTasksFromServer } from '@/lib/sync';
 import toast from 'react-hot-toast';
@@ -37,15 +36,9 @@ interface TechnicianStats {
   status: 'activo' | 'inactivo' | 'atrasado';
 }
 
-interface DailyMetrics {
-  date: string;
-  completed: number;
-  total: number;
-  compliance: number;
-}
+
 
 export default function SupervisorDashboard() {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [technicianStats, setTechnicianStats] = useState<TechnicianStats[]>([]);
   const [globalStats, setGlobalStats] = useState({
@@ -56,62 +49,22 @@ export default function SupervisorDashboard() {
     compliance: 0,
     trend: 0,
   });
-  const [weeklyMetrics, setWeeklyMetrics] = useState<DailyMetrics[]>([]);
   const [recentCompletions, setRecentCompletions] = useState<Array<{
     taskCode: string;
     technician: string;
     completedAt: string;
     machine: string;
     hasPhoto: boolean;
-  }>>([]);
+  }>>([]);;
 
-  useEffect(() => {
-    loadSupervisorData();
-    
-    // Suscripción en tiempo real a cambios en tareas
-    const channel = supabase
-      .channel('supervisor-realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'tasks' },
-        (payload) => {
-          console.log('📡 NUEVA TAREA:', payload);
-          toast.success('✅ Nueva tarea completada!', { duration: 3000 });
-          loadSupervisorData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'tasks' },
-        (payload) => {
-          console.log('📡 TAREA ACTUALIZADA:', payload);
-          toast.success('🔄 Tarea actualizada', { duration: 2000 });
-          loadSupervisorData();
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Realtime status:', status);
-      });
-
-    // Auto-refresh cada 5 segundos (más frecuente)
-    const interval = setInterval(() => {
-      loadSupervisorData();
-    }, 5000);
-
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(interval);
-    };
-  }, []);
-
-  const loadSupervisorData = async () => {
+  const loadSupervisorData = useCallback(async () => {
     setLoading(true);
-    
+
     // Cargar datos de Supabase
     const serverTasks = await getCompletedTasksFromServer();
-    
+
     // Datos locales
-    const workOrders = dataService.getWorkOrders();
+    const _workOrders = dataService.getWorkOrders();
     const allTasks = dataService.getTasks();
     const anomalies = dataService.getAnomalies();
     const points = dataService.getLubricationPoints();
@@ -121,7 +74,7 @@ export default function SupervisorDashboard() {
     // Métricas globales de hoy
     const todayWO = dataService.getTodayWorkOrder();
     const todayTasks = todayWO ? allTasks.filter(t => t.workOrderId === todayWO.id) : [];
-    
+
     // Merge con datos del servidor
     const mergedTasks = todayTasks.map(task => {
       const serverTask = serverTasks.find(st => st.id === task.id);
@@ -132,8 +85,8 @@ export default function SupervisorDashboard() {
     const pendingToday = mergedTasks.filter(t => t.status === 'pendiente').length;
 
     // Calcular cumplimiento
-    const compliance = mergedTasks.length > 0 
-      ? Math.round((completedToday / mergedTasks.length) * 100) 
+    const compliance = mergedTasks.length > 0
+      ? Math.round((completedToday / mergedTasks.length) * 100)
       : 0;
 
     // Tendencia (comparar con ayer - simulado)
@@ -171,7 +124,7 @@ export default function SupervisorDashboard() {
         const point = points.find(p => p.id === task.lubricationPointId);
         const comp = point ? components.find(c => c.id === point.componentId) : null;
         const machine = comp ? machines.find(m => m.id === comp.machineId) : null;
-        
+
         return {
           taskCode: point?.code || task.id.slice(-6),
           technician: 'Juan Pérez', // En producción: buscar por completedBy
@@ -182,25 +135,47 @@ export default function SupervisorDashboard() {
       });
     setRecentCompletions(recent);
 
-    // Métricas semanales (simuladas - en producción de la DB)
-    const weekly: DailyMetrics[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      const isToday = i === 0;
-      
-      weekly.push({
-        date: dateStr,
-        completed: isToday ? completedToday : Math.floor(Math.random() * 10) + 5,
-        total: isToday ? mergedTasks.length : 12,
-        compliance: isToday ? compliance : Math.floor(Math.random() * 30) + 70,
-      });
-    }
-    setWeeklyMetrics(weekly);
-
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadSupervisorData();
+
+    // Suscripción en tiempo real a cambios en tareas
+    const channel = supabase
+      .channel('supervisor-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'tasks' },
+        (payload) => {
+          console.log('📡 NUEVA TAREA:', payload);
+          toast.success('✅ Nueva tarea completada!', { duration: 3000 });
+          loadSupervisorData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'tasks' },
+        (payload) => {
+          console.log('📡 TAREA ACTUALIZADA:', payload);
+          toast.success('🔄 Tarea actualizada', { duration: 2000 });
+          loadSupervisorData();
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Realtime status:', status);
+      });
+
+    // Auto-refresh cada 5 segundos (más frecuente)
+    const interval = setInterval(() => {
+      loadSupervisorData();
+    }, 5000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [loadSupervisorData]);
 
   const downloadDailyReport = () => {
     const workOrder = dataService.getTodayWorkOrder();
@@ -298,7 +273,7 @@ export default function SupervisorDashboard() {
 
         <main className="main-content">
           <div className="page-container">
-            
+
             {/* Header Supervisor */}
             <header style={{
               background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
@@ -331,7 +306,7 @@ export default function SupervisorDashboard() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button
                     onClick={loadSupervisorData}
@@ -395,8 +370,8 @@ export default function SupervisorDashboard() {
                   left: 0,
                   right: 0,
                   height: '4px',
-                  background: globalStats.compliance >= 80 
-                    ? 'linear-gradient(90deg, #22c55e, #16a34a)' 
+                  background: globalStats.compliance >= 80
+                    ? 'linear-gradient(90deg, #22c55e, #16a34a)'
                     : 'linear-gradient(90deg, #f59e0b, #d97706)',
                 }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -492,8 +467,8 @@ export default function SupervisorDashboard() {
                   left: 0,
                   right: 0,
                   height: '4px',
-                  background: globalStats.overdueAnomalies > 0 
-                    ? 'linear-gradient(90deg, #ef4444, #dc2626)' 
+                  background: globalStats.overdueAnomalies > 0
+                    ? 'linear-gradient(90deg, #ef4444, #dc2626)'
                     : 'linear-gradient(90deg, #22c55e, #16a34a)',
                 }} />
                 <div style={{ marginBottom: '12px' }}>
@@ -570,7 +545,7 @@ export default function SupervisorDashboard() {
                         <div>
                           <div style={{ fontWeight: 600, color: '#ffffff', fontSize: '14px' }}>{tech.name}</div>
                           <div style={{ fontSize: '12px', color: '#64748b' }}>
-                            {tech.lastActivity 
+                            {tech.lastActivity
                               ? `Última actividad: ${new Date(tech.lastActivity).toLocaleTimeString('es-CL')}`
                               : 'Sin actividad hoy'}
                           </div>
@@ -585,9 +560,9 @@ export default function SupervisorDashboard() {
                       </div>
 
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{ 
-                          fontSize: '20px', 
-                          fontWeight: 700, 
+                        <div style={{
+                          fontSize: '20px',
+                          fontWeight: 700,
                           color: tech.compliance >= 80 ? '#22c55e' : tech.compliance >= 50 ? '#f59e0b' : '#ef4444',
                           fontFamily: 'var(--font-mono)',
                         }}>
@@ -682,17 +657,17 @@ export default function SupervisorDashboard() {
                   border: '1px solid #334155',
                   padding: '20px',
                 }}>
-                  <h3 style={{ 
-                    fontSize: '14px', 
-                    fontWeight: 700, 
-                    color: '#94a3b8', 
-                    textTransform: 'uppercase', 
+                  <h3 style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#94a3b8',
+                    textTransform: 'uppercase',
                     letterSpacing: '1px',
                     marginBottom: '16px',
                   }}>
                     Acciones de Supervisor
                   </h3>
-                  
+
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <Link href="/historial" style={{
                       display: 'flex',

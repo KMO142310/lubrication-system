@@ -23,7 +23,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
-import { saveCompletedTask, getCompletedTasksFromServer, uploadPhoto, downloadPhotoToGallery, isOnline } from '@/lib/sync';
+import { saveCompletedTask, getCompletedTasksFromServer, isOnline } from '@/lib/sync';
 import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
 import { Task, LubricationPoint, WorkOrder, Component, Machine, Lubricant, Frequency } from '@/lib/types';
@@ -59,16 +59,26 @@ export default function TasksPage() {
     observations: '',
   });
 
+  interface ServerTaskData {
+    id: string;
+    lubricationPointId?: string;
+    status: string;
+    quantityUsed?: number;
+    observations?: string;
+    photoUrl?: string;
+    completedAt?: string;
+  }
+
   const loadData = async () => {
     // Inicializar datos locales
     dataService.init();
-    
+
     // Cargar tareas completadas desde Supabase (fuente de verdad)
-    let serverTasksByPoint: Record<string, any> = {};
+    const serverTasksByPoint: Record<string, ServerTaskData> = {};
     if (isOnline()) {
       const serverTasks = await getCompletedTasksFromServer();
       console.log('📥 Tareas del servidor:', serverTasks.length);
-      
+
       // Mapear por lubrication_point_id (clave única real)
       serverTasks.forEach(st => {
         if (st.lubricationPointId) {
@@ -76,7 +86,7 @@ export default function TasksPage() {
         }
       });
     }
-    
+
     const wo = dataService.getTodayWorkOrder();
     if (wo) {
       setWorkOrder(wo);
@@ -92,7 +102,7 @@ export default function TasksPage() {
       console.log('🔍 DEBUG - Puntos:', points.length);
       console.log('🔍 DEBUG - Componentes:', components.length);
       console.log('🔍 DEBUG - Máquinas:', machines.length);
-      
+
       const enriched: EnrichedTask[] = rawTasks.map(task => {
         const lp = points.find(p => p.id === task.lubricationPointId)!;
         const comp = lp ? components.find(c => c.id === lp.componentId) : null;
@@ -107,18 +117,18 @@ export default function TasksPage() {
         // Merge con datos del servidor (por punto de lubricación)
         const serverData = serverTasksByPoint[task.lubricationPointId];
         if (serverData && serverData.status === 'completado') {
-          return { 
-            ...task, 
+          return {
+            ...task,
             status: 'completado' as const,
             quantityUsed: serverData.quantityUsed,
             observations: serverData.observations,
             photoUrl: serverData.photoUrl,
             completedAt: serverData.completedAt,
-            lubricationPoint: lp, 
-            component: comp!, 
-            machine: mach!, 
-            lubricant: lub!, 
-            frequency: freq! 
+            lubricationPoint: lp,
+            component: comp!,
+            machine: mach!,
+            lubricant: lub!,
+            frequency: freq!
           };
         }
 
@@ -133,12 +143,12 @@ export default function TasksPage() {
 
   useEffect(() => {
     loadData();
-    
+
     // Refrescar cada 30 segundos para sincronizar
     const interval = setInterval(() => {
       loadData();
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -163,10 +173,10 @@ export default function TasksPage() {
 
     const completedAt = new Date().toISOString();
     const photoUrl = execution.photoAfter;
-    
+
     // PRIMERO: Guardar en Supabase (fuente de verdad)
     toast.loading('Guardando en servidor...', { id: 'saving' });
-    
+
     const result = await saveCompletedTask({
       id: selectedTask.id,
       workOrderId: selectedTask.workOrderId,
@@ -177,9 +187,9 @@ export default function TasksPage() {
       photoUrl: photoUrl.substring(0, 100),
       completedAt,
     });
-    
+
     toast.dismiss('saving');
-    
+
     if (result.success) {
       toast.success(`✅ ${selectedTask.lubricationPoint.code} GUARDADO en servidor`);
     } else if (result.queued) {

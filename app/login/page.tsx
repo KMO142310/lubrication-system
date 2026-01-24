@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword } from '@/lib/supabase';
+import { signUpWithEmail, resetPassword } from '@/lib/supabase';
 import { Droplets, Eye, EyeOff, AlertCircle, CheckCircle, Mail, ArrowLeft } from 'lucide-react';
 
 type ViewMode = 'login' | 'register' | 'forgot';
@@ -39,16 +39,16 @@ export default function LoginPage() {
         try {
             // Usar auth local (usuarios hardcodeados) - funciona offline
             const result = await login(email, password);
-            
+
             if (result.success) {
                 // Pequeño delay para asegurar que el estado se guarde
                 await new Promise(resolve => setTimeout(resolve, 100));
                 router.push('/');
                 return;
             }
-            
+
             setError(result.error || 'Credenciales inválidas');
-        } catch (err) {
+        } catch (_err) {
             setError('Error al iniciar sesión');
         } finally {
             setIsLoading(false);
@@ -104,13 +104,7 @@ export default function LoginPage() {
         setIsLoading(false);
     };
 
-    const handleGoogleLogin = async () => {
-        setError('');
-        const { error } = await signInWithGoogle();
-        if (error) {
-            setError(error.message);
-        }
-    };
+
 
     return (
         <div className="login-container">
@@ -126,7 +120,7 @@ export default function LoginPage() {
 
                 {/* Back button for register/forgot */}
                 {viewMode !== 'login' && (
-                    <button 
+                    <button
                         className="back-btn"
                         onClick={() => { setViewMode('login'); resetForm(); }}
                     >
