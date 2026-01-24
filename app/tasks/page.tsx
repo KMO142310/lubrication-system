@@ -88,12 +88,21 @@ export default function TasksPage() {
       const lubricants = dataService.getLubricants();
       const frequencies = dataService.getFrequencies();
 
+      console.log('🔍 DEBUG - Tareas raw:', rawTasks.length, rawTasks.map(t => t.lubricationPointId));
+      console.log('🔍 DEBUG - Puntos:', points.length);
+      console.log('🔍 DEBUG - Componentes:', components.length);
+      console.log('🔍 DEBUG - Máquinas:', machines.length);
+      
       const enriched: EnrichedTask[] = rawTasks.map(task => {
         const lp = points.find(p => p.id === task.lubricationPointId)!;
-        const comp = components.find(c => c.id === lp?.componentId)!;
-        const mach = machines.find(m => m.id === comp?.machineId)!;
-        const lub = lubricants.find(l => l.id === lp?.lubricantId)!;
-        const freq = frequencies.find(f => f.id === lp?.frequencyId)!;
+        const comp = lp ? components.find(c => c.id === lp.componentId) : null;
+        const mach = comp ? machines.find(m => m.id === comp.machineId) : null;
+        const lub = lp ? lubricants.find(l => l.id === lp.lubricantId) : null;
+        const freq = lp ? frequencies.find(f => f.id === lp.frequencyId) : null;
+
+        if (!lp || !mach) {
+          console.log('⚠️ Tarea sin datos:', task.lubricationPointId, 'lp:', !!lp, 'comp:', !!comp, 'mach:', !!mach);
+        }
 
         // Merge con datos del servidor (por punto de lubricación)
         const serverData = serverTasksByPoint[task.lubricationPointId];
@@ -106,14 +115,14 @@ export default function TasksPage() {
             photoUrl: serverData.photoUrl,
             completedAt: serverData.completedAt,
             lubricationPoint: lp, 
-            component: comp, 
-            machine: mach, 
-            lubricant: lub, 
-            frequency: freq 
+            component: comp!, 
+            machine: mach!, 
+            lubricant: lub!, 
+            frequency: freq! 
           };
         }
 
-        return { ...task, lubricationPoint: lp, component: comp, machine: mach, lubricant: lub, frequency: freq };
+        return { ...task, lubricationPoint: lp, component: comp!, machine: mach!, lubricant: lub!, frequency: freq! };
       }).filter(t => t.lubricationPoint && t.machine && t.lubricant);
 
       console.log('📊 Tareas enriquecidas:', enriched.filter(t => t.status === 'completado').length, 'completadas de', enriched.length);

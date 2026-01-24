@@ -57,7 +57,7 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v3.2.0-grimme-fix';
+const DATA_VERSION = 'v3.3.0-debug';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
