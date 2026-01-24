@@ -57,7 +57,7 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v3.0.0-sabado';
+const DATA_VERSION = 'v3.1.0-sabado-3tareas';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
@@ -116,9 +116,13 @@ function generateWeeklyWorkOrders(): void {
             const freq = frequencies.find((f: Frequency) => f.id === p.frequencyId);
             if (!freq) return false;
             
-            // SÁBADO: Tareas especiales (rotor, grimme, soportes LG)
+            // SÁBADO: 3 tareas específicas
             if (dayOfWeek === 6) {
-                const sabadoTasks = ['lp-3000-rotor', 'lp-grimme-ejes', 'lp-grimme-rodamientos', 'lp-8001-rodamientos'];
+                const sabadoTasks = [
+                    'lp-3000-rotor',      // Cambio aceite rotor descortezador LG
+                    'lp-grimme-ejes',     // Engrasar ejes Grimme
+                    'lp-8001-rodamientos' // Engrasar rodamientos y soportes LG
+                ];
                 return sabadoTasks.includes(p.id);
             }
             
