@@ -31,6 +31,7 @@ export const EQUIPOS: Machine[] = [
   // ========== LÍNEA GRUESA ==========
   { id: 'eq-8001', areaId: 'area-linea-gruesa', name: 'Descortezador Línea Gruesa (8001)', make: 'Industrial', createdAt: new Date().toISOString() },
   { id: 'eq-8006', areaId: 'area-linea-gruesa', name: 'Aserradero Línea Gruesa (8006)', make: 'LINCK/ESTERER', createdAt: new Date().toISOString() },
+  { id: 'eq-grimme', areaId: 'area-linea-gruesa', name: 'Grimme Línea Gruesa', make: 'GRIMME', createdAt: new Date().toISOString() },
   
   // ========== LÍNEA DELGADA ==========
   { id: 'eq-8002', areaId: 'area-linea-delgada', name: 'Descortezador Línea Delgada (8002)', make: 'Industrial', createdAt: new Date().toISOString() },
@@ -55,6 +56,10 @@ export const COMPONENTES: Component[] = [
   { id: 'c-8001-reductor', machineId: 'eq-8001', name: 'Reductor Descortezador LG', createdAt: new Date().toISOString() },
   { id: 'c-8001-motor', machineId: 'eq-8001', name: 'Motor Reductor Descortezador LG', createdAt: new Date().toISOString() },
   { id: 'c-8001-rodamientos', machineId: 'eq-8001', name: 'Rodamientos y Soportes LG', createdAt: new Date().toISOString() },
+  
+  // ========== GRIMME - Línea Gruesa ==========
+  { id: 'c-grimme-ejes', machineId: 'eq-grimme', name: 'Ejes Grimme LG', createdAt: new Date().toISOString() },
+  { id: 'c-grimme-rodamientos', machineId: 'eq-grimme', name: 'Rodamientos Grimme LG', createdAt: new Date().toISOString() },
   
   // ========== 8002 - Descortezador LD ==========
   { id: 'c-8002-cuchillos', machineId: 'eq-8002', name: 'Cuchillos Descortezador LD', createdAt: new Date().toISOString() },
@@ -188,6 +193,10 @@ export const PUNTOS_LUBRICACION: LubricationPoint[] = [
   { id: 'lp-8001-reductor', componentId: 'c-8001-reductor', code: '3000', description: 'Reductor Descortezador LG – Revisión nivel aceite', lubricantId: 'lub-aceite-150', method: 'verificar', quantity: 0, frequencyId: 'freq-mensual', createdAt: new Date().toISOString() },
   { id: 'lp-8001-motor', componentId: 'c-8001-motor', code: '3000', description: 'Motor Reductor Descortezador LG – Revisión general', lubricantId: 'lub-grasa-i-ii', method: 'verificar', quantity: 0, frequencyId: 'freq-mensual', createdAt: new Date().toISOString() },
   { id: 'lp-8001-rodamientos', componentId: 'c-8001-rodamientos', code: '3000', description: 'Rodamientos y Soportes LG – Engrasado completo', lubricantId: 'lub-grasa-i-ii', method: 'engrasado', quantity: 200, frequencyId: 'freq-mensual', createdAt: new Date().toISOString() },
+  
+  // ===== GRIMME - LÍNEA GRUESA (Tareas Sábado) =====
+  { id: 'lp-grimme-ejes', componentId: 'c-grimme-ejes', code: 'GRM-01', description: 'Ejes Grimme LG – Engrasado completo', lubricantId: 'lub-grasa-i-ii', method: 'engrasado', quantity: 150, frequencyId: 'freq-semanal', createdAt: new Date().toISOString() },
+  { id: 'lp-grimme-rodamientos', componentId: 'c-grimme-rodamientos', code: 'GRM-02', description: 'Rodamientos Grimme LG – Verificar y engrasar', lubricantId: 'lub-grasa-i-ii', method: 'engrasado', quantity: 100, frequencyId: 'freq-semanal', createdAt: new Date().toISOString() },
   
   // ===== 4.1.4 TAREAS MENSUALES - 8002 =====
   { id: 'lp-8002-reductor', componentId: 'c-8002-reductor', code: '2100', description: 'Reductor Descortezador LD – Revisión nivel aceite', lubricantId: 'lub-aceite-150', method: 'verificar', quantity: 0, frequencyId: 'freq-mensual', createdAt: new Date().toISOString() },

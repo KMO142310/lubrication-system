@@ -57,7 +57,7 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v2.2.0';
+const DATA_VERSION = 'v3.0.0-sabado';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
@@ -115,6 +115,12 @@ function generateWeeklyWorkOrders(): void {
         const dailyPoints = points.filter((p: LubricationPoint) => {
             const freq = frequencies.find((f: Frequency) => f.id === p.frequencyId);
             if (!freq) return false;
+            
+            // SÁBADO: Tareas especiales (rotor, grimme, soportes LG)
+            if (dayOfWeek === 6) {
+                const sabadoTasks = ['lp-3000-rotor', 'lp-grimme-ejes', 'lp-grimme-rodamientos', 'lp-8001-rodamientos'];
+                return sabadoTasks.includes(p.id);
+            }
             
             // Diario (cada 8 horas)
             if (freq.days === 1) return true;
