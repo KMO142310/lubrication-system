@@ -57,32 +57,17 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v3.3.0-debug';
+const DATA_VERSION = 'v4.0.0-grimme-force';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
 
-    const storedVersion = localStorage.getItem('aisa_data_version');
-    
-    // Si la versión cambió, resetear TODOS los datos (excepto auth)
-    if (storedVersion !== DATA_VERSION) {
-        // Limpiar TODOS los datos para forzar recarga de equipos y puntos
-        localStorage.removeItem(STORAGE_KEYS.plants);
-        localStorage.removeItem(STORAGE_KEYS.areas);
-        localStorage.removeItem(STORAGE_KEYS.machines);
-        localStorage.removeItem(STORAGE_KEYS.components);
-        localStorage.removeItem(STORAGE_KEYS.lubricants);
-        localStorage.removeItem(STORAGE_KEYS.frequencies);
-        localStorage.removeItem(STORAGE_KEYS.lubricationPoints);
-        localStorage.removeItem(STORAGE_KEYS.workOrders);
-        localStorage.removeItem(STORAGE_KEYS.tasks);
-        localStorage.removeItem(STORAGE_KEYS.anomalies);
-        localStorage.removeItem(STORAGE_KEYS.initialized);
-        localStorage.setItem('aisa_data_version', DATA_VERSION);
-    }
-
-    const initialized = localStorage.getItem(STORAGE_KEYS.initialized);
-    if (initialized) return;
+    // FORZAR RESET TOTAL - siempre limpiar y recargar datos frescos
+    Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+    });
+    localStorage.removeItem('aisa_data_version');
+    localStorage.removeItem('aisa_data_initialized_v12');
 
     // Usar datos reales del programa AISA
     saveToStorage(STORAGE_KEYS.plants, PLANTA_AISA);
