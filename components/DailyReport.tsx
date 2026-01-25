@@ -34,18 +34,13 @@ interface DailyReportProps {
   onDownload?: () => void;
 }
 
+import { getTaskStats, calculateCompliance } from '@/lib/analytics';
+
 export default function DailyReport({ date, technician, tasks, onClose, onDownload }: DailyReportProps) {
-  const completed = tasks.filter(t => t.status === 'completado');
-  const pending = tasks.filter(t => t.status === 'pendiente');
-  const skipped = tasks.filter(t => t.status === 'omitido');
+  const stats = getTaskStats(tasks);
+  const { completed, pending, skipped, totalLubricantUsed } = stats;
+  const compliance = calculateCompliance(stats.counts.completed, stats.counts.total);
 
-  const totalLubricant = completed.reduce((acc, t) => {
-    return acc + (t.quantityUsed || 0);
-  }, 0);
-
-  const compliance = tasks.length > 0
-    ? Math.round((completed.length / tasks.length) * 100)
-    : 0;
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-CL', {
@@ -336,7 +331,7 @@ export default function DailyReport({ date, technician, tasks, onClose, onDownlo
             Consumo total de lubricante:
           </span>
           <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--primary-700)' }}>
-            {totalLubricant.toLocaleString()} unidades
+            {totalLubricantUsed.toLocaleString()} unidades
           </span>
         </div>
 

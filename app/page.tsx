@@ -20,6 +20,7 @@ import {
 import { dataService } from '@/lib/data';
 import { useAuth } from '@/lib/auth';
 import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
+import { calculateCompliance } from '@/lib/analytics';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -93,9 +94,7 @@ export default function Dashboard() {
         return serverData && serverData.status === 'completado';
       }).length;
 
-      const compliance = todayTasks.length > 0
-        ? Math.round((todayCompleted / todayTasks.length) * 100)
-        : 0;
+      const compliance = calculateCompliance(todayCompleted, todayTasks.length);
 
       setStats({
         compliance,

@@ -9,23 +9,23 @@ export enum ErrorCode {
   AUTH_INVALID_CREDENTIALS = 'AUTH_001',
   AUTH_SESSION_EXPIRED = 'AUTH_002',
   AUTH_UNAUTHORIZED = 'AUTH_003',
-  
+
   // Data errors
   DATA_NOT_FOUND = 'DATA_001',
   DATA_VALIDATION_FAILED = 'DATA_002',
   DATA_DUPLICATE = 'DATA_003',
   DATA_INTEGRITY_ERROR = 'DATA_004',
-  
+
   // Network errors
   NETWORK_OFFLINE = 'NET_001',
   NETWORK_TIMEOUT = 'NET_002',
   NETWORK_SERVER_ERROR = 'NET_003',
-  
+
   // Business logic errors
   TASK_ALREADY_COMPLETED = 'BIZ_001',
   TASK_NOT_ASSIGNED = 'BIZ_002',
   INSUFFICIENT_STOCK = 'BIZ_003',
-  
+
   // System errors
   SYSTEM_UNKNOWN = 'SYS_001',
   SYSTEM_STORAGE_FULL = 'SYS_002',
@@ -36,20 +36,20 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.AUTH_INVALID_CREDENTIALS]: 'Credenciales inválidas. Verifique su email y contraseña.',
   [ErrorCode.AUTH_SESSION_EXPIRED]: 'Su sesión ha expirado. Por favor inicie sesión nuevamente.',
   [ErrorCode.AUTH_UNAUTHORIZED]: 'No tiene permisos para realizar esta acción.',
-  
+
   [ErrorCode.DATA_NOT_FOUND]: 'El recurso solicitado no fue encontrado.',
   [ErrorCode.DATA_VALIDATION_FAILED]: 'Los datos ingresados no son válidos.',
   [ErrorCode.DATA_DUPLICATE]: 'Ya existe un registro con estos datos.',
   [ErrorCode.DATA_INTEGRITY_ERROR]: 'Error de integridad de datos.',
-  
+
   [ErrorCode.NETWORK_OFFLINE]: 'Sin conexión a internet. Verifique su conexión.',
   [ErrorCode.NETWORK_TIMEOUT]: 'La solicitud tardó demasiado. Intente nuevamente.',
   [ErrorCode.NETWORK_SERVER_ERROR]: 'Error en el servidor. Intente más tarde.',
-  
+
   [ErrorCode.TASK_ALREADY_COMPLETED]: 'Esta tarea ya fue completada.',
   [ErrorCode.TASK_NOT_ASSIGNED]: 'Esta tarea no está asignada a usted.',
   [ErrorCode.INSUFFICIENT_STOCK]: 'Stock insuficiente de lubricante.',
-  
+
   [ErrorCode.SYSTEM_UNKNOWN]: 'Ha ocurrido un error inesperado.',
   [ErrorCode.SYSTEM_STORAGE_FULL]: 'Almacenamiento local lleno.',
 };
@@ -95,7 +95,7 @@ function logError(error: AppError | Error): void {
 
   try {
     const logs: ErrorLog[] = JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]');
-    
+
     const entry: ErrorLog = {
       timestamp: new Date().toISOString(),
       code: error instanceof AppError ? error.code : 'UNKNOWN',
@@ -105,7 +105,7 @@ function logError(error: AppError | Error): void {
     };
 
     logs.unshift(entry);
-    
+
     // Keep only last MAX_LOG_ENTRIES
     if (logs.length > MAX_LOG_ENTRIES) {
       logs.length = MAX_LOG_ENTRIES;
@@ -151,7 +151,7 @@ export async function withErrorHandling<T>(
     if (err instanceof AppError) {
       return { data: null, error: err };
     }
-    
+
     const error = new AppError(
       fallbackCode,
       err instanceof Error ? err.message : 'Unknown error',
@@ -160,6 +160,9 @@ export async function withErrorHandling<T>(
     return { data: null, error };
   }
 }
+
+// Alias for refactoring plan compliance
+export const safeExecute = withErrorHandling;
 
 // Helper for sync operations
 export function withErrorHandlingSync<T>(
@@ -173,7 +176,7 @@ export function withErrorHandlingSync<T>(
     if (err instanceof AppError) {
       return { data: null, error: err };
     }
-    
+
     const error = new AppError(
       fallbackCode,
       err instanceof Error ? err.message : 'Unknown error',
