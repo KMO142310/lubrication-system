@@ -7,23 +7,31 @@ import { Input } from '@/components/ui/input';
 import { Search, FileText, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock data for initial development - replace with Supabase fetch later
-const MOCK_PLANS = [
+// Real data using the extracted equipment and created SVG diagrams
+const PLANS_DATA = [
     {
         id: '1',
-        name: 'Diagrama Cinta Transportadora 1',
-        description: 'Esquema de puntos de lubricación de la cinta principal.',
-        imageUrl: '/reference-images/codificacion-equipos-foresa.jpeg',
+        name: 'Plano 8006 - Línea de Producción',
+        description: 'Diagrama vectorizado de la línea de producción con descortezador, scanner, pateadores y clasificador. 8 puntos de lubricación.',
+        imageUrl: '/diagrams/8006-layout.svg',
         status: 'Vectorizado',
-        updatedAt: '2026-01-24',
+        updatedAt: '2026-01-25',
     },
     {
         id: '2',
-        name: 'Motor Principal - Planta A',
-        description: 'Vista explotada del motor con indicación de rodamientos.',
-        imageUrl: null,
-        status: 'Pendiente',
-        updatedAt: '2026-01-23',
+        name: 'Layout Aserradero - Boceto Digitalizado',
+        description: 'Boceto original de WhatsApp digitalizado. Grúa Sh47, transportes h1/h2/h22, unidad S10 y 6 puntos de lubricación.',
+        imageUrl: '/diagrams/boceto-layout.svg',
+        status: 'Vectorizado',
+        updatedAt: '2026-01-25',
+    },
+    {
+        id: '3',
+        name: 'Codificación Equipos Foresa',
+        description: 'Tabla de codificación original. Áreas 8000-8003 (Cancha, Descortezadores, Extracción Corteza).',
+        imageUrl: '/reference-images/codificacion-equipos-foresa.jpeg',
+        status: 'Referencia',
+        updatedAt: '2026-01-24',
     },
 ];
 
@@ -60,7 +68,7 @@ export default function PlansPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {MOCK_PLANS.map((plan) => (
+                {PLANS_DATA.map((plan) => (
                     <Link key={plan.id} href={`/plans/${plan.id}`}>
                         <Card className="hover:shadow-lg transition-shadow cursor-pointer border-slate-200 dark:border-slate-800 h-full">
                             <div className="aspect-video w-full bg-slate-100 dark:bg-slate-900 relative overflow-hidden rounded-t-lg flex items-center justify-center">
@@ -76,8 +84,8 @@ export default function PlansPage() {
                                 <div className="absolute top-2 right-2">
                                     <span
                                         className={`px-2 py-1 text-xs font-semibold rounded-full ${plan.status === 'Vectorizado'
-                                                ? 'bg-green-100 text-green-700 border border-green-200'
-                                                : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                                            ? 'bg-green-100 text-green-700 border border-green-200'
+                                            : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
                                             }`}
                                     >
                                         {plan.status}
