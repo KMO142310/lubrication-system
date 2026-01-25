@@ -5,8 +5,8 @@
 // ============================================================
 
 import type { Plant, Area, Machine, Component, Lubricant, Frequency, LubricationPoint, WorkOrder, Task, Anomaly, User } from './types';
-import { PLANTA_AISA, CENTROS_GESTION, EQUIPOS, COMPONENTES, LUBRICANTES, FRECUENCIAS, PUNTOS_LUBRICACION } from './datos_completos_aisa';
-import { FORESA_EQUIPMENT_DATA, LUBRICATION_POINTS as NEW_POINTS } from './equipment-data';
+import { PLANTA_AISA, CENTROS_GESTION, EQUIPOS, COMPONENTES, LUBRICANTES, FRECUENCIAS, PUNTOS_LUBRICACION, getTareasPorFecha } from './datos_completos_aisa';
+// import { FORESA_EQUIPMENT_DATA, LUBRICATION_POINTS as NEW_POINTS } from './equipment-data';
 
 // ============================================================
 // STORAGE KEYS
@@ -58,94 +58,53 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v4.0.0-grimme-force';
+const DATA_VERSION = 'v4.0.1-real-data';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
 
-    // FORZAR RESET TOTAL - siempre limpiar y recargar datos frescos
+    // FORZAR RESET TOTAL - siempre limpiar y recargar datos frescos para asegurar consistencia
     Object.values(STORAGE_KEYS).forEach(key => {
         localStorage.removeItem(key);
     });
     localStorage.removeItem('aisa_data_version');
     localStorage.removeItem('aisa_data_initialized_v12');
 
-    // Usar datos reales del programa AISA
-    const existingPlants = PLANTA_AISA;
-    const existingAreas = CENTROS_GESTION;
-    const existingMachines = EQUIPOS;
-    // ... items existing
+    console.log('🔄 Inicializando con DATOS MAESTROS AISA 2026...');
 
-    // IMPORTAR DATOS EXTRACTADOS DE WHATSAPP (EQUIPMENT-DATA)
-    // IMPORTAR DATOS EXTRACTADOS DE WHATSAPP (EQUIPMENT-DATA)
-    // (Importado arriba)
+    // 1. Cargar Plantas
+    saveToStorage(STORAGE_KEYS.plants, PLANTA_AISA);
 
-    // Transformar y fusionar datos Foresa
+    // 2. Cargar Áreas
+    saveToStorage(STORAGE_KEYS.areas, CENTROS_GESTION);
 
-    // Transformar y fusionar datos Foresa
-    const newPlants: any[] = [];
-    const newAreas: any[] = [];
-    const newMachines: any[] = [];
-    const newComponents: any[] = [];
-    const newPoints: any[] = [];
+    // 3. Cargar Equipos (Maquinaria)
+    saveToStorage(STORAGE_KEYS.machines, EQUIPOS);
 
-    FORESA_EQUIPMENT_DATA.forEach((mc: any) => {
-        // Management Center -> Plant/Area Group
-        const plantId = `plant-${mc.code}`;
-        newPlants.push({ id: plantId, name: mc.name, createdAt: new Date().toISOString() });
+    // 4. Cargar Componentes
+    saveToStorage(STORAGE_KEYS.components, COMPONENTES);
 
-        mc.costCenters.forEach((cc: any) => {
-            const areaId = `area-${cc.code}`;
-            newAreas.push({ id: areaId, plantId: plantId, name: cc.name, code: cc.code, createdAt: new Date().toISOString() });
-
-            cc.equipment.forEach((eq: any) => {
-                const machineId = `mac-${eq.code}`;
-                newMachines.push({
-                    id: machineId,
-                    areaId: areaId,
-                    name: eq.name,
-                    code: eq.code,
-                    createdAt: new Date().toISOString()
-                });
-
-                // Crear componente default "General" o "Principal"
-                const compId = `comp-${eq.code}`;
-                newComponents.push({
-                    id: compId,
-                    machineId: machineId,
-                    name: 'Principal',
-                    createdAt: new Date().toISOString()
-                });
-
-                // Asignar puntos de lubricación
-                // (Simplificación: Asignamos puntos "estándar" a cada máquina nueva para demostración)
-                NEW_POINTS.slice(0, 3).forEach((p: any, idx: number) => {
-                    newPoints.push({
-                        id: `lp-${eq.code}-${idx}`,
-                        componentId: compId,
-                        code: `L${idx + 1}`,
-                        description: p.description,
-                        lubricantId: 'lub-1', // Default
-                        frequencyId: 'freq-sem', // Semanal
-                        method: 'manual',
-                        quantity: 10,
-                        createdAt: new Date().toISOString()
-                    });
-                });
-            });
-        });
-    });
-
-    saveToStorage(STORAGE_KEYS.plants, [...PLANTA_AISA, ...newPlants]);
-    saveToStorage(STORAGE_KEYS.areas, [...CENTROS_GESTION, ...newAreas]);
-    saveToStorage(STORAGE_KEYS.machines, [...EQUIPOS, ...newMachines]);
-    saveToStorage(STORAGE_KEYS.components, [...COMPONENTES, ...newComponents]);
+    // 5. Cargar Lubricantes
     saveToStorage(STORAGE_KEYS.lubricants, LUBRICANTES);
+
+    // 6. Cargar Frecuencias
     saveToStorage(STORAGE_KEYS.frequencies, FRECUENCIAS);
-    saveToStorage(STORAGE_KEYS.lubricationPoints, [...PUNTOS_LUBRICACION, ...newPoints]);
+
+    // 7. Cargar Puntos de Lubricación (Tareas Maestras)
+    saveToStorage(STORAGE_KEYS.lubricationPoints, PUNTOS_LUBRICACION);
+
+    // 8. Cargar Usuarios
     saveToStorage(STORAGE_KEYS.users, DEFAULT_USERS);
 
-    // Generate work orders for the current week - TODAS PENDIENTES
+    console.log(`✅ Datos cargados:
+    - ${PLANTA_AISA.length} Plantas
+    - ${CENTROS_GESTION.length} Áreas
+    - ${EQUIPOS.length} Equipos
+    - ${COMPONENTES.length} Componentes
+    - ${PUNTOS_LUBRICACION.length} Puntos de Lubricación (Tareas Maestras)
+    `);
+
+    // 9. Generar Órdenes de Trabajo para la semana actual based on REAL TASKS
     generateWeeklyWorkOrders();
 
     localStorage.setItem(STORAGE_KEYS.initialized, 'true');
@@ -186,26 +145,22 @@ function generateWeeklyWorkOrders(): void {
     today.setHours(0, 0, 0, 0);
     const dateStr = today.toISOString().split('T')[0];
 
-    // HOY: Crear orden de trabajo con las 3 tareas específicas
+    // HOY: Crear orden de trabajo con las tareas que tocan hoy según frecuencia
     const woId = `wo-${dateStr}`;
-    workOrders.push({
-        id: woId,
-        scheduledDate: dateStr,
-        status: 'pendiente',
-        technicianId: 'user-lub-1',
-        createdAt: new Date().toISOString(),
-    });
 
-    // 3 TAREAS DEL SÁBADO 24 ENERO 2026
-    const tareasHoy = [
-        'lp-3000-rotor',      // Cambio aceite rotor descortezador LG
-        'lp-grimme-ejes',     // Engrasar ejes Grimme
-        'lp-8001-rodamientos' // Engrasar rodamientos y soportes LG
-    ];
+    // Obtener tareas que corresponden hoy según día de semana/mes
+    const tareasParaHoy = getTareasPorFecha(today);
 
-    tareasHoy.forEach(pointId => {
-        const point = points.find((p: LubricationPoint) => p.id === pointId);
-        if (point) {
+    if (tareasParaHoy.length > 0) {
+        workOrders.push({
+            id: woId,
+            scheduledDate: dateStr,
+            status: 'pendiente',
+            technicianId: 'user-lub-1',
+            createdAt: new Date().toISOString(),
+        });
+
+        tareasParaHoy.forEach((point: LubricationPoint) => {
             tasks.push({
                 id: `task-${woId}-${point.id}`,
                 workOrderId: woId,
@@ -213,11 +168,11 @@ function generateWeeklyWorkOrders(): void {
                 status: 'pendiente',
                 createdAt: new Date().toISOString(),
             });
-            console.log('✅ Tarea creada:', point.id, point.description);
-        } else {
-            console.log('❌ Punto no encontrado:', pointId);
-        }
-    });
+            console.log('✅ Tarea programada para hoy:', point.code, point.description);
+        });
+    } else {
+        console.log('ℹ️ Para hoy no hay tareas según el plan de mantenimiento.');
+    }
 
     saveToStorage(STORAGE_KEYS.workOrders, workOrders);
     saveToStorage(STORAGE_KEYS.tasks, tasks);
