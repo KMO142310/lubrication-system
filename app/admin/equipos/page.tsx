@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { Machine, Area } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
 
 export default function EquiposPage() {
     const [machines, setMachines] = useState<Machine[]>([]);
@@ -61,47 +62,91 @@ export default function EquiposPage() {
         setShowModal(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.name || !formData.areaId) return;
 
-        if (editingMachine) {
-            // Actualizar máquina existente
-            const updated = {
-                ...editingMachine,
-                name: formData.name,
-                areaId: formData.areaId,
-                make: formData.make,
-            };
-            const allMachines = dataService.getMachines();
-            const index = allMachines.findIndex(m => m.id === editingMachine.id);
-            if (index !== -1) {
-                allMachines[index] = updated;
+        try {
+            if (editingMachine) {
+                // Actualizar máquina existente (Supabase)
+                const { error } = await supabase
+                    .from('machines')
+                    .update({
+                        name: formData.name,
+                        area_id: formData.areaId,
+                        make: formData.make
+                    })
+                    .eq('id', editingMachine.id);
+
+                if (error) throw error;
+
+                // Update Local Cache for immediate UI feedback
+                const updated = {
+                    ...editingMachine,
+                    name: formData.name,
+                    areaId: formData.areaId,
+                    make: formData.make,
+                };
+                const allMachines = dataService.getMachines();
+                const index = allMachines.findIndex(m => m.id === editingMachine.id);
+                if (index !== -1) {
+                    allMachines[index] = updated;
+                    localStorage.setItem('aisa_machines', JSON.stringify(allMachines));
+                }
+            } else {
+                // Crear nueva máquina (Supabase)
+                const { data, error } = await supabase
+                    .from('machines')
+                    .insert({
+                        name: formData.name,
+                        area_id: formData.areaId,
+                        make: formData.make,
+                        status: 'active'
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                // Add to Local Cache
+                const newMachine: Machine = {
+                    id: data.id,
+                    name: data.name,
+                    areaId: data.area_id,
+                    make: data.make,
+                    createdAt: data.created_at,
+                };
+                const allMachines = dataService.getMachines();
+                allMachines.push(newMachine);
                 localStorage.setItem('aisa_machines', JSON.stringify(allMachines));
             }
-        } else {
-            // Crear nueva máquina
-            const newMachine: Machine = {
-                id: `eq-${Date.now()}`,
-                name: formData.name,
-                areaId: formData.areaId,
-                make: formData.make,
-                createdAt: new Date().toISOString(),
-            };
-            const allMachines = dataService.getMachines();
-            allMachines.push(newMachine);
-            localStorage.setItem('aisa_machines', JSON.stringify(allMachines));
-        }
 
-        setShowModal(false);
-        loadData();
+            setShowModal(false);
+            loadData();
+            // Optional: Toast notification here
+        } catch (error) {
+            console.error('Error saving machine:', error);
+            alert('Error al guardar en el servidor. Verifique su conexión.');
+        }
     };
 
-    const handleDelete = (machine: Machine) => {
+    const handleDelete = async (machine: Machine) => {
         if (!confirm(`¿Eliminar "${machine.name}"? Esta acción no se puede deshacer.`)) return;
 
-        const allMachines = dataService.getMachines().filter(m => m.id !== machine.id);
-        localStorage.setItem('aisa_machines', JSON.stringify(allMachines));
-        loadData();
+        try {
+            const { error } = await supabase
+                .from('machines')
+                .delete()
+                .eq('id', machine.id);
+
+            if (error) throw error;
+
+            const allMachines = dataService.getMachines().filter(m => m.id !== machine.id);
+            localStorage.setItem('aisa_machines', JSON.stringify(allMachines));
+            loadData();
+        } catch (error) {
+            console.error('Error deleting machine:', error);
+            alert('Error al eliminar. Verifique su conexión.');
+        }
     };
 
     const getAreaName = (areaId: string) => {
