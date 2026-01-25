@@ -90,7 +90,7 @@ interface ErrorLog {
 const ERROR_LOG_KEY = 'aisa_error_log';
 const MAX_LOG_ENTRIES = 100;
 
-function logError(error: AppError | Error): void {
+export function logError(error: AppError | Error): void {
   if (typeof window === 'undefined') return;
 
   try {

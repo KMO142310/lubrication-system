@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import NavigationCard from '@/components/NavigationCard';
 import Link from 'next/link';
 import {
   Users,
@@ -669,73 +670,41 @@ export default function SupervisorDashboard() {
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <Link href="/historial" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      border: '1px solid rgba(59, 130, 246, 0.2)',
-                      textDecoration: 'none',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <FileText style={{ width: 18, height: 18, color: '#3b82f6' }} />
-                        <span style={{ fontWeight: 600, fontSize: '13px', color: '#ffffff' }}>Ver Historial</span>
-                      </div>
-                      <ChevronRight style={{ width: 16, height: 16, color: '#64748b' }} />
-                    </Link>
+                    <NavigationCard
+                      href="/historial"
+                      title="Ver Historial"
+                      subtitle=""
+                      icon={FileText}
+                      color="#3b82f6"
+                      bgColorRgba="rgba(59, 130, 246, 0.1)"
+                    />
 
-                    <Link href="/metrics" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(139, 92, 246, 0.1)',
-                      border: '1px solid rgba(139, 92, 246, 0.2)',
-                      textDecoration: 'none',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <BarChart3 style={{ width: 18, height: 18, color: '#8b5cf6' }} />
-                        <span style={{ fontWeight: 600, fontSize: '13px', color: '#ffffff' }}>Métricas Detalladas</span>
-                      </div>
-                      <ChevronRight style={{ width: 16, height: 16, color: '#64748b' }} />
-                    </Link>
+                    <NavigationCard
+                      href="/metrics"
+                      title="Métricas Detalladas"
+                      subtitle=""
+                      icon={BarChart3}
+                      color="#8b5cf6"
+                      bgColorRgba="rgba(139, 92, 246, 0.1)"
+                    />
 
-                    <Link href="/anomalies" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      textDecoration: 'none',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <AlertTriangle style={{ width: 18, height: 18, color: '#ef4444' }} />
-                        <span style={{ fontWeight: 600, fontSize: '13px', color: '#ffffff' }}>Revisar Anomalías</span>
-                      </div>
-                      <ChevronRight style={{ width: 16, height: 16, color: '#64748b' }} />
-                    </Link>
+                    <NavigationCard
+                      href="/anomalies"
+                      title="Revisar Anomalías"
+                      subtitle=""
+                      icon={AlertTriangle}
+                      color="#ef4444"
+                      bgColorRgba="rgba(239, 68, 68, 0.1)"
+                    />
 
-                    <Link href="/schedule" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(245, 158, 11, 0.1)',
-                      border: '1px solid rgba(245, 158, 11, 0.2)',
-                      textDecoration: 'none',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Calendar style={{ width: 18, height: 18, color: '#f59e0b' }} />
-                        <span style={{ fontWeight: 600, fontSize: '13px', color: '#ffffff' }}>Planificación</span>
-                      </div>
-                      <ChevronRight style={{ width: 16, height: 16, color: '#64748b' }} />
-                    </Link>
+                    <NavigationCard
+                      href="/schedule"
+                      title="Planificación"
+                      subtitle=""
+                      icon={Calendar}
+                      color="#f59e0b"
+                      bgColorRgba="rgba(245, 158, 11, 0.1)"
+                    />
                   </div>
                 </div>
               </div>

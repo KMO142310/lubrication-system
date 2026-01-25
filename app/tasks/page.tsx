@@ -6,6 +6,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import SignaturePad from '@/components/SignaturePad';
 import PhotoUpload from '@/components/PhotoUpload';
 import DailyReport from '@/components/DailyReport';
+import JobCard from '@/components/JobCard';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { saveCompletedTask, getCompletedTasksFromServer, isOnline } from '@/lib/sync';
+import { validateTaskExecution } from '@/lib/quality-control';
 import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
 import { Task, LubricationPoint, WorkOrder, Component, Machine, Lubricant, Frequency } from '@/lib/types';
@@ -169,6 +171,27 @@ export default function TasksPage() {
     if (!execution.photoAfter) {
       toast.error('Debe adjuntar la foto posterior a la lubricación');
       return;
+    }
+
+    // Quality Control Validation
+    const validation = validateTaskExecution(
+      execution.quantityUsed,
+      selectedTask.lubricationPoint.quantity,
+      selectedTask.lubricationPoint.unit || 'ml'
+    );
+
+    if (!validation.valid) {
+      toast.error(validation.error || 'Error de validación');
+      return; // Block execution
+    }
+
+    if (validation.warning) {
+      // En un caso real usaríamos un toast.custom con botones de Confirmar
+      // Por ahora, solo mostramos el warning y permitimos continuar si el usuario da click de nuevo?
+      // Simplificación: Bloqueamos warnings severos, o permitimos con confirmación nativa
+      if (!confirm(`ADVERTENCIA: ${validation.warning}\n¿Desea continuar de todas formas?`)) {
+        return;
+      }
     }
 
     const completedAt = new Date().toISOString();
@@ -381,43 +404,11 @@ export default function TasksPage() {
                 {/* Task Cards */}
                 <div className="task-grid">
                   {tasks.map(task => (
-                    <div
+                    <JobCard
                       key={task.id}
-                      className={`task-card ${task.status === 'completado' ? 'completed' : ''}`}
-                      onClick={() => task.status !== 'completado' && openTaskExecution(task)}
-                    >
-                      <div className="task-card-header">
-                        <span className="task-code">{task.lubricationPoint.code}</span>
-                        <div className={`task-status ${task.status}`}>
-                          {task.status === 'completado' ? (
-                            <><CheckCircle2 style={{ width: 14, height: 14 }} /> Completado</>
-                          ) : (
-                            <><Circle style={{ width: 14, height: 14 }} /> Pendiente</>
-                          )}
-                        </div>
-                      </div>
-
-                      <h3 className="task-machine">{task.machine.name}</h3>
-                      <p className="task-description">{task.lubricationPoint.description}</p>
-
-                      <div className="task-specs">
-                        <div className="spec">
-                          <Droplets style={{ width: 14, height: 14 }} />
-                          <span>{task.lubricant.name}</span>
-                        </div>
-                        <div className="spec">
-                          <Settings style={{ width: 14, height: 14 }} />
-                          <span>{task.lubricationPoint.method}</span>
-                        </div>
-                      </div>
-
-                      {task.status !== 'completado' && (
-                        <button className="task-action">
-                          <Play style={{ width: 16, height: 16 }} />
-                          Ejecutar Tarea
-                        </button>
-                      )}
-                    </div>
+                      task={task}
+                      onClick={openTaskExecution}
+                    />
                   ))}
                 </div>
               </>

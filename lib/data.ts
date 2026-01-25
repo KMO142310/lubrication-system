@@ -147,9 +147,21 @@ export const dataService = {
     getPlants: (): Plant[] => getFromStorage(STORAGE_KEYS.plants, PLANTA_AISA),
 
     // Areas
-    getAreas: (plantId?: string): Area[] => {
+    getAreas: (plantId?: string, userContext?: User): Area[] => {
         const areas = getFromStorage(STORAGE_KEYS.areas, CENTROS_GESTION);
-        return plantId ? areas.filter(a => a.plantId === plantId) : areas;
+        let filtered = areas;
+
+        // Filter by Plant
+        if (plantId) {
+            filtered = filtered.filter(a => a.plantId === plantId);
+        }
+
+        // Filter by Contractor (if user is external supervisor)
+        if (userContext?.role === 'supervisor_ext' && userContext.contractorId) {
+            filtered = filtered.filter(a => a.contractorId === userContext.contractorId);
+        }
+
+        return filtered;
     },
 
     // Machines

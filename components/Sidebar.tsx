@@ -81,7 +81,7 @@ export default function Sidebar() {
                             <div className="sidebar-logo-text">
                                 <span className="sidebar-logo-title">AISA Lubricación</span>
                                 <span className="sidebar-logo-subtitle">
-                                    {user?.role === 'desarrollador' ? 'Desarrollador' : user?.role === 'supervisor' ? 'Supervisor' : 'Lubricador'}
+                                    {user?.contractorId ? 'Contratista' : (user?.role === 'desarrollador' ? 'Desarrollador' : user?.role === 'supervisor' ? 'Supervisor' : 'Lubricador')}
                                 </span>
                             </div>
                         </div>

@@ -16,7 +16,10 @@ import {
   ClipboardCheck,
   BarChart3,
   Play,
+  Calendar,
+  LogOut
 } from 'lucide-react';
+import NavigationCard from '@/components/NavigationCard';
 import { dataService } from '@/lib/data';
 import { useAuth } from '@/lib/auth';
 import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
@@ -400,83 +403,32 @@ export default function Dashboard() {
                   </h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <Link href="/tasks" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(245, 158, 11, 0.1)',
-                      border: '1px solid rgba(245, 158, 11, 0.2)',
-                    }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <Play style={{ width: 18, height: 18, color: '#0f172a' }} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>Ejecutar Tareas</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>Lubricación diaria</div>
-                      </div>
-                    </Link>
+                    <NavigationCard
+                      href="/tasks"
+                      title="Ejecutar Tareas"
+                      subtitle="Lubricación diaria"
+                      icon={Play}
+                      color="#f59e0b"
+                      bgColorRgba="rgba(245, 158, 11, 0.1)"
+                    />
 
-                    <Link href="/anomalies" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                    }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        background: 'rgba(239, 68, 68, 0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <AlertTriangle style={{ width: 18, height: 18, color: '#ef4444' }} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>Reportar Anomalía</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>Problemas detectados</div>
-                      </div>
-                    </Link>
+                    <NavigationCard
+                      href="/anomalies"
+                      title="Reportar Anomalía"
+                      subtitle="Problemas detectados"
+                      icon={AlertTriangle}
+                      color="#ef4444"
+                      bgColorRgba="rgba(239, 68, 68, 0.1)"
+                    />
 
-                    <Link href="/metrics" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      border: '1px solid rgba(59, 130, 246, 0.2)',
-                    }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        background: 'rgba(59, 130, 246, 0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <BarChart3 style={{ width: 18, height: 18, color: '#3b82f6' }} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '14px', color: '#ffffff' }}>Ver Indicadores</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>KPIs y métricas</div>
-                      </div>
-                    </Link>
+                    <NavigationCard
+                      href="/metrics"
+                      title="Ver Métricas"
+                      subtitle="Dashboard de control"
+                      icon={BarChart3}
+                      color="#3b82f6"
+                      bgColorRgba="rgba(59, 130, 246, 0.1)"
+                    />
                   </div>
                 </div>
 
@@ -532,8 +484,8 @@ export default function Dashboard() {
               </aside>
             </div>
           </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+        </main >
+      </div >
+    </ProtectedRoute >
   );
 }

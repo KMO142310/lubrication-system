@@ -15,6 +15,9 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
+import { calculateSystemRisk, calculateOperatingCosts } from '@/lib/analytics';
+import RiskDashboard from '@/components/RiskDashboard';
+import CostDashboard from '@/components/CostDashboard';
 
 interface MetricData {
   title: string;
@@ -29,6 +32,18 @@ interface MetricData {
 export default function MetricsPage() {
   const [metrics, setMetrics] = useState<MetricData[]>([]);
   const [weeklyData, setWeeklyData] = useState<{ day: string; completed: number; total: number }[]>([]);
+  const [riskMetrics, setRiskMetrics] = useState({
+    level: 'LOW' as 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL',
+    score: 0,
+    criticalCount: 0,
+    totalTasks: 0
+  });
+  const [costData, setCostData] = useState({
+    monthlyTotal: '$0',
+    dailyAverage: '$0',
+    topSpenderMachine: '-',
+    lubricantUsageLiters: 0
+  });
 
   useEffect(() => {
     const workOrders = dataService.getWorkOrders();
@@ -127,6 +142,56 @@ export default function MetricsPage() {
       });
     }
     setWeeklyData(last7Days);
+
+    // Calculate Risk Metrics
+    const today = new Date();
+    const overdueTasks = allTasks.filter(t => {
+      const wo = workOrders.find(w => w.id === t.workOrderId);
+      if (!wo || t.status === 'completado' || t.status === 'omitido') return false;
+
+      const scheduledDate = new Date(wo.scheduledDate);
+      return scheduledDate < today;
+    }).map(t => {
+      const wo = workOrders.find(w => w.id === t.workOrderId);
+      return {
+        ...t,
+        workOrderDate: wo?.scheduledDate || '',
+        toleranceDays: 1, // Default, logic should fetch from frequency
+        machineCriticality: 'B' // Default, logic should fetch from machine
+      };
+    });
+
+    const calculatedRisk = calculateSystemRisk({ overdueTasks });
+    setRiskMetrics({
+      level: calculatedRisk.level as 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL',
+      score: calculatedRisk.score,
+      criticalCount: calculatedRisk.criticalCount,
+      totalTasks: overdueTasks.length
+    });
+
+    // Calculate Financial Metrics
+    const completedWithCost = completedTasks.map(t => {
+      const lp = lubricationPoints.find(p => p.id === t.lubricationPointId);
+      const lub = lp ? lubricants.find(l => l.id === lp.lubricantId) : null;
+      return {
+        ...t,
+        quantityUsed: t.quantityUsed || 0,
+        lubricantPrice: lub?.pricePerUnit || 15000, // Mock price if missing
+        lubricantCurrency: lub?.currency || 'CLP'
+      };
+    });
+
+    const costMetrics = calculateOperatingCosts({ completedTasks: completedWithCost });
+
+    // Simple logic for top spender machine
+    // In real app use aggregation
+    setCostData({
+      monthlyTotal: costMetrics.formatted,
+      dailyAverage: '$0', // To be implemented with date logic
+      topSpenderMachine: 'Sierra Principal', // Mock for visualization
+      lubricantUsageLiters: completedWithCost.reduce((acc, t) => acc + (t.quantityUsed || 0), 0) / 1000
+    });
+
   }, []);
 
   const maxTasks = Math.max(...weeklyData.map(d => d.total), 1);
@@ -176,6 +241,24 @@ export default function MetricsPage() {
                   </div>
                 </div>
               ))}
+
+              <div className="col-span-12">
+                <RiskDashboard
+                  riskLevel={riskMetrics.level}
+                  score={riskMetrics.score}
+                  criticalCount={riskMetrics.criticalCount}
+                  totalTasks={riskMetrics.totalTasks}
+                />
+              </div>
+
+              <div className="col-span-12">
+                <CostDashboard
+                  monthlyTotal={costData.monthlyTotal}
+                  dailyAverage={costData.dailyAverage}
+                  topSpenderMachine={costData.topSpenderMachine}
+                  lubricantUsageLiters={costData.lubricantUsageLiters}
+                />
+              </div>
 
               {/* Resumen del Programa */}
               <div className="col-span-12">

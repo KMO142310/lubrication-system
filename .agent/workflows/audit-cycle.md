@@ -40,3 +40,12 @@ Este workflow automatiza el proceso de QA de principio a fin.
 
 6. **Reporte Final**
    - Actualiza `todos.md` y `learnings.md` con lo realizado.
+
+7. **Despliegue (CI/CD)**
+   - Ejecuta `git push origin main`.
+   - El pipeline de GitHub Actions se encargará de:
+     - Lint & Type Check
+     - Unit Tests
+     - Build
+     - **Deploy to Vercel** (solo si todo lo anterior pasa exitosamente).
+

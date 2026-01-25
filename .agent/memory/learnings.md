@@ -1,11 +1,13 @@
-# Lecciones Aprendidas
+# Learnings & Patterns
 
-Bitácora de errores resueltos y conocimientos adquiridos para evitar problemas futuros.
+## Code Quality (Audit Cycle 1)
+- **Duplication Pattern**: Navigation cards (Visual Links) tend to be copied between dashboards. *Solution*: Extracted `NavigationCard` component.
+- **Dead Code**: Auth helper functions (`canAccess`) were replaced by `ProtectedRoute` logic but left behind. *Action*: Removed.
+- **False Positives**: `check-dead-code` flags Next.js page exports. Added to ignore list.
 
-<!-- Agregar nuevas lecciones abajo con formato: -->
-<!-- ## [FECHA] - Título del Problema/Hallazgo -->
+## React Patterns
+- Used `dangerouslySetInnerHTML` for styles in `ReportsPage` to handle keyframe animations in CSS-in-JS (Quick win vs CSS Modules).
+- `Skeleton` component improves perceived performance significantly over plain text loading states.
 
-## [2026-01-25] Dependencias Internas en Borrado de Código Muerto
-**Problema**: Al borrar `getPendingCorrections` (reportado como unused), rompió `getSecuritySummary` que lo usaba internamente.
-**Causa**: `ts-prune` reporta exportaciones no usadas *externamente*, pero pueden usarse dentro del mismo módulo.
-**Solución**: Verificar referencias internas con `grep` o búsquedas locales antes de confiar ciegamente en reportes de "unused export".
+## Database
+- Supabase Realtime requires explicit channel subscription cleanup in `useEffect` return.

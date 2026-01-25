@@ -348,10 +348,6 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
         doc.text(
-            `Generado el ${new Date().toLocaleString('es-CL')} | Sistema AISA Lubricación | Página ${i} de ${totalPages}`,
-            pageWidth / 2,
-            pageHeight - 6,
-            { align: 'center' }
         );
     }
 
@@ -409,6 +405,5 @@ export function generateAnomalyReportPDF(anomalies: {
         },
         margin: { left: 14, right: 14 },
     });
-
-    doc.save(`reporte-anomalias-${new Date().toISOString().split('T')[0]}.pdf`);
 }
+

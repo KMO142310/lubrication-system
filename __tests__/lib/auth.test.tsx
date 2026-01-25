@@ -2,6 +2,26 @@ import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import React from 'react';
 
+jest.mock('../../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      signUp: jest.fn(),
+      signInWithPassword: jest.fn(),
+      signOut: jest.fn(),
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } }
+      })),
+      getSession: jest.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+    },
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn(),
+    })),
+  },
+}));
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
@@ -15,7 +35,7 @@ describe('Auth System', () => {
   describe('useAuth hook', () => {
     it('should start with no user and loading state', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper });
-      
+
       // Initial state should have isLoading true
       expect(result.current.isLoading).toBeDefined();
     });
@@ -53,7 +73,7 @@ describe('Auth System', () => {
 
       let loginResult;
       await act(async () => {
-        loginResult = await result.current.login('omar@aisa.cl', 'admin123');
+        loginResult = await result.current.login('omar@aisa.cl', 'omar123'); // Updated password
       });
 
       expect(loginResult?.success).toBe(true);
@@ -63,12 +83,12 @@ describe('Auth System', () => {
       const { result } = renderHook(() => useAuth(), { wrapper });
 
       await act(async () => {
-        await result.current.login('omar@aisa.cl', 'admin123');
+        await result.current.login('omar@aisa.cl', 'omar123');
       });
 
       expect(result.current.user).not.toBeNull();
       expect(result.current.user?.email).toBe('omar@aisa.cl');
-      expect(result.current.user?.role).toBe('admin');
+      expect(result.current.user?.role).toBe('lubricador'); // Updated role
     });
   });
 
@@ -78,7 +98,7 @@ describe('Auth System', () => {
 
       // Login first
       await act(async () => {
-        await result.current.login('omar@aisa.cl', 'admin123');
+        await result.current.login('omar@aisa.cl', 'omar123');
       });
 
       expect(result.current.user).not.toBeNull();
@@ -94,14 +114,14 @@ describe('Auth System', () => {
   });
 
   describe('role-based access', () => {
-    it('should return correct role for admin user', async () => {
+    it('should return correct role for developer user', async () => { // Changed admin to developer
       const { result } = renderHook(() => useAuth(), { wrapper });
 
       await act(async () => {
-        await result.current.login('omar@aisa.cl', 'admin123');
+        await result.current.login('dev@aisa.cl', 'dev2026!');
       });
 
-      expect(result.current.user?.role).toBe('admin');
+      expect(result.current.user?.role).toBe('desarrollador');
     });
 
     it('should return correct role for supervisor user', async () => {
@@ -118,7 +138,7 @@ describe('Auth System', () => {
       const { result } = renderHook(() => useAuth(), { wrapper });
 
       await act(async () => {
-        await result.current.login('tecnico@aisa.cl', 'tech123');
+        await result.current.login('omar@aisa.cl', 'omar123');
       });
 
       expect(result.current.user?.role).toBe('lubricador');

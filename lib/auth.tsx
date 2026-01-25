@@ -5,13 +5,14 @@ import { supabase } from './supabase';
 import { User } from '@supabase/supabase-js';
 
 // Types
-export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador';
+export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador' | 'supervisor_ext';
 
 export interface AuthUser {
     id: string;
     email: string;
     name: string;
     role: UserRole;
+    contractorId?: string;
 }
 
 interface AuthContextType {
@@ -45,6 +46,15 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         name: 'Omar Alexis',
         role: 'lubricador',
     },
+    // Contratista Example
+    {
+        id: 'user-cont-1',
+        email: 'juan@lubricacion.cl',
+        password: 'tech123',
+        name: 'Juan Pérez (Contratista)',
+        role: 'supervisor_ext',
+        contractorId: 'cont-123',
+    }
 ];
 
 const AUTH_STORAGE_KEY = 'aisa_auth_session';
@@ -66,6 +76,7 @@ async function supabaseUserToAuthUser(supabaseUser: User): Promise<AuthUser> {
         email: supabaseUser.email || '',
         name: profile?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuario',
         role: profile?.role || 'lubricador',
+        contractorId: profile?.contractor_id,
     };
 }
 
@@ -165,14 +176,3 @@ export function useAuth() {
 }
 
 // Permission helpers
-export function canAccess(role: UserRole, requiredRoles: UserRole[]): boolean {
-    return requiredRoles.includes(role);
-}
-
-export function isDesarrollador(role: UserRole): boolean {
-    return role === 'desarrollador';
-}
-
-export function isDesarrolladorOrSupervisor(role: UserRole): boolean {
-    return role === 'desarrollador' || role === 'supervisor';
-}

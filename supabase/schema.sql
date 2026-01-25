@@ -28,6 +28,7 @@ CREATE TABLE areas (
     plant_id UUID NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     code TEXT,
+    contractor_id UUID REFERENCES contractors(id), -- Nullable: Internal areas have null
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -42,7 +43,9 @@ CREATE TABLE machines (
     model TEXT,
     serial_number TEXT,
     install_date DATE,
+    install_date DATE,
     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'maintenance')),
+    criticality TEXT DEFAULT 'B' CHECK (criticality IN ('A', 'B', 'C')), -- A=High Risk, B=Medium, C=Low
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -78,6 +81,7 @@ CREATE TABLE frequencies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     days INTEGER NOT NULL,
+    tardiness_tolerance INTEGER DEFAULT 1, -- Days allowed before becoming "Critical Risk"
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -179,6 +183,7 @@ CREATE TABLE audit_log (
 -- ============================================================
 
 CREATE INDEX idx_areas_plant ON areas(plant_id);
+CREATE INDEX idx_areas_contractor ON areas(contractor_id);
 CREATE INDEX idx_machines_area ON machines(area_id);
 CREATE INDEX idx_components_machine ON components(machine_id);
 CREATE INDEX idx_lubrication_points_component ON lubrication_points(component_id);
@@ -209,8 +214,20 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated users to read all data
 CREATE POLICY "Authenticated users can read" ON plants FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated users can read" ON areas FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated users can read" ON machines FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Authenticated users can read" ON areas FOR SELECT TO authenticated USING (
+    -- Internal staff sees everything
+    (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'supervisor', 'desarrollador', 'lubricador', 'tecnico')))
+    OR
+    -- External supervisors see only their assigned areas
+    (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'supervisor_ext' AND contractor_id = areas.contractor_id))
+);
+CREATE POLICY "Authenticated users can read" ON machines FOR SELECT TO authenticated USING (
+    -- Internal staff sees everything
+    (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'supervisor', 'desarrollador', 'lubricador', 'tecnico')))
+    OR
+    -- External supervisors see machines in their areas
+    (area_id IN (SELECT id FROM areas WHERE contractor_id = (SELECT contractor_id FROM profiles WHERE id = auth.uid())))
+);
 CREATE POLICY "Authenticated users can read" ON components FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Authenticated users can read" ON lubricants FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Authenticated users can read" ON frequencies FOR SELECT TO authenticated USING (true);

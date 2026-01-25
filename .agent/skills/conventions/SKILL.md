@@ -22,6 +22,9 @@ Sigue estas reglas estrictamente para mantener la consistencia del código.
 - Usar clases de utilidad de Tailwind.
 - Evitar estilos en línea (`style={{...}}`).
 - Para clases condicionales extensas, usar `cn()` (función `clsx` + `tailwind-merge`) si está disponible en `lib/utils`.
+- **UI Patterns**:
+  - **Navegación**: Usar `lib/navigation.ts` para configuración (data-driven) en lugar de hardcodear menús.
+  - **KPIs/Cards**: Usar `MetricCard` para tarjetas de métricas estandarizadas.
 
 ## Manejo de Estado
 - Preferir estado local (`useState`) para UI simple.

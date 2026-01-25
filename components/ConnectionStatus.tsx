@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw, Cloud, CloudOff } from 'lucide-react';
-import { getSyncStatus, onSyncStatusChange, syncDataService, SyncStatus } from '@/lib/sync';
+import { getSyncStatus, onSyncStatusChange, SyncStatus } from '@/lib/sync-store';
+import { syncDataService } from '@/lib/sync';
 
 export default function ConnectionStatus() {
   const [status, setStatus] = useState<SyncStatus>({ isOnline: true, lastSync: null, isSyncing: false });

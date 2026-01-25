@@ -14,6 +14,7 @@ export interface Area {
     id: string;
     plantId: string;
     name: string;           // e.g., "Sierra Principal", "Desbaste"
+    contractorId?: string;  // ID of external company managing this area
     createdAt: string;
 }
 
@@ -23,6 +24,7 @@ export interface Machine {
     name: string;           // e.g., "Sierra Huincha 1", "Transportador A"
     make?: string;
     model?: string;
+    criticality?: 'A' | 'B' | 'C'; // A=High, B=Medium, C=Low
     createdAt: string;
 }
 
@@ -55,6 +57,8 @@ export interface Lubricant {
     type: 'aceite' | 'grasa';
     viscosity?: string;
     nlgiGrade?: string;     // For greases
+    pricePerUnit?: number;
+    currency?: 'CLP' | 'USD';
     createdAt: string;
 }
 
@@ -62,6 +66,7 @@ export interface Frequency {
     id: string;
     name: string;           // e.g., "Diario", "Semanal", "Quincenal", "Mensual"
     days: number;           // Interval in days
+    tardinessTolerance?: number; // Days allowed delay before critical
     createdAt: string;
 }
 
@@ -117,7 +122,7 @@ export interface Anomaly {
 // USERS
 // ============================================================
 
-export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador';
+export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador' | 'supervisor_ext';
 
 export interface User {
     id: string;

@@ -6,52 +6,17 @@
 // ============================================================
 
 import { supabase } from './supabase';
-
-// ============================================================
-// SYNC STATUS MANAGEMENT
-// ============================================================
-
-export interface SyncStatus {
-  isOnline: boolean;
-  lastSync: Date | null;
-  isSyncing: boolean;
-}
-
-const currentSyncStatus: SyncStatus = {
-  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-  lastSync: null,
-  isSyncing: false,
-};
-
-const syncStatusListeners: ((status: SyncStatus) => void)[] = [];
-
-export function getSyncStatus(): SyncStatus {
-  return currentSyncStatus;
-}
-
-export function onSyncStatusChange(listener: (status: SyncStatus) => void): () => void {
-  syncStatusListeners.push(listener);
-  return () => {
-    const index = syncStatusListeners.indexOf(listener);
-    if (index > -1) syncStatusListeners.splice(index, 1);
-  };
-}
-
-function notifyListeners() {
-  syncStatusListeners.forEach(listener => listener(currentSyncStatus));
-}
+import { updateSyncStatus, notifyListeners } from './sync-store';
+export { getSyncStatus, onSyncStatusChange, type SyncStatus } from './sync-store';
 
 export const syncDataService = {
   getPendingCount(): number {
     return getPendingQueue().length;
   },
   async syncNow(): Promise<void> {
-    currentSyncStatus.isSyncing = true;
-    notifyListeners();
+    updateSyncStatus({ isSyncing: true });
     await syncPendingQueue();
-    currentSyncStatus.isSyncing = false;
-    currentSyncStatus.lastSync = new Date();
-    notifyListeners();
+    updateSyncStatus({ isSyncing: false, lastSync: new Date() });
   },
 };
 
