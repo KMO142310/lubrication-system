@@ -20,10 +20,15 @@ Este workflow automatiza el proceso de QA de principio a fin.
    - Ejecuta la skill `audit-verification`.
    - *Objetivo*: Filtrar falsos positivos y generar (o actualizar) el `correction_plan.md`.
 
-3. **Revisión Humana (PAUSA)**
+3. **Análisis de Complejidad y Preguntas de Diseño**
+   - Si `audit-verification` detecta problemas complejos (ej: duplicación > 5%), la skill generará un bloque de "Preguntas de Diseño" en el `correction_plan.md`.
+   - Incluirá sugerencias técnicas (ej: "Crear componente HOC 'TaskCard'").
+
+4. **Revisión Humana (PAUSA)**
    - **STOP**: Notifica al usuario.
-   - Pide aprobación explícita del `correction_plan.md` generado.
-   - *Nota*: No avanzar al paso 4 hasta recibir "Proceder" o "Aprobado".
+   - Presenta el `correction_plan.md` con las preguntas de diseño.
+   - Pide aprobación explícita O respuestas a las preguntas de diseño.
+   - *Nota*: No avanzar al paso 5 hasta resolver el diseño.
 
 4. **Corrección Automática**
    - Ejecuta la skill `auto-fix`.

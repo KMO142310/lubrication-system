@@ -24,7 +24,7 @@ export const SECURITY_CONFIG = {
     enabled: true,
     allowWeekends: false,
   },
-  
+
   // GPS
   gps: {
     enabled: true,
@@ -35,14 +35,14 @@ export const SECURITY_CONFIG = {
       radiusKm: 5, // Radio permitido en km
     },
   },
-  
+
   // Límites anti-abuso
   limits: {
     maxCorrectionsPerDay: 3,
     minTaskCompletionSeconds: 20, // Reducido para equipos lentos
     maxPhotosPerTask: 5,
   },
-  
+
   // Modo offline
   offline: {
     enabled: true,
@@ -112,7 +112,7 @@ const STORAGE_KEYS = {
 export async function generateImageHash(imageDataUrl: string): Promise<string> {
   // Extraer solo los datos base64 (sin el prefijo data:image/...)
   const base64Data = imageDataUrl.split(',')[1] || imageDataUrl;
-  
+
   // Crear hash usando SubtleCrypto (disponible en navegadores modernos)
   if (typeof window !== 'undefined' && window.crypto?.subtle) {
     const encoder = new TextEncoder();
@@ -121,7 +121,7 @@ export async function generateImageHash(imageDataUrl: string): Promise<string> {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  
+
   // Fallback: hash simple basado en longitud y muestreo
   let hash = 0;
   const sample = base64Data.slice(0, 1000) + base64Data.slice(-1000);
@@ -143,10 +143,10 @@ export async function generateImageHash(imageDataUrl: string): Promise<string> {
  */
 export function checkDuplicatePhoto(hash: string): PhotoMetadata | null {
   if (typeof window === 'undefined') return null;
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.photoHashes);
   const hashes: PhotoMetadata[] = stored ? JSON.parse(stored) : [];
-  
+
   return hashes.find(h => h.hash === hash) || null;
 }
 
@@ -155,25 +155,15 @@ export function checkDuplicatePhoto(hash: string): PhotoMetadata | null {
  */
 export function registerPhoto(metadata: PhotoMetadata): void {
   if (typeof window === 'undefined') return;
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.photoHashes);
   const hashes: PhotoMetadata[] = stored ? JSON.parse(stored) : [];
-  
+
   hashes.push(metadata);
   localStorage.setItem(STORAGE_KEYS.photoHashes, JSON.stringify(hashes));
 }
 
-/**
- * Obtiene todas las fotos registradas de un usuario
- */
-export function getUserPhotos(userId: string): PhotoMetadata[] {
-  if (typeof window === 'undefined') return [];
-  
-  const stored = localStorage.getItem(STORAGE_KEYS.photoHashes);
-  const hashes: PhotoMetadata[] = stored ? JSON.parse(stored) : [];
-  
-  return hashes.filter(h => h.userId === userId);
-}
+
 
 // ============================================================
 // SISTEMA DE AUDITORÍA
@@ -184,24 +174,24 @@ export function getUserPhotos(userId: string): PhotoMetadata[] {
  */
 export function logAuditAction(log: Omit<AuditLog, 'id' | 'timestamp'>): void {
   if (typeof window === 'undefined') return;
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.auditLogs);
   const logs: AuditLog[] = stored ? JSON.parse(stored) : [];
-  
+
   const newLog: AuditLog = {
     ...log,
     id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     timestamp: new Date().toISOString(),
     deviceInfo: getDeviceInfo(),
   };
-  
+
   logs.unshift(newLog); // Más reciente primero
-  
+
   // Mantener solo los últimos 1000 registros
   if (logs.length > 1000) {
     logs.length = 1000;
   }
-  
+
   localStorage.setItem(STORAGE_KEYS.auditLogs, JSON.stringify(logs));
 }
 
@@ -216,10 +206,10 @@ export function getAuditLogs(filters?: {
   toDate?: string;
 }): AuditLog[] {
   if (typeof window === 'undefined') return [];
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.auditLogs);
   let logs: AuditLog[] = stored ? JSON.parse(stored) : [];
-  
+
   if (filters) {
     if (filters.userId) {
       logs = logs.filter(l => l.userId === filters.userId);
@@ -237,7 +227,7 @@ export function getAuditLogs(filters?: {
       logs = logs.filter(l => l.timestamp <= filters.toDate!);
     }
   }
-  
+
   return logs;
 }
 
@@ -250,20 +240,20 @@ export function getAuditLogs(filters?: {
  */
 export function createFraudAlert(alert: Omit<FraudAlert, 'id' | 'timestamp' | 'resolved'>): void {
   if (typeof window === 'undefined') return;
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.fraudAlerts);
   const alerts: FraudAlert[] = stored ? JSON.parse(stored) : [];
-  
+
   const newAlert: FraudAlert = {
     ...alert,
     id: `fraud-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     timestamp: new Date().toISOString(),
     resolved: false,
   };
-  
+
   alerts.unshift(newAlert);
   localStorage.setItem(STORAGE_KEYS.fraudAlerts, JSON.stringify(alerts));
-  
+
   // También registrar en auditoría
   logAuditAction({
     userId: alert.userId,
@@ -280,10 +270,10 @@ export function createFraudAlert(alert: Omit<FraudAlert, 'id' | 'timestamp' | 'r
  */
 export function getFraudAlerts(includeResolved = false): FraudAlert[] {
   if (typeof window === 'undefined') return [];
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.fraudAlerts);
   const alerts: FraudAlert[] = stored ? JSON.parse(stored) : [];
-  
+
   return includeResolved ? alerts : alerts.filter(a => !a.resolved);
 }
 
@@ -292,10 +282,10 @@ export function getFraudAlerts(includeResolved = false): FraudAlert[] {
  */
 export function resolveFraudAlert(alertId: string, resolvedBy: string): void {
   if (typeof window === 'undefined') return;
-  
+
   const stored = localStorage.getItem(STORAGE_KEYS.fraudAlerts);
   const alerts: FraudAlert[] = stored ? JSON.parse(stored) : [];
-  
+
   const index = alerts.findIndex(a => a.id === alertId);
   if (index !== -1) {
     alerts[index].resolved = true;
@@ -323,109 +313,24 @@ export interface TaskCorrection {
   rejected?: boolean;
 }
 
-/**
- * Solicita corrección de una tarea
- * Requiere aprobación de supervisor para completarse
- */
-export function requestTaskCorrection(correction: Omit<TaskCorrection, 'id' | 'timestamp'>): TaskCorrection {
-  if (typeof window === 'undefined') throw new Error('Not in browser');
-  
-  const stored = localStorage.getItem(STORAGE_KEYS.taskCorrections);
-  const corrections: TaskCorrection[] = stored ? JSON.parse(stored) : [];
-  
-  const newCorrection: TaskCorrection = {
-    ...correction,
-    id: `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    timestamp: new Date().toISOString(),
-  };
-  
-  corrections.unshift(newCorrection);
-  localStorage.setItem(STORAGE_KEYS.taskCorrections, JSON.stringify(corrections));
-  
-  // Registrar en auditoría
-  logAuditAction({
-    userId: correction.userId,
-    userName: correction.userName,
-    action: 'task_corrected',
-    taskId: correction.taskId,
-    details: `Solicitud de corrección: ${correction.reason}. Estado: ${correction.previousStatus} → ${correction.newStatus}`,
-  });
-  
-  return newCorrection;
-}
 
-/**
- * Obtiene correcciones pendientes de aprobación
- */
-export function getPendingCorrections(): TaskCorrection[] {
-  if (typeof window === 'undefined') return [];
-  
-  const stored = localStorage.getItem(STORAGE_KEYS.taskCorrections);
-  const corrections: TaskCorrection[] = stored ? JSON.parse(stored) : [];
-  
-  return corrections.filter(c => !c.approvedBy && !c.rejected);
-}
-
-/**
- * Aprueba o rechaza una corrección
- */
-export function processCorrection(correctionId: string, approved: boolean, processedBy: string): void {
-  if (typeof window === 'undefined') return;
-  
-  const stored = localStorage.getItem(STORAGE_KEYS.taskCorrections);
-  const corrections: TaskCorrection[] = stored ? JSON.parse(stored) : [];
-  
-  const index = corrections.findIndex(c => c.id === correctionId);
-  if (index !== -1) {
-    if (approved) {
-      corrections[index].approvedBy = processedBy;
-      corrections[index].approvedAt = new Date().toISOString();
-    } else {
-      corrections[index].rejected = true;
-    }
-    localStorage.setItem(STORAGE_KEYS.taskCorrections, JSON.stringify(corrections));
-  }
-}
 
 // ============================================================
 // VALIDACIONES DE SEGURIDAD
 // ============================================================
 
-/**
- * Verifica si el tiempo entre tareas es sospechosamente rápido
- */
-export function checkSuspiciousCompletionTime(
-  userId: string,
-  taskId: string,
-  completionTimeSeconds: number
-): boolean {
-  // Si completa una tarea en menos de 30 segundos, es sospechoso
-  const MIN_COMPLETION_TIME = 30;
-  
-  if (completionTimeSeconds < MIN_COMPLETION_TIME) {
-    createFraudAlert({
-      type: 'rapid_completion',
-      severity: 'medium',
-      userId,
-      taskId,
-      description: `Tarea completada en ${completionTimeSeconds}s (mínimo esperado: ${MIN_COMPLETION_TIME}s)`,
-    });
-    return true;
-  }
-  
-  return false;
-}
+
 
 /**
  * Obtiene información del dispositivo
  */
 function getDeviceInfo(): string {
   if (typeof window === 'undefined') return 'server';
-  
+
   const ua = navigator.userAgent;
   const isMobile = /Mobile|Android|iPhone/i.test(ua);
   const browser = /Chrome|Firefox|Safari|Edge/i.exec(ua)?.[0] || 'Unknown';
-  
+
   return `${isMobile ? 'Mobile' : 'Desktop'} - ${browser}`;
 }
 
@@ -433,16 +338,7 @@ function getDeviceInfo(): string {
 // EXPORTAR DATOS PARA AUDITORÍA EXTERNA
 // ============================================================
 
-export function exportAuditData(): string {
-  const data = {
-    exportDate: new Date().toISOString(),
-    auditLogs: getAuditLogs(),
-    fraudAlerts: getFraudAlerts(true),
-    corrections: getPendingCorrections(),
-  };
-  
-  return JSON.stringify(data, null, 2);
-}
+
 
 // ============================================================
 // GPS Y GEOLOCALIZACIÓN (Opcional - funciona sin señal)
@@ -456,57 +352,7 @@ export interface LocationData {
   source: 'gps' | 'network' | 'unavailable';
 }
 
-/**
- * Intenta obtener ubicación GPS (no bloquea si falla)
- * Timeout corto para equipos lentos/mala señal
- */
-export async function getLocation(): Promise<LocationData | null> {
-  if (typeof window === 'undefined' || !navigator.geolocation) {
-    return null;
-  }
 
-  return new Promise((resolve) => {
-    const timeout = setTimeout(() => {
-      // Sin señal GPS - permitir continuar
-      resolve({
-        lat: 0,
-        lng: 0,
-        accuracy: -1,
-        timestamp: new Date().toISOString(),
-        source: 'unavailable',
-      });
-    }, 5000); // 5 segundos máximo para mala señal
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        clearTimeout(timeout);
-        resolve({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: new Date().toISOString(),
-          source: position.coords.accuracy < 100 ? 'gps' : 'network',
-        });
-      },
-      () => {
-        clearTimeout(timeout);
-        // Error de GPS - permitir continuar
-        resolve({
-          lat: 0,
-          lng: 0,
-          accuracy: -1,
-          timestamp: new Date().toISOString(),
-          source: 'unavailable',
-        });
-      },
-      {
-        enableHighAccuracy: false, // Más rápido para equipos lentos
-        timeout: 5000,
-        maximumAge: 60000, // Usar cache de 1 minuto
-      }
-    );
-  });
-}
 
 /**
  * Calcula distancia entre dos puntos (Haversine)
@@ -515,108 +361,21 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   const R = 6371; // Radio de la Tierra en km
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLng/2) * Math.sin(dLng/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
-/**
- * Verifica si la ubicación está dentro del radio de la planta
- * Si no hay GPS, registra pero NO bloquea
- */
-export function verifyLocation(location: LocationData | null, userId: string, taskId: string): {
-  valid: boolean;
-  warning: string | null;
-  distance?: number;
-} {
-  if (!SECURITY_CONFIG.gps.enabled) {
-    return { valid: true, warning: null };
-  }
 
-  // Sin GPS disponible - permitir pero registrar
-  if (!location || location.source === 'unavailable') {
-    logAuditAction({
-      userId,
-      userName: 'Sistema',
-      action: 'task_completed',
-      taskId,
-      details: 'GPS no disponible (mala señal o permiso denegado)',
-      metadata: { gpsStatus: 'unavailable' },
-    });
-    return { 
-      valid: true, 
-      warning: 'GPS no disponible. Tarea registrada sin ubicación.' 
-    };
-  }
-
-  const { lat, lng, radiusKm } = SECURITY_CONFIG.gps.plantCoordinates;
-  const distance = calculateDistance(location.lat, location.lng, lat, lng);
-
-  if (distance > radiusKm) {
-    // Fuera de rango - crear alerta pero NO bloquear (puede ser error de GPS)
-    createFraudAlert({
-      type: 'location_mismatch',
-      severity: distance > radiusKm * 2 ? 'high' : 'medium',
-      userId,
-      taskId,
-      description: `Ubicación a ${distance.toFixed(1)}km de la planta (máximo: ${radiusKm}km)`,
-    });
-    
-    return {
-      valid: true, // No bloquear, pero alertar
-      warning: `Ubicación detectada a ${distance.toFixed(1)}km de la planta`,
-      distance,
-    };
-  }
-
-  return { valid: true, warning: null, distance };
-}
 
 // ============================================================
 // HORARIO LABORAL
 // ============================================================
 
-/**
- * Verifica si está dentro del horario laboral
- * Funciona offline (usa hora del dispositivo)
- */
-export function checkWorkingHours(): {
-  allowed: boolean;
-  message: string;
-  currentHour: number;
-} {
-  if (!SECURITY_CONFIG.workingHours.enabled) {
-    return { allowed: true, message: '', currentHour: new Date().getHours() };
-  }
 
-  const now = new Date();
-  const currentHour = now.getHours();
-  const dayOfWeek = now.getDay(); // 0=Dom, 6=Sáb
-  const { start, end, allowWeekends } = SECURITY_CONFIG.workingHours;
-
-  // Verificar fin de semana
-  if (!allowWeekends && (dayOfWeek === 0 || dayOfWeek === 6)) {
-    return {
-      allowed: false,
-      message: 'No se permiten tareas en fin de semana',
-      currentHour,
-    };
-  }
-
-  // Verificar horario
-  if (currentHour < start || currentHour >= end) {
-    return {
-      allowed: false,
-      message: `Horario laboral: ${start}:00 - ${end}:00. Hora actual: ${currentHour}:${now.getMinutes().toString().padStart(2, '0')}`,
-      currentHour,
-    };
-  }
-
-  return { allowed: true, message: '', currentHour };
-}
 
 // ============================================================
 // RESUMEN PARA SUPERVISORES
@@ -640,7 +399,7 @@ export function getSecuritySummary(): SecuritySummary {
   const unresolvedAlerts = allAlerts.filter(a => !a.resolved);
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
-  
+
   // Contar por tipo
   const alertsByType: Record<string, number> = {};
   const alertsBySeverity: Record<string, number> = {};
