@@ -25,4 +25,54 @@ Este archivo almacena el conocimiento acumulado del agente para mejorar su asert
 
 ## 📊 Métricas de Asertividad
 - **Ciclo 1 (Deployment)**: 80% (Fallos iniciales en tests de Auth, corregidos rápidamente).
+- **Ciclo 2 (Schedule Gen)**: 95% (Éxito completo en generación de programación Feb 2026).
 - **Meta**: Mantener >90% en próximas iteraciones.
+
+---
+
+## 🔴 Anti-Patterns (Errores a Evitar)
+
+### [2026-01-25] Agent Termination Errors
+**Síntoma**: "Agent terminated due to error" aparece intermitentemente.
+**Causas identificadas**:
+1. **Unicode en LaTeX**: Usar emojis o símbolos Unicode (⚠, ✅) en archivos `.tex` causa errores de compilación que pueden romper el flujo.
+2. **Comandos muy largos**: Comandos que generan output extenso (>10000 caracteres) pueden causar timeouts.
+3. **Parallel tool calls excesivos**: Más de 5 tool calls paralelas pueden saturar el contexto.
+
+**Soluciones aplicadas**:
+- Reemplazar Unicode por texto ASCII en archivos LaTeX (`⚠` → `ATENCION:`)
+- Usar `| tail -N` o `| head -N` para limitar output de comandos
+- Secuenciar tool calls cuando hay dependencias de datos
+- Mantener `WaitMsBeforeAsync` bajo pero suficiente (3000-5000ms para scripts cortos)
+
+### [2026-01-25] LaTeX Compilation
+**Problema**: Caracteres Unicode no soportados en LaTeX básico.
+**Regla**: En archivos `.tex`, usar SOLO ASCII o paquetes como `inputenc` con `utf8` + fuentes apropiadas.
+
+### [2026-01-25] Long-Running Tasks
+**Problema**: Tasks muy largas sin checkpoints pueden perderse.
+**Regla**: 
+- Dividir scripts en fases que generen archivos intermedios
+- Guardar progreso a disco frecuentemente
+- Usar `task_boundary` para actualizar estado regularmente
+
+---
+
+## 🧠 Conocimiento de Dominio (AISA)
+
+### Turnos de Trabajo
+- **Turno A**: Lunes a Viernes (libra Sáb/Dom/Lun)
+- **Turno B**: Martes a Sábado (libra Dom)
+- **Rotación**: Semanal alternada (Semana 1=A, Semana 2=B, ...)
+
+### Frecuencias de Lubricación
+- **Diarias**: 20 tareas base
+- **Día por medio**: VQT, Bijur
+- **Semanales**: Perfiladora (Mié), FR-10 (Jue)
+- **Quincenales Sábado**: Lavado de rotores (solo Turno B)
+- **Mensuales**: Primera semana del mes
+
+### Grasa Especial
+- **ISOFLEX NBU 15**: EXCLUSIVA para árbol de sierra
+- **KP2K**: Perfiladora LINCK y puntos WD
+

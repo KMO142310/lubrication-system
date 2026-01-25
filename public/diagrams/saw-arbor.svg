@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 550 320" 
+     width="550" 
+     height="320">
+  <defs>
+    <style>
+      .title { font: bold 14px Arial, sans-serif; fill: #005293; }
+      .label { font: 10px Arial, sans-serif; fill: #808080; }
+      .point-label { font: bold 9px Arial, sans-serif; fill: #000; }
+      .frequency { font: 8px Arial, sans-serif; fill: #808080; }
+      .component { fill: #DCDCDC; stroke: #005293; stroke-width: 2; }
+      .grease-point { fill: #4682B430; stroke: #4682B4; stroke-width: 1.5; }
+      .grease-point-red { fill: #DC143C30; stroke: #DC143C; stroke-width: 1.5; }
+      .oil-point { fill: #FFBF0030; stroke: #FFBF00; stroke-width: 1.5; }
+      .shaft { fill: #80808020; stroke: #005293; stroke-width: 1; }
+      .bearing { fill: white; stroke: #005293; stroke-width: 2; }
+      .warning { fill: #B2222210; stroke: #B22222; stroke-width: 2; }
+      .warning-text { font: bold 11px Arial, sans-serif; fill: #B22222; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="275" y="25" class="title" text-anchor="middle">Figura 9.12: Detalle Arbol de Sierra (NBU 15)</text>
+  
+  <!-- Warning Box -->
+  <rect x="20" y="40" width="510" height="35" rx="5" class="warning"/>
+  <text x="275" y="63" class="warning-text" text-anchor="middle">ATENCION: USAR SOLAMENTE GRASA ISOFLEX NBU 15</text>
+  
+  <!-- Shaft Body -->
+  <rect x="60" y="120" width="380" height="80" rx="3" class="component"/>
+  
+  <!-- Interior Bearing A -->
+  <circle cx="120" cy="160" r="25" class="bearing"/>
+  <circle cx="120" cy="115" r="10" class="grease-point-red"/>
+  <text x="120" y="100" class="point-label" text-anchor="middle">A</text>
+  <text x="120" y="225" class="label" text-anchor="middle">Coj. Interior</text>
+  <text x="120" y="240" class="frequency" text-anchor="middle">Anual (10 gr)</text>
+  
+  <!-- Labyrinth Seal C -->
+  <line x1="250" y1="120" x2="250" y2="200" stroke="#808080" stroke-width="2" stroke-dasharray="5,3"/>
+  <line x1="290" y1="120" x2="290" y2="200" stroke="#808080" stroke-width="2" stroke-dasharray="5,3"/>
+  <circle cx="270" cy="110" r="10" class="grease-point-red"/>
+  <text x="270" y="95" class="point-label" text-anchor="middle">C</text>
+  <text x="270" y="225" class="label" text-anchor="middle">Empaq. Laberintica</text>
+  <text x="270" y="240" class="frequency" text-anchor="middle">Semestral (4 gr)</text>
+  
+  <!-- Exterior Bearing B -->
+  <circle cx="380" cy="160" r="25" class="bearing"/>
+  <circle cx="380" cy="115" r="10" class="grease-point-red"/>
+  <text x="380" y="100" class="point-label" text-anchor="middle">B</text>
+  <text x="380" y="225" class="label" text-anchor="middle">Coj. Exterior</text>
+  <text x="380" y="240" class="frequency" text-anchor="middle">Anual (8 gr)</text>
+  
+  <!-- Saw Blade -->
+  <circle cx="480" cy="160" r="40" stroke="#808080" stroke-width="3" fill="none"/>
+  <text x="480" y="225" class="label" text-anchor="middle">Sierra</text>
+  
+  <!-- Legend -->
+  <circle cx="50" cy="280" r="8" class="grease-point-red"/>
+  <text x="65" y="284" class="frequency">ISOFLEX NBU 15 - Mantener boquilla limpia</text>
+</svg>

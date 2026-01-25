@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 800 300" 
+     width="800" 
+     height="300">
+  <defs>
+    <style>
+      .title { font: bold 14px Arial, sans-serif; fill: #005293; }
+      .label { font: 10px Arial, sans-serif; fill: #808080; }
+      .point-label { font: bold 9px Arial, sans-serif; fill: #000; }
+      .frequency { font: 8px Arial, sans-serif; fill: #808080; }
+      .component { fill: #DCDCDC; stroke: #005293; stroke-width: 2; }
+      .grease-point { fill: #4682B430; stroke: #4682B4; stroke-width: 1.5; }
+      .grease-point-red { fill: #DC143C30; stroke: #DC143C; stroke-width: 1.5; }
+      .oil-point { fill: #FFBF0030; stroke: #FFBF00; stroke-width: 1.5; }
+      .shaft { fill: #80808020; stroke: #005293; stroke-width: 1; }
+      .bearing { fill: white; stroke: #005293; stroke-width: 2; }
+      .warning { fill: #B2222210; stroke: #B22222; stroke-width: 2; }
+      .warning-text { font: bold 11px Arial, sans-serif; fill: #B22222; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="30" class="title" text-anchor="middle">Resumen de Frecuencias de Lubricacion</text>
+  
+  <!-- Daily -->
+  <rect x="20" y="60" width="180" height="60" rx="5" fill="#228B2220" stroke="#228B22" stroke-width="2"/>
+  <text x="110" y="85" class="label" text-anchor="middle" style="font-weight:bold">DIARIAS</text>
+  <text x="110" y="105" class="frequency" text-anchor="middle">Centrales hid., Engrasado, Cadenas</text>
+  
+  <!-- Every Other Day -->
+  <rect x="220" y="60" width="180" height="60" rx="5" fill="#00529320" stroke="#005293" stroke-width="2"/>
+  <text x="310" y="85" class="label" text-anchor="middle" style="font-weight:bold">DIA POR MEDIO</text>
+  <text x="310" y="105" class="frequency" text-anchor="middle">VQT, FR-10 Bijur</text>
+  
+  <!-- Weekly -->
+  <rect x="420" y="60" width="180" height="60" rx="5" fill="#FF8C0020" stroke="#FF8C00" stroke-width="2"/>
+  <text x="510" y="85" class="label" text-anchor="middle" style="font-weight:bold">SEMANALES</text>
+  <text x="510" y="105" class="frequency" text-anchor="middle">Perfiladora (X), WD (J)</text>
+  
+  <!-- Biweekly -->
+  <rect x="620" y="60" width="180" height="60" rx="5" fill="#B2222220" stroke="#B22222" stroke-width="2"/>
+  <text x="710" y="85" class="label" text-anchor="middle" style="font-weight:bold">QUINCENALES</text>
+  <text x="710" y="105" class="frequency" text-anchor="middle">Harneros, GRIMME, Rotores</text>
+  
+  <!-- Monthly -->
+  <rect x="120" y="150" width="180" height="60" rx="5" fill="#80808020" stroke="#808080" stroke-width="2"/>
+  <text x="210" y="175" class="label" text-anchor="middle" style="font-weight:bold">MENSUALES</text>
+  <text x="210" y="195" class="frequency" text-anchor="middle">Reductores, Rodamientos</text>
+  
+  <!-- Quarterly/Annual -->
+  <rect x="320" y="150" width="180" height="60" rx="5" fill="#00000010" stroke="#000" stroke-width="2"/>
+  <text x="410" y="175" class="label" text-anchor="middle" style="font-weight:bold">TRIM./ANUAL</text>
+  <text x="410" y="195" class="frequency" text-anchor="middle">Arbol sierra (NBU 15)</text>
+  
+  <!-- Saturday Special -->
+  <rect x="520" y="150" width="180" height="60" rx="5" fill="#FFD70020" stroke="#FFD700" stroke-width="2"/>
+  <text x="610" y="175" class="label" text-anchor="middle" style="font-weight:bold">SABADO (Turno B)</text>
+  <text x="610" y="195" class="frequency" text-anchor="middle">Lavado Rotores Desc.</text>
+  
+  <!-- Footer -->
+  <text x="400" y="260" class="frequency" text-anchor="middle">Sistema de Lubricacion AISA 2026 - Planta Chile</text>
+</svg>

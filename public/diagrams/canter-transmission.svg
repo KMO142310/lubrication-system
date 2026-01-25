@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 600 300" 
+     width="600" 
+     height="300">
+  <defs>
+    <style>
+      .title { font: bold 14px Arial, sans-serif; fill: #005293; }
+      .label { font: 10px Arial, sans-serif; fill: #808080; }
+      .point-label { font: bold 9px Arial, sans-serif; fill: #000; }
+      .frequency { font: 8px Arial, sans-serif; fill: #808080; }
+      .component { fill: #DCDCDC; stroke: #005293; stroke-width: 2; }
+      .grease-point { fill: #4682B430; stroke: #4682B4; stroke-width: 1.5; }
+      .grease-point-red { fill: #DC143C30; stroke: #DC143C; stroke-width: 1.5; }
+      .oil-point { fill: #FFBF0030; stroke: #FFBF00; stroke-width: 1.5; }
+      .shaft { fill: #80808020; stroke: #005293; stroke-width: 1; }
+      .bearing { fill: white; stroke: #005293; stroke-width: 2; }
+      .warning { fill: #B2222210; stroke: #B22222; stroke-width: 2; }
+      .warning-text { font: bold 11px Arial, sans-serif; fill: #B22222; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="300" y="25" class="title" text-anchor="middle">Figura 9.1: Transmision Canter 240-12E</text>
+  
+  <!-- Motor -->
+  <rect x="30" y="100" width="80" height="60" rx="5" class="component"/>
+  <text x="70" y="135" class="label" text-anchor="middle">MOTOR</text>
+  
+  <!-- Pulley A -->
+  <circle cx="160" cy="130" r="25" class="bearing"/>
+  <circle cx="160" cy="105" r="8" class="grease-point"/>
+  <text x="160" y="80" class="point-label" text-anchor="middle">A</text>
+  <text x="160" y="175" class="label" text-anchor="middle">Polea Trans.</text>
+  
+  <!-- Splined Shaft B -->
+  <rect x="190" y="125" width="120" height="10" class="shaft"/>
+  <circle cx="250" cy="110" r="8" class="grease-point"/>
+  <text x="250" y="95" class="point-label" text-anchor="middle">B</text>
+  <text x="250" y="155" class="label" text-anchor="middle">Eje Estriado</text>
+  
+  <!-- Toothed Pulley C -->
+  <circle cx="360" cy="130" r="30" class="bearing"/>
+  <circle cx="360" cy="95" r="8" class="grease-point"/>
+  <text x="360" y="80" class="point-label" text-anchor="middle">C</text>
+  <text x="360" y="180" class="label" text-anchor="middle">Polea Dentada</text>
+  
+  <!-- Tensioner D -->
+  <circle cx="450" cy="80" r="20" class="bearing"/>
+  <circle cx="430" cy="80" r="8" class="grease-point"/>
+  <text x="470" y="85" class="point-label">D</text>
+  <text x="450" y="55" class="label" text-anchor="middle">P. Tensora</text>
+  
+  <!-- Belt -->
+  <path d="M 185 115 L 330 115 L 435 70" stroke="#808080" stroke-width="4" fill="none"/>
+  <path d="M 185 145 L 330 145" stroke="#808080" stroke-width="4" fill="none"/>
+  
+  <!-- Output -->
+  <rect x="400" y="125" width="100" height="10" class="shaft"/>
+  <text x="450" y="155" class="label" text-anchor="middle">Salida a Canter</text>
+  
+  <!-- Legend -->
+  <circle cx="50" cy="250" r="8" class="grease-point"/>
+  <text x="65" y="254" class="frequency">Punto de engrase (Grasa I y II)</text>
+  <text x="30" y="280" class="frequency">A, C, D: Mensual | B: Cada 8 hrs</text>
+</svg>

@@ -1,0 +1,148 @@
+%% AISA Lubrication Diagrams - Demo Document
+%% Compile with: pdflatex aisa-diagrams-demo.tex
+%%
+%% This document demonstrates all TikZ diagrams for the AISA manual
+
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, shapes.geometric, shapes.misc, positioning, calc, patterns, decorations.pathmorphing, decorations.markings}
+
+% Import AISA diagram library
+\input{aisa-diagrams.tex}
+
+\title{\textbf{Manual Técnico de Lubricación AISA 2026}\\[0.5em]
+\large Anexo: Diagramas Técnicos Regenerados}
+\author{Sistema de Lubricación AISA\\Generado por Antigravity Agent}
+\date{25 de Enero de 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+Este documento contiene los diagramas técnicos regenerados para el Manual Técnico de Lubricación Industrial de AISA 2026. Todos los diagramas han sido creados en formato vectorial TikZ, garantizando:
+
+\begin{itemize}
+    \item \textbf{Escalabilidad}: Los diagramas pueden ampliarse sin pérdida de calidad.
+    \item \textbf{Consistencia}: Paleta de colores corporativa AISA aplicada uniformemente.
+    \item \textbf{Editabilidad}: Código fuente disponible para futuras modificaciones.
+    \item \textbf{Precisión}: Puntos de lubricación claramente identificados con frecuencias.
+\end{itemize}
+
+\section{Diagramas de Línea Delgada}
+
+\subsection{Figura 9.1: Transmisión Canter 240-12E}
+
+\begin{center}
+\diagramCanterTransmission
+\end{center}
+
+\textbf{Leyenda de Puntos:}
+\begin{itemize}
+    \item \textbf{A} -- Rodamiento polea transmisión: 100 gr, Mensual
+    \item \textbf{B} -- Eje estriado: 120 gr, Cada 8 horas
+    \item \textbf{C} -- Rodamiento polea dentada: 200 gr, Mensual
+    \item \textbf{D} -- Rodamiento polea tensora: 80 gr, Mensual
+\end{itemize}
+
+\newpage
+\subsection{Figura 9.2: Rodillos de Avance Verticales}
+
+\begin{center}
+\diagramVerticalFeedRollers
+\end{center}
+
+\textbf{Leyenda de Puntos:}
+\begin{itemize}
+    \item \textbf{A} -- Reductores de avance: 1.9 L Aceite 150, Cada 7000 hrs
+    \item \textbf{B} -- Cardan de transmisión: 80 gr Grasa I/II, Cada 40 hrs
+    \item \textbf{C} -- Eje de rodillos: 80 gr Grasa I/II, Cada 40 hrs
+    \item \textbf{D} -- Rodamientos rodillos verticales: 80 gr Grasa I/II, Cada 40 hrs
+\end{itemize}
+
+\newpage
+\subsection{Figura 9.3: Vista Superior Perfiladora LINCK}
+
+\begin{center}
+\diagramPerfiladoraTopView
+\end{center}
+
+\textbf{Puntos de Lubricación Cada 8 Horas:}
+\begin{itemize}
+    \item N°10 -- Guías lineales BV y ejes HV: 10 gr KP2K × 16 puntos
+\end{itemize}
+
+\textbf{Puntos de Lubricación Cada 160 Horas:}
+\begin{itemize}
+    \item N°11 -- Husillo de bolas: 5 gr KP2K × 6 puntos
+\end{itemize}
+
+\newpage
+\section{Diagramas WD (Wuster Decker)}
+
+\subsection{Figuras 9.5/9.6: Rodillos de Avance H84}
+
+\begin{center}
+\diagramWDFeedRollers
+\end{center}
+
+\textbf{Frecuencias de Lubricación (Grasa KP2K):}
+\begin{itemize}
+    \item N°1, 2 -- Cojinetes rodillos avance: Cada 3 meses
+    \item N°3 -- Cojinete husillo regulación guía madera: Cada 6 meses
+\end{itemize}
+
+\newpage
+\subsection{Figura 9.7: Cilindros y Estribos FR10}
+
+\begin{center}
+\diagramFRCylinders
+\end{center}
+
+\textbf{Frecuencias de Lubricación (Grasa KP2K):}
+\begin{itemize}
+    \item N°1, 3, 5, 7 -- Cojinetes cilindros: Cada 3 meses
+    \item N°2, 6, 8 -- Cojinetes estribos: Cada 6 meses
+    \item N°4 -- Cojinete bisagra puerta: Anual
+\end{itemize}
+
+\newpage
+\subsection{Figura 9.12: Detalle Árbol de Sierra}
+
+\begin{center}
+\diagramSawArbor
+\end{center}
+
+\textbf{IMPORTANTE: Usar exclusivamente grasa ISOFLEX NBU 15}
+
+\begin{itemize}
+    \item \textbf{A} -- Cojinete interior: 10 gr, Anual
+    \item \textbf{B} -- Cojinete exterior: 8 gr, Anual
+    \item \textbf{C} -- Empaquetadura laberíntica: 4 gr, Semestral
+\end{itemize}
+
+\newpage
+\section{Resumen de Frecuencias}
+
+\begin{center}
+\diagramFrequencySummary
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+\textbf{--- FIN DEL DOCUMENTO ---}
+\end{center}
+
+\end{document}
