@@ -94,39 +94,16 @@ export default function LoginContainer() {
                     </div>
                 )}
 
-                {/* BIOMETRIC / MODERN VIEW (Default) */}
+                {/* MODERN AUTH - GMAIL PRIMARY */}
                 {viewMode === 'biometric' && (
                     <div className="modern-auth-stack">
-                        <div className="form-group">
-                            <label className="form-label">Identifícate</label>
-                            <input
-                                type="email"
-                                className="form-input"
-                                placeholder="tu@email.com"
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Passkey Button */}
+                        {/* Google Button - PRINCIPAL */}
                         <button
-                            className="btn btn-primary login-btn"
-                            onClick={handleBiometricLogin}
-                            disabled={isLoading}
-                        >
-                            <Fingerprint style={{ width: 20, height: 20, marginRight: 8 }} />
-                            Ingresar con Huella / FaceID
-                        </button>
-
-                        <div className="divider"><span>O CONTINÚA CON</span></div>
-
-                        {/* Google Button */}
-                        <button
-                            className="btn-google"
+                            className="btn-google-primary"
                             onClick={handleGoogleLogin}
                             disabled={isLoading}
                         >
-                            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" width="20" height="20">
+                            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" width="24" height="24">
                                 <path
                                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                                     fill="#4285F4"
@@ -144,36 +121,40 @@ export default function LoginContainer() {
                                     fill="#EA4335"
                                 />
                             </svg>
-                            Google Workspace
+                            Continuar con Google
                         </button>
 
-                        <button
-                            className="text-btn"
-                            onClick={() => setViewMode('login')}
-                        >
-                            Usar contraseña tradicional
-                        </button>
+                        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', margin: '16px 0' }}>
+                            Solo cuentas @aisa.cl autorizadas
+                        </p>
 
-                        {/* DEV BYPASS */}
-                        {process.env.NODE_ENV === 'development' && (
+                        {/* TEST MODE BYPASS - Visible with ?test=1 in URL */}
+                        {(typeof window !== 'undefined' && window.location.search.includes('test=1')) && (
                             <button
                                 className="btn btn-secondary"
-                                style={{ marginTop: '1rem', background: '#f5f5f5', color: '#333' }}
+                                style={{ marginTop: '1rem', background: '#059669', color: 'white', fontWeight: 600 }}
                                 onClick={() => {
-                                    // Bypassing auth for dev speed
-                                    document.cookie = "aisa-auth=true; path=/";
-                                    localStorage.setItem('aisa-user', JSON.stringify({
-                                        id: 'dev-bypass',
-                                        name: 'Dev User (Bypass)',
-                                        email: 'dev@aisa.cl',
-                                        role: 'desarrollador'
+                                    localStorage.setItem('aisa_auth_session', JSON.stringify({
+                                        id: 'test-user-1',
+                                        name: 'Omar Alexis (Modo Test)',
+                                        email: 'omar@aisa.cl',
+                                        role: 'lubricador'
                                     }));
                                     router.push('/');
                                 }}
                             >
-                                ⚡ DEV FAST LOGIN
+                                ✅ ENTRAR MODO TEST (Omar)
                             </button>
                         )}
+
+                        {/* Link to legacy login if needed */}
+                        <button
+                            className="text-btn"
+                            onClick={() => setViewMode('login')}
+                            style={{ marginTop: 24 }}
+                        >
+                            ¿Problemas? Usar contraseña
+                        </button>
                     </div>
                 )}
 
@@ -319,6 +300,26 @@ export default function LoginContainer() {
                     justify-content: center;
                     cursor: pointer;
                     margin-bottom: var(--space-4);
+                }
+                .btn-google-primary {
+                    width: 100%;
+                    padding: var(--space-4);
+                    border: 2px solid #4285F4;
+                    border-radius: var(--radius-lg);
+                    background: white;
+                    color: #1a1a1a;
+                    font-weight: 600;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .btn-google-primary:hover {
+                    background: #4285F4;
+                    color: white;
                 }
                 .text-btn {
                     width: 100%;
