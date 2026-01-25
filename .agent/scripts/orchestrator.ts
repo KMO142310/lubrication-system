@@ -123,6 +123,4 @@ async function runCycle() {
 }
 
 // Ejecutar
-if (require.main === module) {
-    runCycle();
-}
+runCycle().catch(console.error);

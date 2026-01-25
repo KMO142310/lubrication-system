@@ -6,6 +6,7 @@
 
 import type { Plant, Area, Machine, Component, Lubricant, Frequency, LubricationPoint, WorkOrder, Task, Anomaly, User } from './types';
 import { PLANTA_AISA, CENTROS_GESTION, EQUIPOS, COMPONENTES, LUBRICANTES, FRECUENCIAS, PUNTOS_LUBRICACION } from './datos_completos_aisa';
+import { FORESA_EQUIPMENT_DATA, LUBRICATION_POINTS as NEW_POINTS } from './equipment-data';
 
 // ============================================================
 // STORAGE KEYS
@@ -70,16 +71,80 @@ function initializeData(): void {
     localStorage.removeItem('aisa_data_initialized_v12');
 
     // Usar datos reales del programa AISA
-    saveToStorage(STORAGE_KEYS.plants, PLANTA_AISA);
-    saveToStorage(STORAGE_KEYS.areas, CENTROS_GESTION);
-    saveToStorage(STORAGE_KEYS.machines, EQUIPOS);
-    saveToStorage(STORAGE_KEYS.components, COMPONENTES);
+    const existingPlants = PLANTA_AISA;
+    const existingAreas = CENTROS_GESTION;
+    const existingMachines = EQUIPOS;
+    // ... items existing
+
+    // IMPORTAR DATOS EXTRACTADOS DE WHATSAPP (EQUIPMENT-DATA)
+    // IMPORTAR DATOS EXTRACTADOS DE WHATSAPP (EQUIPMENT-DATA)
+    // (Importado arriba)
+
+    // Transformar y fusionar datos Foresa
+
+    // Transformar y fusionar datos Foresa
+    const newPlants: any[] = [];
+    const newAreas: any[] = [];
+    const newMachines: any[] = [];
+    const newComponents: any[] = [];
+    const newPoints: any[] = [];
+
+    FORESA_EQUIPMENT_DATA.forEach((mc: any) => {
+        // Management Center -> Plant/Area Group
+        const plantId = `plant-${mc.code}`;
+        newPlants.push({ id: plantId, name: mc.name, createdAt: new Date().toISOString() });
+
+        mc.costCenters.forEach((cc: any) => {
+            const areaId = `area-${cc.code}`;
+            newAreas.push({ id: areaId, plantId: plantId, name: cc.name, code: cc.code, createdAt: new Date().toISOString() });
+
+            cc.equipment.forEach((eq: any) => {
+                const machineId = `mac-${eq.code}`;
+                newMachines.push({
+                    id: machineId,
+                    areaId: areaId,
+                    name: eq.name,
+                    code: eq.code,
+                    createdAt: new Date().toISOString()
+                });
+
+                // Crear componente default "General" o "Principal"
+                const compId = `comp-${eq.code}`;
+                newComponents.push({
+                    id: compId,
+                    machineId: machineId,
+                    name: 'Principal',
+                    createdAt: new Date().toISOString()
+                });
+
+                // Asignar puntos de lubricación
+                // (Simplificación: Asignamos puntos "estándar" a cada máquina nueva para demostración)
+                NEW_POINTS.slice(0, 3).forEach((p: any, idx: number) => {
+                    newPoints.push({
+                        id: `lp-${eq.code}-${idx}`,
+                        componentId: compId,
+                        code: `L${idx + 1}`,
+                        description: p.description,
+                        lubricantId: 'lub-1', // Default
+                        frequencyId: 'freq-sem', // Semanal
+                        method: 'manual',
+                        quantity: 10,
+                        createdAt: new Date().toISOString()
+                    });
+                });
+            });
+        });
+    });
+
+    saveToStorage(STORAGE_KEYS.plants, [...PLANTA_AISA, ...newPlants]);
+    saveToStorage(STORAGE_KEYS.areas, [...CENTROS_GESTION, ...newAreas]);
+    saveToStorage(STORAGE_KEYS.machines, [...EQUIPOS, ...newMachines]);
+    saveToStorage(STORAGE_KEYS.components, [...COMPONENTES, ...newComponents]);
     saveToStorage(STORAGE_KEYS.lubricants, LUBRICANTES);
     saveToStorage(STORAGE_KEYS.frequencies, FRECUENCIAS);
-    saveToStorage(STORAGE_KEYS.lubricationPoints, PUNTOS_LUBRICACION);
+    saveToStorage(STORAGE_KEYS.lubricationPoints, [...PUNTOS_LUBRICACION, ...newPoints]);
     saveToStorage(STORAGE_KEYS.users, DEFAULT_USERS);
 
-    // Generate work orders for the current week - TODAS PENDIENTES
     // Generate work orders for the current week - TODAS PENDIENTES
     generateWeeklyWorkOrders();
 

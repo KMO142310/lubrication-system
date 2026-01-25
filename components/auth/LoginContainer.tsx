@@ -153,6 +153,27 @@ export default function LoginContainer() {
                         >
                             Usar contraseña tradicional
                         </button>
+
+                        {/* DEV BYPASS */}
+                        {process.env.NODE_ENV === 'development' && (
+                            <button
+                                className="btn btn-secondary"
+                                style={{ marginTop: '1rem', background: '#f5f5f5', color: '#333' }}
+                                onClick={() => {
+                                    // Bypassing auth for dev speed
+                                    document.cookie = "aisa-auth=true; path=/";
+                                    localStorage.setItem('aisa-user', JSON.stringify({
+                                        id: 'dev-bypass',
+                                        name: 'Dev User (Bypass)',
+                                        email: 'dev@aisa.cl',
+                                        role: 'desarrollador'
+                                    }));
+                                    router.push('/');
+                                }}
+                            >
+                                ⚡ DEV FAST LOGIN
+                            </button>
+                        )}
                     </div>
                 )}
 
