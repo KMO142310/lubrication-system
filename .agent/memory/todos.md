@@ -2,10 +2,13 @@
 
 Tareas técnicas, refactorizaciones o ideas que surgen pero no son el foco inmediato.
 
-## Alta Prioridad
-- [ ] Ejecutar Plan de Refactorización (`refactor_plan.md`): Centralizar lógica de reportes en `lib/analytics.ts`.
-- [ ] Refactorizar `Sidebar.tsx` extrayendo configuración a `lib/navigation-config.ts`.
-- [ ] Validar funcionamiento de skills en próxima sesión.
+### Workflow Audit Cycle
+- [x] Snapshot Pre-Audit (Git)
+- [x] Ejecutar Scripts de Auditoría
+- [/] Verificar Hallazgos (En progreso)
+- [ ] Revisión Humana (Pendiente)
+- [ ] Auto-Fix (Pendiente)
+- [ ] Snapshot Post-Fix (Git)
 
 ## Media Prioridad
 - [ ] Revisar reporte de duplicados restantes.

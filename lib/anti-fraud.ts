@@ -16,40 +16,7 @@
 // CONFIGURACIÓN DE SEGURIDAD
 // ============================================================
 
-export const SECURITY_CONFIG = {
-  // Horario laboral permitido (24h format)
-  workingHours: {
-    start: 7,  // 7:00 AM
-    end: 19,   // 7:00 PM
-    enabled: true,
-    allowWeekends: false,
-  },
 
-  // GPS
-  gps: {
-    enabled: true,
-    required: false, // No bloquear si no hay GPS (mala señal)
-    plantCoordinates: {
-      lat: -33.4489, // Coordenadas de la planta (ejemplo Santiago)
-      lng: -70.6693,
-      radiusKm: 5, // Radio permitido en km
-    },
-  },
-
-  // Límites anti-abuso
-  limits: {
-    maxCorrectionsPerDay: 3,
-    minTaskCompletionSeconds: 20, // Reducido para equipos lentos
-    maxPhotosPerTask: 5,
-  },
-
-  // Modo offline
-  offline: {
-    enabled: true,
-    syncOnReconnect: true,
-    maxOfflineHours: 24, // Máximo tiempo offline antes de alerta
-  },
-};
 
 // ============================================================
 // TIPOS
@@ -299,19 +266,7 @@ export function resolveFraudAlert(alertId: string, resolvedBy: string): void {
 // CORRECCIÓN DE TAREAS
 // ============================================================
 
-export interface TaskCorrection {
-  id: string;
-  taskId: string;
-  timestamp: string;
-  userId: string;
-  userName: string;
-  previousStatus: string;
-  newStatus: string;
-  reason: string;
-  approvedBy?: string;
-  approvedAt?: string;
-  rejected?: boolean;
-}
+
 
 
 

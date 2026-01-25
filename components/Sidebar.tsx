@@ -5,23 +5,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useState, useEffect, useRef } from 'react';
 import {
-    LayoutDashboard,
-    ClipboardCheck,
-    Calendar,
-    BarChart3,
-    Database,
-    AlertTriangle,
-    Package,
-    Settings,
-    LogOut,
-    ChevronRight,
-    Users,
     Menu,
     X,
-    History,
-    Shield,
+    ChevronRight,
+    LogOut,
 } from 'lucide-react';
 import ConnectionStatus from './ConnectionStatus';
+import { NAVIGATION_CONFIG } from '@/lib/navigation';
 
 export default function Sidebar() {
     const pathname = usePathname();
@@ -43,34 +33,7 @@ export default function Sidebar() {
         router.push('/login');
     };
 
-    // Navigation items vary by role
-    const navigation = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['lubricador'] },
-        { name: 'Panel Supervisor', href: '/supervisor', icon: Shield, roles: ['desarrollador', 'supervisor'] },
-        { name: 'Mis Tareas', href: '/tasks', icon: ClipboardCheck, roles: ['lubricador'] },
-        { name: 'Tareas Equipo', href: '/tasks', icon: ClipboardCheck, roles: ['desarrollador', 'supervisor'] },
-        { name: 'Historial', href: '/historial', icon: History, roles: ['desarrollador', 'supervisor', 'lubricador'] },
-        { name: 'Planificación', href: '/schedule', icon: Calendar, roles: ['desarrollador', 'supervisor'] },
-        { name: 'Indicadores', href: '/metrics', icon: BarChart3, roles: ['desarrollador', 'supervisor'] },
-    ];
 
-    const management = [
-        { name: 'Activos', href: '/assets', icon: Database, roles: ['desarrollador', 'supervisor'] },
-        { name: 'Anomalías', href: '/anomalies', icon: AlertTriangle, roles: ['desarrollador', 'supervisor', 'lubricador'] },
-        { name: 'Inventario', href: '/inventory', icon: Package, roles: ['desarrollador', 'supervisor'] },
-        { name: 'Contratistas', href: '/contractors', icon: Users, roles: ['desarrollador'] },
-    ];
-
-    const system = [
-        { name: 'Alertas', href: '/admin/alertas', icon: Shield, roles: ['desarrollador', 'supervisor'] },
-        { name: 'Usuarios', href: '/users', icon: Users, roles: ['desarrollador'] },
-        { name: 'Configuración', href: '/admin', icon: Settings, roles: ['desarrollador'] },
-    ];
-
-    const filterByRole = (items: typeof navigation) => {
-        if (!user) return [];
-        return items.filter(item => item.roles.includes(user.role));
-    };
 
     return (
         <>
@@ -131,66 +94,34 @@ export default function Sidebar() {
                 </div>
 
                 <nav className="sidebar-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">Principal</span>
-                        {filterByRole(navigation).map((item) => {
-                            const isActive = pathname === item.href;
-                            return (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    className={`nav-item ${isActive ? 'active' : ''}`}
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    <item.icon className="nav-icon" />
-                                    <span>{item.name}</span>
-                                    {isActive && <ChevronRight className="nav-chevron" style={{ marginLeft: 'auto', width: 16, height: 16 }} />}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                    {NAVIGATION_CONFIG.map((section) => {
+                        const visibleItems = section.items.filter(item =>
+                            user && item.roles.includes(user.role)
+                        );
 
-                    {filterByRole(management).length > 0 && (
-                        <div className="nav-section">
-                            <span className="nav-section-title">Gestión</span>
-                            {filterByRole(management).map((item) => {
-                                const isActive = pathname.startsWith(item.href);
-                                return (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={`nav-item ${isActive ? 'active' : ''}`}
-                                        onClick={() => setIsOpen(false)}
-                                    >
-                                        <item.icon className="nav-icon" />
-                                        <span>{item.name}</span>
-                                        {isActive && <ChevronRight className="nav-chevron" style={{ marginLeft: 'auto', width: 16, height: 16 }} />}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    )}
+                        if (visibleItems.length === 0) return null;
 
-                    {filterByRole(system).length > 0 && (
-                        <div className="nav-section">
-                            <span className="nav-section-title">Sistema</span>
-                            {filterByRole(system).map((item) => {
-                                const isActive = pathname === item.href;
-                                return (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={`nav-item ${isActive ? 'active' : ''}`}
-                                        onClick={() => setIsOpen(false)}
-                                    >
-                                        <item.icon className="nav-icon" />
-                                        <span>{item.name}</span>
-                                        {isActive && <ChevronRight className="nav-chevron" style={{ marginLeft: 'auto', width: 16, height: 16 }} />}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    )}
+                        return (
+                            <div key={section.group} className="nav-section">
+                                <span className="nav-section-title">{section.group}</span>
+                                {visibleItems.map((item) => {
+                                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                                    return (
+                                        <Link
+                                            key={item.label}
+                                            href={item.href}
+                                            className={`nav-item ${isActive ? 'active' : ''}`}
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            <item.icon className="nav-icon" />
+                                            <span>{item.label}</span>
+                                            {isActive && <ChevronRight className="nav-chevron" style={{ marginLeft: 'auto', width: 16, height: 16 }} />}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
                 </nav>
 
                 <div className="sidebar-footer">
