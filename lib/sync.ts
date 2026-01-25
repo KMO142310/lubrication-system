@@ -280,18 +280,114 @@ export function downloadPhotoToGallery(dataUrl: string, fileName: string): void 
 }
 
 // ============================================================
-// SUBIR FOTO A STORAGE (stub - por ahora retorna dataUrl)
+// SUBIR FOTO A STORAGE (REAL IMPLEMENTATION)
 // ============================================================
 
 export async function uploadPhotoToStorage(
   dataUrl: string,
-  _taskId: string,
-  _photoType: string
+  taskId: string,
+  photoType: 'before' | 'after' | string
 ): Promise<string | null> {
-  // Por ahora, simplemente retornar la dataUrl
-  // En producción, esto subiría a Supabase Storage
-  console.log('📷 Foto procesada localmente');
-  return dataUrl;
+
+  try {
+    // 1. Comprimir imagen antes de subir (max 1MB, 1200px)
+    const compressedDataUrl = await compressImage(dataUrl, 1200, 0.8);
+
+    // 2. Convertir base64 a blob
+    const base64Data = compressedDataUrl.split(',')[1];
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+    // 3. Generar path estructurado: photos/{date}/{taskId}_{type}_{timestamp}.jpg
+    const today = new Date().toISOString().split('T')[0];
+    const timestamp = Date.now();
+    const fileName = `${taskId}_${photoType}_${timestamp}.jpg`;
+    const filePath = `photos/${today}/${fileName}`;
+
+    console.log('📤 Subiendo foto a Storage:', filePath);
+
+    // 4. Subir con reintentos
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const { data, error } = await supabase.storage
+          .from('photos')
+          .upload(filePath, blob, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          });
+
+        if (!error && data) {
+          // Obtener URL pública
+          const { data: urlData } = supabase.storage
+            .from('photos')
+            .getPublicUrl(data.path);
+
+          console.log('✅ Foto subida exitosamente:', urlData.publicUrl);
+          return urlData.publicUrl;
+        }
+
+        console.error(`❌ Intento ${attempt}/3 falló:`, error?.message);
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+        }
+      } catch (e) {
+        console.error(`❌ Error de red intento ${attempt}:`, e);
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+        }
+      }
+    }
+
+    // Si falló después de reintentos, retornar null (se usará dataUrl como fallback)
+    console.log('⚠️ Subida falló, usando foto local como fallback');
+    return null;
+
+  } catch (e) {
+    console.error('❌ Error procesando foto:', e);
+    return null;
+  }
+}
+
+// ============================================================
+// COMPRIMIR IMAGEN
+// ============================================================
+
+async function compressImage(
+  dataUrl: string,
+  maxWidth: number = 1200,
+  quality: number = 0.8
+): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let { width, height } = img;
+
+      // Redimensionar si excede maxWidth
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      } else {
+        resolve(dataUrl); // Fallback si no hay contexto
+      }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
 }
 
 // ============================================================

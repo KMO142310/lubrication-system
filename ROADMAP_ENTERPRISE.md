@@ -41,10 +41,18 @@
 | Offline Queue | ✅ | localStorage + auto-retry |
 | useSyncStatus Hook | ✅ | `hooks/useSyncStatus.ts` |
 
+### ✅ FASE 1.2 COMPLETADA (25-01-2026):
+| Componente | Estado | Notas |
+|------------|--------|-------|
+| Login Supabase | ✅ | Email/password + fallback local |
+| Register | ✅ | `/register` page |
+| Forgot Password | ✅ | `/forgot-password` page |
+| Google OAuth | ✅ | Prepared (need Supabase config) |
+| Passkey (WebAuthn) | ✅ | MVP implementation |
+
 ### ❌ Lo que FALTA para Enterprise:
 | Componente | Prioridad | Complejidad | Fase |
 |------------|-----------|-------------|------|
-| Autenticación Supabase | CRÍTICA | Media | 1.2 |
 | Upload fotos Storage | ALTA | Baja | 1.3 |
 | Multi-tenancy | CRÍTICA | Alta | 2.1 |
 | Onboarding de empresas | ALTA | Alta | 2.2 |
@@ -52,6 +60,7 @@
 | Notificaciones push | MEDIA | Media | 3.1 |
 | Reportes avanzados | MEDIA | Media | 3.2 |
 | API pública | BAJA | Alta | 3.3 |
+
 
 
 ---
