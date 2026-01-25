@@ -30,13 +30,20 @@
 ### 🔄 EN PROGRESO:
 | Componente | Estado | Notas |
 |------------|--------|-------|
-| UI Industrial (Fase 0) | 🔄 70% | Sidebar done, Dashboard pending |
+| UI Industrial (Fase 0) | 🔄 80% | Sidebar done, Dashboard pending |
 | Componentes HMI | 🔄 50% | LEDs, Gauges, Tags creados |
+
+### ✅ FASE 1.1 COMPLETADA (25-01-2026):
+| Componente | Estado | Notas |
+|------------|--------|-------|
+| Supabase Sync | ✅ | `lib/supabase-sync.ts` |
+| Realtime Subscriptions | ✅ | postgres_changes |
+| Offline Queue | ✅ | localStorage + auto-retry |
+| useSyncStatus Hook | ✅ | `hooks/useSyncStatus.ts` |
 
 ### ❌ Lo que FALTA para Enterprise:
 | Componente | Prioridad | Complejidad | Fase |
 |------------|-----------|-------------|------|
-| Sincronización tiempo real | CRÍTICA | Media | 1.1 |
 | Autenticación Supabase | CRÍTICA | Media | 1.2 |
 | Upload fotos Storage | ALTA | Baja | 1.3 |
 | Multi-tenancy | CRÍTICA | Alta | 2.1 |
