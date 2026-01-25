@@ -50,10 +50,17 @@
 | Google OAuth | ✅ | Prepared (need Supabase config) |
 | Passkey (WebAuthn) | ✅ | MVP implementation |
 
+### ✅ FASE 1.3 COMPLETADA (25-01-2026):
+| Componente | Estado | Notas |
+|------------|--------|-------|
+| Upload to Supabase Storage | ✅ | `lib/sync.ts` |
+| Image Compression | ✅ | Max 1200px, 80% quality |
+| Retry with Backoff | ✅ | 3 attempts |
+| Structured Paths | ✅ | `photos/{date}/{taskId}_{type}_{ts}.jpg` |
+
 ### ❌ Lo que FALTA para Enterprise:
 | Componente | Prioridad | Complejidad | Fase |
 |------------|-----------|-------------|------|
-| Upload fotos Storage | ALTA | Baja | 1.3 |
 | Multi-tenancy | CRÍTICA | Alta | 2.1 |
 | Onboarding de empresas | ALTA | Alta | 2.2 |
 | Dashboard por rol | ALTA | Media | 2.3 |
