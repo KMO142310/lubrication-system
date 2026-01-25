@@ -2,160 +2,136 @@
 description: Ciclo autónomo completo que ejecuta análisis, mejora y verificación del proyecto AISA de forma continua.
 ---
 
-# Autonomous Cycle Workflow
+# Autonomous Cycle - AISA Lubricación
 
-Este workflow orquesta todo el ciclo de mejora continua del sistema AISA de lubricación.
+Workflow maestro que orquesta todos los procesos autónomos del proyecto.
 
-## Trigger
-Ejecutar cuando se detecten:
-- Nuevas imágenes de WhatsApp en `/BITACORA/`
-- Cambios en requisitos del usuario
-- Errores en build/tests
-- Solicitud explícita: `/autonomous-cycle`
+## Modo de Ejecución
+- **Trigger**: Usuario envía `/autonomous-cycle`
+- **Modo**: Continuo hasta completar objetivo o alcanzar límite
 
-## Fases del Ciclo
+## Ciclo Principal
 
-### 1. SCAN - Escanear Entorno
-```bash
-// turbo
-# Buscar nuevas imágenes para procesar
-find /Users/omaralexis/Desktop/BITACORA -name "WhatsApp*.jpeg" -newer .last-scan
-
-# Verificar estado del proyecto
-npm run build
-npm run test
+```
+┌─────────────────────────────────────────────────────┐
+│                  AUTONOMOUS CYCLE                    │
+├─────────────────────────────────────────────────────┤
+│  1. ANALYZE    → Leer ROADMAP, determinar estado    │
+│  2. PLAN       → Seleccionar siguiente tarea        │
+│  3. EXECUTE    → Implementar cambio                 │
+│  4. VERIFY     → Build + Deploy + Test              │
+│  5. DOCUMENT   → Actualizar ROADMAP y walkthrough   │
+│  6. REPEAT     → Si hay más tareas, volver a 1      │
+└─────────────────────────────────────────────────────┘
 ```
 
-**Entregables:**
-- Lista de imágenes nuevas
-- Estado de build/tests
-- Errores pendientes
-
----
-
-### 2. ANALYZE - Analizar Requerimientos
-- Leer imágenes encontradas
-- Identificar tipo: ¿Tabla de equipos? ¿Plano técnico? ¿Boceto?
-- Determinar skill apropiado:
-  - Tabla → `/equipment-extraction`
-  - Plano → `/plan-restoration`
-  - Código → `/audit-cycle`
-
----
-
-### 3. EXECUTE - Ejecutar Skills
-Según el tipo de contenido detectado:
-
-```bash
-# Para tablas de equipos
-@agent skill equipment-extraction --input <imagen>
-
-# Para planos técnicos
-@agent skill plan-restoration --input <imagen>
-
-# Para código
-@agent workflow audit-cycle
-```
-
----
-
-### 4. VERIFY - Verificar Resultados
+## Fase 1: ANALYZE
 
 ```bash
 // turbo
-npm run build
-npm run lint
-npm run test
+cat ROADMAP_ENTERPRISE.md | grep -A5 "EN PROGRESO"
 ```
 
-**Criterios de éxito:**
-- [ ] Build sin errores
-- [ ] Tests pasando
-- [ ] Nuevos datos integrados
+1. Leer `ROADMAP_ENTERPRISE.md`
+2. Identificar la fase actual en progreso
+3. Verificar qué subtareas quedan pendientes
+4. Determinar si hay blockers
 
----
+## Fase 2: PLAN
 
-### 5. COMMIT - Guardar Progreso
+Seleccionar la siguiente tarea según prioridad:
+1. **Críticas primero**: Errores de build/deploy
+2. **UI pendiente**: Si Fase 0 < 100%
+3. **ROADMAP secuencial**: Fase 1.2, 1.3, 2.1, etc.
 
+## Fase 3: EXECUTE
+
+Según el tipo de tarea:
+
+### Si es código:
+1. Crear/modificar archivos necesarios
+2. Seguir patrones existentes del proyecto
+3. Mantener tipos en `lib/types.ts`
+4. Usar CSS industrial de `globals.css`
+
+### Si es configuración:
+1. Verificar .env.local
+2. Actualizar scripts si necesario
+3. Agregar migraciones SQL si es DB
+
+## Fase 4: VERIFY
+
+// turbo-all
 ```bash
-git add -A
-git commit -m "auto: [tipo] [descripción breve]"
+npm run build -- --webpack
 ```
 
-**Tipos de commit:**
-- `feat` - Nueva funcionalidad
-- `fix` - Corrección de error
-- `data` - Nuevos datos extraídos
-- `docs` - Documentación
-- `style` - Formato/estilos
+Si el build falla:
+1. Leer errores
+2. Corregir automáticamente
+3. Re-intentar build
 
----
-
-### 6. LEARN - Registrar Aprendizajes
-
-Actualizar `.agent/memory/learnings.md` con:
-- Patrones exitosos
-- Errores y soluciones
-- Optimizaciones descubiertas
-
----
-
-## Mecanismo de Auto-Llamado
-
-El ciclo se reinicia automáticamente cuando:
-1. Se completa una iteración exitosa
-2. Se detectan nuevos archivos
-3. Han pasado 30 minutos desde la última ejecución
-
-```typescript
-// Pseudo-código de orquestación
-while (projectActive) {
-  const changes = await scanForChanges();
-  if (changes.length > 0) {
-    for (const change of changes) {
-      await processChange(change);
-    }
-    await verifyAndCommit();
-  }
-  await updateCheckpoint();
-  await sleep(INTERVAL);
-}
-```
-
----
-
-## Checkpoints
-
-Se mantiene un archivo `.last-checkpoint` con:
-```json
-{
-  "timestamp": "2026-01-25T16:42:00Z",
-  "lastImage": "WhatsApp Image 2026-01-25 at 12.51.16.jpeg",
-  "lastCommit": "bd11a3b",
-  "status": "success",
-  "nextTask": null
-}
-```
-
----
-
-## Recovery de Errores (Self-Healing)
-
-Si cualquier paso del ciclo falla, se invoca automáticamente el skill de recuperación:
-
+Si el build pasa:
 ```bash
-# 1. Capturar error
-npm run build 2> error.log
-
-# 2. Invocar skill
-@agent skill error-recovery --analyze error.log
+git add -A && git commit -m "feat/fix: [descripción]"
+git push origin main
+vercel --prod
 ```
 
-Si el skill logra recuperar:
-1. Se reinicia el paso fallido.
-2. Se registra la corrección en `learnings.md`.
+## Fase 5: DOCUMENT
 
-Si no logra recuperar:
-1. **Rollback**: `git reset --hard HEAD~1` (si se hizo commit).
-2. **Notificar**: Generar alerta en `task.md`.
-3. **Pausar**: Esperar intervención humana si es crítico.
+1. Actualizar `ROADMAP_ENTERPRISE.md`:
+   - Marcar tarea completada
+   - Actualizar porcentajes
+
+2. Actualizar `walkthrough.md`:
+   - Agregar lo implementado
+   - Incluir screenshots si hay UI
+
+3. Commit de documentación:
+```bash
+git add -A && git commit -m "docs: update progress"
+git push origin main
+```
+
+## Fase 6: REPEAT
+
+Verificar condiciones de continuación:
+
+### Continuar si:
+- Hay más tareas pendientes en ROADMAP
+- No hay errores bloqueantes
+- Usuario no ha interrumpido
+
+### Pausar si:
+- Fase actual del ROADMAP completa (notificar usuario)
+- Error que requiere decisión humana
+- 5+ iteraciones sin interacción
+
+## Workflows Integrados
+
+Este ciclo invoca automáticamente:
+- `/quality-verify` después de cada deploy
+- `/auto-sync` cuando hay cambios de datos
+- `/autonomous-dev` para fases del ROADMAP
+
+## Límites de Seguridad
+
+- **Max commits por ciclo**: 10
+- **Max tiempo sin notificar**: 30 minutos
+- **Auto-pause si**: 3 builds fallidos consecutivos
+
+## Notificación Final
+
+Al completar un ciclo significativo, usar `notify_user`:
+```
+✅ Ciclo Autónomo Completado
+
+Tareas ejecutadas:
+- [lista de tareas]
+
+Próximos pasos:
+- [siguiente fase]
+
+Deploy: https://lubrication-system.vercel.app
+```
