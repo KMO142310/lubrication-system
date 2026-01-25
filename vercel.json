@@ -1,0 +1,14 @@
+{
+    "buildCommand": "npm run build -- --webpack",
+    "framework": "nextjs",
+    "installCommand": "npm install",
+    "regions": [
+        "sfo1"
+    ],
+    "crons": [
+        {
+            "path": "/api/sync/pull",
+            "schedule": "0 0 * * *"
+        }
+    ]
+}

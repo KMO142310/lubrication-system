@@ -1,238 +1,148 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth';
-import { signUpWithEmail, resetPassword } from '@/lib/supabase';
-import { Droplets, Eye, EyeOff, AlertCircle, CheckCircle, Mail, ArrowLeft } from 'lucide-react';
-
-type ViewMode = 'login' | 'register' | 'forgot';
+import LoginContainer from '@/components/auth/LoginContainer';
 
 export default function LoginPage() {
-    const router = useRouter();
-    const { login } = useAuth();
+    return <LoginContainer />;
+}
 
-    const [viewMode, setViewMode] = useState<ViewMode>('login');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [name, setName] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+const [viewMode, setViewMode] = useState<ViewMode>('login');
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+const [confirmPassword, setConfirmPassword] = useState('');
+const [name, setName] = useState('');
+const [showPassword, setShowPassword] = useState(false);
+const [error, setError] = useState('');
+const [success, setSuccess] = useState('');
+const [isLoading, setIsLoading] = useState(false);
 
-    const resetForm = () => {
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setName('');
-        setError('');
-        setSuccess('');
-    };
+const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setName('');
+    setError('');
+    setSuccess('');
+};
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setIsLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
-        try {
-            // Usar auth local (usuarios hardcodeados) - funciona offline
-            const result = await login(email, password);
+    try {
+        // Usar auth local (usuarios hardcodeados) - funciona offline
+        const result = await login(email, password);
 
-            if (result.success) {
-                // Pequeño delay para asegurar que el estado se guarde
-                await new Promise(resolve => setTimeout(resolve, 100));
-                router.push('/');
-                return;
-            }
-
-            setError(result.error || 'Credenciales inválidas');
-        } catch (_err) {
-            setError('Error al iniciar sesión');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
-
-        if (password !== confirmPassword) {
-            setError('Las contraseñas no coinciden');
+        if (result.success) {
+            // Pequeño delay para asegurar que el estado se guarde
+            await new Promise(resolve => setTimeout(resolve, 100));
+            router.push('/');
             return;
         }
 
-        if (password.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres');
-            return;
-        }
-
-        setIsLoading(true);
-
-        const { data, error } = await signUpWithEmail(email, password, name);
-
-        if (error) {
-            setError(error.message);
-        } else if (data?.user) {
-            setSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu cuenta.');
-            setTimeout(() => {
-                setViewMode('login');
-                resetForm();
-            }, 3000);
-        }
-
+        setError(result.error || 'Credenciales inválidas');
+    } catch (_err) {
+        setError('Error al iniciar sesión');
+    } finally {
         setIsLoading(false);
-    };
+    }
+};
 
-    const handleForgotPassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
-        setIsLoading(true);
+const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-        const { error } = await resetPassword(email);
+    if (password !== confirmPassword) {
+        setError('Las contraseñas no coinciden');
+        return;
+    }
 
-        if (error) {
-            setError(error.message);
-        } else {
-            setSuccess('Te enviamos un correo con instrucciones para restablecer tu contraseña.');
-        }
+    if (password.length < 6) {
+        setError('La contraseña debe tener al menos 6 caracteres');
+        return;
+    }
 
-        setIsLoading(false);
-    };
+    setIsLoading(true);
+
+    const { data, error } = await signUpWithEmail(email, password, name);
+
+    if (error) {
+        setError(error.message);
+    } else if (data?.user) {
+        setSuccess('¡Cuenta creada! Revisa tu correo para confirmar tu cuenta.');
+        setTimeout(() => {
+            setViewMode('login');
+            resetForm();
+        }, 3000);
+    }
+
+    setIsLoading(false);
+};
+
+const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+
+    const { error } = await resetPassword(email);
+
+    if (error) {
+        setError(error.message);
+    } else {
+        setSuccess('Te enviamos un correo con instrucciones para restablecer tu contraseña.');
+    }
+
+    setIsLoading(false);
+};
 
 
 
-    return (
-        <div className="login-container">
-            <div className="login-card">
-                {/* Logo */}
-                <div className="login-header">
-                    <div className="login-logo">
-                        <Droplets style={{ width: 32, height: 32 }} />
-                    </div>
-                    <h1>AISA Lubricación</h1>
-                    <p>{viewMode === 'login' ? 'Iniciar Sesión' : viewMode === 'register' ? 'Crear Cuenta' : 'Recuperar Contraseña'}</p>
+return (
+    <div className="login-container">
+        <div className="login-card">
+            {/* Logo */}
+            <div className="login-header">
+                <div className="login-logo">
+                    <Droplets style={{ width: 32, height: 32 }} />
                 </div>
+                <h1>AISA Lubricación</h1>
+                <p>{viewMode === 'login' ? 'Iniciar Sesión' : viewMode === 'register' ? 'Crear Cuenta' : 'Recuperar Contraseña'}</p>
+            </div>
 
-                {/* Back button for register/forgot */}
-                {viewMode !== 'login' && (
-                    <button
-                        className="back-btn"
-                        onClick={() => { setViewMode('login'); resetForm(); }}
-                    >
-                        <ArrowLeft style={{ width: 16, height: 16 }} />
-                        Volver al login
-                    </button>
-                )}
+            {/* Back button for register/forgot */}
+            {viewMode !== 'login' && (
+                <button
+                    className="back-btn"
+                    onClick={() => { setViewMode('login'); resetForm(); }}
+                >
+                    <ArrowLeft style={{ width: 16, height: 16 }} />
+                    Volver al login
+                </button>
+            )}
 
-                {/* Error */}
-                {error && (
-                    <div className="login-error">
-                        <AlertCircle style={{ width: 16, height: 16 }} />
-                        <span>{error}</span>
-                    </div>
-                )}
+            {/* Error */}
+            {error && (
+                <div className="login-error">
+                    <AlertCircle style={{ width: 16, height: 16 }} />
+                    <span>{error}</span>
+                </div>
+            )}
 
-                {/* Success */}
-                {success && (
-                    <div className="login-success">
-                        <CheckCircle style={{ width: 16, height: 16 }} />
-                        <span>{success}</span>
-                    </div>
-                )}
+            {/* Success */}
+            {success && (
+                <div className="login-success">
+                    <CheckCircle style={{ width: 16, height: 16 }} />
+                    <span>{success}</span>
+                </div>
+            )}
 
-                {/* LOGIN FORM */}
-                {viewMode === 'login' && (
-                    <>
-                        <form onSubmit={handleLogin}>
-                            <div className="form-group">
-                                <label className="form-label">Correo Electrónico</label>
-                                <input
-                                    type="email"
-                                    className="form-input"
-                                    placeholder="tu@email.com"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                    autoCorrect="off"
-                                    autoCapitalize="off"
-                                    spellCheck={false}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label className="form-label">Contraseña</label>
-                                <div className="password-input-wrapper">
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        className="form-input"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        required
-                                        autoComplete="off"
-                                    />
-                                    <button
-                                        type="button"
-                                        className="password-toggle"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        tabIndex={-1}
-                                    >
-                                        {showPassword ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                className="forgot-link"
-                                onClick={() => { setViewMode('forgot'); resetForm(); }}
-                            >
-                                ¿Olvidaste tu contraseña?
-                            </button>
-
-                            <button
-                                type="submit"
-                                className="btn btn-primary login-btn"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <span className="loading-spinner" style={{ width: 20, height: 20 }} />
-                                ) : (
-                                    'Iniciar Sesión'
-                                )}
-                            </button>
-                        </form>
-
-                        <div className="register-link">
-                            ¿No tienes cuenta?{' '}
-                            <button onClick={() => { setViewMode('register'); resetForm(); }}>
-                                Crear cuenta
-                            </button>
-                        </div>
-                    </>
-                )}
-
-                {/* REGISTER FORM */}
-                {viewMode === 'register' && (
-                    <form onSubmit={handleRegister}>
-                        <div className="form-group">
-                            <label className="form-label">Nombre Completo</label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                placeholder="Tu nombre"
-                                value={name}
-                                onChange={e => setName(e.target.value)}
-                                required
-                            />
-                        </div>
-
+            {/* LOGIN FORM */}
+            {viewMode === 'login' && (
+                <>
+                    <form onSubmit={handleLogin}>
                         <div className="form-group">
                             <label className="form-label">Correo Electrónico</label>
                             <input
@@ -242,33 +152,43 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 required
+                                autoComplete="off"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                spellCheck={false}
                             />
                         </div>
 
                         <div className="form-group">
                             <label className="form-label">Contraseña</label>
-                            <input
-                                type="password"
-                                className="form-input"
-                                placeholder="Mínimo 6 caracteres"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                required
-                                minLength={6}
-                            />
+                            <div className="password-input-wrapper">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="form-input"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                    autoComplete="off"
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="form-group">
-                            <label className="form-label">Confirmar Contraseña</label>
-                            <input
-                                type="password"
-                                className="form-input"
-                                placeholder="Repite tu contraseña"
-                                value={confirmPassword}
-                                onChange={e => setConfirmPassword(e.target.value)}
-                                required
-                            />
-                        </div>
+                        <button
+                            type="button"
+                            className="forgot-link"
+                            onClick={() => { setViewMode('forgot'); resetForm(); }}
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
 
                         <button
                             type="submit"
@@ -278,54 +198,128 @@ export default function LoginPage() {
                             {isLoading ? (
                                 <span className="loading-spinner" style={{ width: 20, height: 20 }} />
                             ) : (
-                                'Crear Cuenta'
+                                'Iniciar Sesión'
                             )}
                         </button>
                     </form>
-                )}
 
-                {/* FORGOT PASSWORD FORM */}
-                {viewMode === 'forgot' && (
-                    <form onSubmit={handleForgotPassword}>
-                        <div className="forgot-info">
-                            <Mail style={{ width: 48, height: 48, color: 'var(--primary-600)', margin: '0 auto 16px' }} />
-                            <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">Correo Electrónico</label>
-                            <input
-                                type="email"
-                                className="form-input"
-                                placeholder="tu@email.com"
-                                value={email}
-                                onChange={e => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="btn btn-primary login-btn"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <span className="loading-spinner" style={{ width: 20, height: 20 }} />
-                            ) : (
-                                'Enviar Enlace'
-                            )}
+                    <div className="register-link">
+                        ¿No tienes cuenta?{' '}
+                        <button onClick={() => { setViewMode('register'); resetForm(); }}>
+                            Crear cuenta
                         </button>
-                    </form>
-                )}
+                    </div>
+                </>
+            )}
 
-                {/* Footer info */}
-                <div className="login-footer">
-                    <p>Sistema de Gestión de Lubricación Industrial</p>
-                    <p>AISA Aserraderos © 2026</p>
-                </div>
+            {/* REGISTER FORM */}
+            {viewMode === 'register' && (
+                <form onSubmit={handleRegister}>
+                    <div className="form-group">
+                        <label className="form-label">Nombre Completo</label>
+                        <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Tu nombre"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Correo Electrónico</label>
+                        <input
+                            type="email"
+                            className="form-input"
+                            placeholder="tu@email.com"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Contraseña</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            placeholder="Mínimo 6 caracteres"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
+                            minLength={6}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Confirmar Contraseña</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            placeholder="Repite tu contraseña"
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary login-btn"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <span className="loading-spinner" style={{ width: 20, height: 20 }} />
+                        ) : (
+                            'Crear Cuenta'
+                        )}
+                    </button>
+                </form>
+            )}
+
+            {/* FORGOT PASSWORD FORM */}
+            {viewMode === 'forgot' && (
+                <form onSubmit={handleForgotPassword}>
+                    <div className="forgot-info">
+                        <Mail style={{ width: 48, height: 48, color: 'var(--primary-600)', margin: '0 auto 16px' }} />
+                        <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Correo Electrónico</label>
+                        <input
+                            type="email"
+                            className="form-input"
+                            placeholder="tu@email.com"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary login-btn"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <span className="loading-spinner" style={{ width: 20, height: 20 }} />
+                        ) : (
+                            'Enviar Enlace'
+                        )}
+                    </button>
+                </form>
+            )}
+
+            {/* Footer info */}
+            <div className="login-footer">
+                <p>Sistema de Gestión de Lubricación Industrial</p>
+                <p>AISA Aserraderos © 2026</p>
             </div>
+        </div>
 
-            <style jsx>{`
+        <style jsx>{`
         .login-container {
           min-height: 100vh;
           display: flex;
@@ -553,6 +547,6 @@ export default function LoginPage() {
           line-height: 1.5;
         }
       `}</style>
-        </div>
-    );
+    </div>
+);
 }

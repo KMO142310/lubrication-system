@@ -98,21 +98,25 @@ lubrication-system/
 
 ---
 
-## 🚀 Instalación y Desarrollo
+## 🚀 Despliegue Automatizado (CI/CD)
+Este proyecto incluye pipelines de GitHub Actions (`.github/workflows`) para auditoría automática.
 
+### Vercel (Cloud Demo)
+Optimizado para Vercel Serverless.
+**Nota**: SQLite es efímero en Vercel. Cada deploy reiniciará la DB. Para producción, usar Turso/Neon.
+
+### Docker (Producción)
+La forma recomendada de desplegar con **persistencia real**:
 ```bash
-# Clonar repositorio
-git clone <repo-url>
-cd lubrication-system
+./deploy.sh
+```
+Esto levantará el contenedor con `aisa.db` persistente.
 
-# Instalar dependencias
+## 🛠 Instalación y Desarrollo
+```bash
 npm install
-
-# Ejecutar en desarrollo
+npx tsx scripts/seed.ts # Cargar datos iniciales
 npm run dev
-
-# Abrir en navegador
-open http://localhost:3000
 ```
 
 ---
