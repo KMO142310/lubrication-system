@@ -427,6 +427,6 @@ export function getSecuritySummary(): SecuritySummary {
     alertsBySeverity,
     todayActions,
     suspiciousUsers,
-    pendingCorrections: getPendingCorrections().length,
+    pendingCorrections: 0, // Feature removed (dead code cleanup)
   };
 }
