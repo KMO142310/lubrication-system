@@ -72,6 +72,25 @@
 
 # FASES DE DESARROLLO
 
+## FASE 0: TRANSFORMACIÓN VISUAL (PRIORIDAD INMEDIATA)
+**Objetivo:** Transformar la UI genérica en una interfaz industrial profesional (HMI/SCADA style).
+**Workflow:** `/industrial-ui-redesign`
+
+### FASE 0.1: Sistema de Diseño & Componentes
+**Agente:** Industrial UI Designer
+
+```
+PROMPT: "Ver .agent/workflows/industrial-ui-redesign.md"
+```
+
+**Tareas Clave:**
+1. Paleta de colores ANSI Z535 (Seguridad real).
+2. Iconografía específica (bombas, motores, rodamientos) - NO iconos genéricos.
+3. Componentes HMI: Gauges, LEDs, Placas de equipo, Diagramas de planta.
+4. Tipografía técnica (DIN/Oswald + Mono).
+
+---
+
 ## FASE 1: FUNDAMENTOS (2-3 semanas)
 **Objetivo:** Hacer el sistema funcional con sincronización real
 

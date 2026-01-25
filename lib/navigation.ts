@@ -10,6 +10,7 @@ import {
     Shield,
     Calendar,
     Package,
+    Map,
 } from 'lucide-react';
 
 export interface NavItemConfig {
@@ -41,6 +42,7 @@ export const NAVIGATION_CONFIG: NavGroupConfig[] = [
         group: 'Gestión',
         items: [
             { label: 'Activos', icon: Database, href: '/assets', roles: ['desarrollador', 'supervisor', 'supervisor_ext'] }, // They see their allocated assets
+            { label: 'Planos', icon: Map, href: '/plans', roles: ['desarrollador', 'supervisor', 'lubricador', 'supervisor_ext'] },
             { label: 'Anomalías', icon: AlertTriangle, href: '/anomalies', roles: ['desarrollador', 'supervisor', 'lubricador', 'supervisor_ext'] },
             { label: 'Inventario', icon: Package, href: '/inventory', roles: ['desarrollador', 'supervisor'] },
             { label: 'Contratistas', icon: Users, href: '/contractors', roles: ['desarrollador', 'supervisor'] },

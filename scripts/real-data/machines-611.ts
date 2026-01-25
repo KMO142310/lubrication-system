@@ -1,0 +1,50 @@
+import { Machine } from './types';
+
+// 8001 - Descortezador Linea Gruesa
+export const MACHINES_8001: Machine[] = [
+    { id: 'mach-501', areaId: 'area-611-8001', code: '501', name: 'Remuneraciones Desc. Linea Gruesa' },
+    { id: 'mach-549', areaId: 'area-611-8001', code: '549', name: 'Gtos Grales Desc. Linea Gruesa' },
+    { id: 'mach-513', areaId: 'area-611-8001', code: '513', name: 'Sistema Control y Fuerza' },
+    { id: 'mach-520', areaId: 'area-611-8001', code: '520', name: 'Subest. Electr. Transf. 150KVA' },
+    { id: 'mach-521', areaId: 'area-611-8001', code: '521', name: 'Canalizacion Electrica' },
+    { id: 'mach-522', areaId: 'area-611-8001', code: '522', name: 'Iluminacion' },
+    { id: 'mach-3000', areaId: 'area-611-8001', code: '3000', name: 'Descortezador L.G. (EQ.3000)' },
+    { id: 'mach-3002', areaId: 'area-611-8001', code: '3002', name: 'Central Hidraulica D.L.G. (EQ.3002)' },
+    { id: 'mach-3100', areaId: 'area-611-8001', code: '3100', name: 'Cadena Recep. Desde 1700 (EQ.3100)' },
+    { id: 'mach-3200', areaId: 'area-611-8001', code: '3200', name: 'Cadena Alim. D.L.G. (EQ.3200)' },
+    { id: 'mach-3300', areaId: 'area-611-8001', code: '3300', name: 'Elevador Trozos 3000 (EQ.3300)' },
+    { id: 'mach-3400', areaId: 'area-611-8001', code: '3400', name: 'Volteador (EQ.3400)' },
+    { id: 'mach-3500', areaId: 'area-611-8001', code: '3500', name: 'Centrador Entrada 3000 (EQ.3500)' },
+    { id: 'mach-3600', areaId: 'area-611-8001', code: '3600', name: 'Mesa Acopio D.L.G. (EQ.3600)' },
+    { id: 'mach-3700', areaId: 'area-611-8001', code: '3700', name: 'Centrador Salida 3000 (EQ.3700)' },
+    { id: 'mach-3800', areaId: 'area-611-8001', code: '3800', name: 'Transp. de Salida 3000 (EQ.3800)' },
+    { id: 'mach-3850', areaId: 'area-611-8001', code: '3850', name: 'Scanner D.L.G. (EQ.3850)' },
+    { id: 'mach-3900', areaId: 'area-611-8001', code: '3900', name: 'Clasificador L.G. (EQ.3900)' },
+];
+
+// 8002 - Descortezador Linea Delgada
+export const MACHINES_8002: Machine[] = [
+    { id: 'mach-551', areaId: 'area-611-8002', code: '551', name: 'Remuneraciones Desc. Linea Delgada' },
+    { id: 'mach-599', areaId: 'area-611-8002', code: '599', name: 'Gtos Grales Desc. Linea Delg.' },
+    { id: 'mach-1000', areaId: 'area-611-8002', code: '1000', name: 'Mesa Alim. Izq. DLD (EQ.1000)' },
+    { id: 'mach-1050', areaId: 'area-611-8002', code: '1050', name: 'Mesa Alim. Der. DLD (EQ.1050)' },
+    { id: 'mach-1100', areaId: 'area-611-8002', code: '1100', name: 'D.A.G. Lado Izquierdo (EQ.1100)' },
+    { id: 'mach-1150', areaId: 'area-611-8002', code: '1150', name: 'D.A.G. Lado Derecho (EQ.1150)' },
+    { id: 'mach-1300', areaId: 'area-611-8002', code: '1300', name: 'Cadena de Recepcion 1100-1150 (EQ.1300)' },
+    { id: 'mach-1350', areaId: 'area-611-8002', code: '1350', name: 'Central Hidraulica 1100-1150 (EQ.1350)' },
+    { id: 'mach-1450', areaId: 'area-611-8002', code: '1450', name: 'Pateador 1 (EQ.1450)' },
+    { id: 'mach-1460', areaId: 'area-611-8002', code: '1460', name: 'Pateador 2 (EQ.1460)' },
+    { id: 'mach-1470', areaId: 'area-611-8002', code: '1470', name: 'Pateador 3 (EQ.1470)' },
+    { id: 'mach-1500', areaId: 'area-611-8002', code: '1500', name: 'Dosificador 1600 (EQ.1500)' },
+    { id: 'mach-1600', areaId: 'area-611-8002', code: '1600', name: 'Mesa Aliment. EQ Desde LD (EQ.1600)' },
+    { id: 'mach-1700', areaId: 'area-611-8002', code: '1700', name: 'BAB Descortezador LD (EQ.1700)' },
+    { id: 'mach-1800', areaId: 'area-611-8002', code: '1800', name: 'D.A.G. Aliment. 2100 (EQ.1800)' },
+    { id: 'mach-1810', areaId: 'area-611-8002', code: '1810', name: 'Central Hidraulica 1800 (EQ.1810)' },
+    { id: 'mach-1900', areaId: 'area-611-8002', code: '1900', name: 'Transportador Alim. DLD (EQ.1900)' },
+    { id: 'mach-2000', areaId: 'area-611-8002', code: '2000', name: 'Centrador Entrada DLD (EQ.2000)' },
+    { id: 'mach-2100', areaId: 'area-611-8002', code: '2100', name: 'Descortezador LD (EQ.2100)' },
+    { id: 'mach-2200', areaId: 'area-611-8002', code: '2200', name: 'Centrador Salida 2100 (EQ.2200)' },
+    { id: 'mach-2300', areaId: 'area-611-8002', code: '2300', name: 'Cadena Scanner (EQ.2300)' },
+    { id: 'mach-2400', areaId: 'area-611-8002', code: '2400', name: 'Scanner Descort. LD (EQ.2400)' },
+    { id: 'mach-2500', areaId: 'area-611-8002', code: '2500', name: 'Clasificador D.L.D (EQ.2500)' },
+];
