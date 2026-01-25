@@ -12,10 +12,10 @@ Este archivo almacena el conocimiento acumulado del agente para mejorar su asert
 - **Supabase Mocks**: NUNCA importar `supabase-js` real en tests unitarios (`jest`). Siempre usar `jest.mock` con una implementación completa (select, insert, eq, single) para evitar errores de conexión.
 - **Auth Testing**: Al testear autenticación, alinear siempre las credenciales del mock con la lógica de fallback en `lib/auth.tsx`.
 
-### Deployment
-- **Secrets First**: Verificar siempre la existencia de secretos (`VERCEL_TOKEN`, etc.) antes de asumir que el CI/CD pasará.
+### Auth Testing
+- **Hooks Mocking**: For testing components using custom hooks like `useAuth`, utilize `jest.mock` to return specific function mocks (`mockLogin`, `mockLoginWithGoogle`) to inspect calls, rather than mocking the context provider directly which is more verbose.
+- **Provider Methods**: When extending authentication (e.g., Google OAuth), ensure the Provider explicitly exposes these new methods in its value prop, otherwise consumers (like `LoginContainer`) will fail at runtime or build time.
 
-## 🔴 Anti-Patterns (A Evitar)
 
 ### State Management
 - **Circular Dependencies**: Evitar importar stores (ej. `sync.ts`) dentro de componentes que son importados por el store. Usar inyección de dependencias o separar la lógica de estado en archivos aislados (`store.ts`).
