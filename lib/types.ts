@@ -43,6 +43,7 @@ export interface LubricationPoint {
     lubricantId: string;
     method: 'manual' | 'automatico' | 'centralizado' | 'verificar' | 'engrasado' | 'nivel';
     quantity: number;       // ml or grams
+    unit?: string;          // 'ml', 'g', 'oz', etc.
     frequencyId: string;
     createdAt: string;
 }

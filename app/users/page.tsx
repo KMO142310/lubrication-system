@@ -16,7 +16,7 @@ export default function UsersPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'lubricador' as 'desarrollador' | 'supervisor' | 'lubricador',
+    role: 'lubricador' as 'desarrollador' | 'supervisor' | 'lubricador' | 'supervisor_ext',
   });
 
   const loadUsers = () => {

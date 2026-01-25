@@ -3,10 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { UserRole } from '@/lib/types';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    allowedRoles?: ('desarrollador' | 'supervisor' | 'lubricador')[];
+    allowedRoles?: UserRole[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
