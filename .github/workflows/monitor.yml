@@ -1,0 +1,32 @@
+name: System Health Monitor (Agent)
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Ejecutar cada 30 minutos
+  workflow_dispatch: # Permitir ejecución manual
+
+jobs:
+  health-check:
+    name: Synthetic Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Production Health
+        id: health
+        run: |
+          # Reemplazar con URL real post-despliegue o usar secret
+          URL="https://lubrication-system.vercel.app/api/health"
+          
+          echo "🔍 Checking System Health at $URL..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" $URL)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "Status Code: $HTTP_CODE"
+          echo "Response: $BODY"
+          
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "❌ CRITICAL: System Unhealthy!"
+            exit 1
+          fi
+          
+          echo "✅ System Operational"

@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",
-    apple: "/icon-192.png",
+    apple: "/icons/icon-192x192.svg",
   },
   appleWebApp: {
     capable: true,
@@ -46,17 +46,8 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
+        {/* PWA Service Worker Registration */}
+        {/* Note: next-pwa might auto-register, but explicit registration ensures control */}
       </head>
       <body>
         <Providers>
