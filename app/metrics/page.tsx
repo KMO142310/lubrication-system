@@ -18,6 +18,7 @@ import { dataService } from '@/lib/data';
 import { calculateSystemRisk, calculateOperatingCosts } from '@/lib/analytics';
 import RiskDashboard from '@/components/RiskDashboard';
 import CostDashboard from '@/components/CostDashboard';
+import IoTMonitor from '@/components/IoTMonitor';
 
 interface MetricData {
   title: string;
@@ -249,6 +250,10 @@ export default function MetricsPage() {
                   criticalCount={riskMetrics.criticalCount}
                   totalTasks={riskMetrics.totalTasks}
                 />
+              </div>
+
+              <div className="col-span-12">
+                <IoTMonitor />
               </div>
 
               <div className="col-span-12">

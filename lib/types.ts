@@ -190,8 +190,18 @@ export interface ComplianceAudit {
 }
 
 // ============================================================
-// CONSUMPTION TRACKING (Enterprise Feature)
+// CONSUMPTION TRACKING & INVENTORY (Enterprise Feature)
 // ============================================================
+
+export interface InventoryItem {
+    id: string;
+    lubricantId: string;
+    quantity: number;       // Current stock
+    minStock: number;       // Reorder point
+    maxStock: number;
+    location?: string;      // e.g., "Bodega Central - Estante A"
+    lastUpdated: string;
+}
 
 export interface LubricantConsumption {
     id: string;
@@ -231,4 +241,25 @@ export interface KPIMetric {
     anomaliesResolved: number;
     lubricantCost: number;      // Total cost in CLP
     createdAt: string;
+}
+
+// ============================================================
+// IOT & SENSORS (AISA Advanced)
+// ============================================================
+
+export interface Sensor {
+    id: string;
+    machineId: string;
+    type: 'vibration' | 'temperature' | 'level';
+    status: 'online' | 'offline' | 'alert';
+    lastReading: number;
+    unit: string;
+    createdAt: string;
+}
+
+export interface SensorReading {
+    id: string;
+    sensorId: string;
+    value: number;
+    timestamp: string;
 }

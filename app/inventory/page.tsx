@@ -3,150 +3,191 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Link from 'next/link';
-import { Droplets, Package, Info } from 'lucide-react';
+import {
+  Package,
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Search,
+  Filter,
+  MoreVertical,
+  Plus
+} from 'lucide-react';
 import { dataService } from '@/lib/data';
-import { Lubricant } from '@/lib/types';
+import { InventoryItem, Lubricant } from '@/lib/types';
+
+interface EnrichedInventoryItem extends InventoryItem {
+  lubricant: Lubricant;
+}
 
 export default function InventoryPage() {
-  const [lubricants, setLubricants] = useState<Lubricant[]>([]);
+  const [items, setItems] = useState<EnrichedInventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    setLubricants(dataService.getLubricants());
+    const loadInventory = () => {
+      const inventory = dataService.getInventory();
+      const lubricants = dataService.getLubricants();
+
+      const enriched = inventory.map(item => ({
+        ...item,
+        lubricant: lubricants.find(l => l.id === item.lubricantId)!
+      })).filter(i => i.lubricant); // Filter out orphans
+
+      setItems(enriched);
+      setLoading(false);
+    };
+
+    loadInventory();
   }, []);
 
-  const oils = lubricants.filter(l => l.type === 'aceite');
-  const greases = lubricants.filter(l => l.type === 'grasa');
+  const lowStockItems = items.filter(i => i.quantity <= i.minStock);
+  const totalValue = items.reduce((acc, item) => acc + (item.quantity * (item.lubricant.pricePerUnit || 0)), 0);
+
+  const filteredItems = items.filter(item =>
+    item.lubricant.name.toLowerCase().includes(filter.toLowerCase()) ||
+    item.lubricant.type.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <ProtectedRoute allowedRoles={['desarrollador', 'supervisor']}>
       <div className="app-layout">
         <Sidebar />
-
         <main className="main-content">
           <div className="page-container">
-            <nav className="breadcrumb">
-              <Link href="/" className="breadcrumb-link">Dashboard</Link>
-              <span className="breadcrumb-separator">/</span>
-              <span className="breadcrumb-current">Inventario</span>
-            </nav>
-
+            {/* Header */}
             <header className="page-header">
-              <h1 className="page-title">Lubricantes Disponibles</h1>
-              <p className="page-subtitle">Catálogo de lubricantes según manual de operaciones</p>
+              <div className="page-header-top">
+                <div>
+                  <h1 className="page-title">Inventario de Lubricantes</h1>
+                  <p className="page-subtitle">Control de stock y movimientos de bodega</p>
+                </div>
+                <button className="btn btn-primary">
+                  <Plus style={{ width: 16, height: 16 }} />
+                  Registrar Movimiento
+                </button>
+              </div>
             </header>
 
-            {/* Info Banner */}
-            <div style={{
-              background: '#eff6ff',
-              border: '1px solid #3b82f6',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px',
-            }}>
-              <Info style={{ width: 20, height: 20, color: '#3b82f6', flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '14px', color: '#1e40af' }}>
-                <strong>Nota:</strong> Este catálogo está basado en el manual de lubricación AISA. 
-                Los nombres y especificaciones están sujetos a cambios según proveedor.
+            {/* KPI Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
+              <div className="card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Package style={{ width: 24, height: 24 }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{items.length}</div>
+                  <div style={{ color: '#64748b', fontSize: '13px' }}>SKUs Activos</div>
+                </div>
+              </div>
+
+              <div className="card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertTriangle style={{ width: 24, height: 24 }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{lowStockItems.length}</div>
+                  <div style={{ color: '#64748b', fontSize: '13px' }}>Stock Crítico</div>
+                </div>
+              </div>
+
+              <div className="card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ArrowUpRight style={{ width: 24, height: 24 }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '24px', fontWeight: 700 }}>${totalValue.toLocaleString('es-CL')}</div>
+                  <div style={{ color: '#64748b', fontSize: '13px' }}>Valor Inventario (Est.)</div>
+                </div>
               </div>
             </div>
 
-            <div className="dashboard-grid">
-              {/* Summary Cards */}
-              <div className="col-span-6">
-                <div className="stat-card" style={{ flexDirection: 'row', alignItems: 'center', gap: 'var(--space-6)' }}>
-                  <div className="stat-icon primary"><Droplets style={{ width: 24, height: 24 }} /></div>
-                  <div>
-                    <span className="stat-value">{oils.length}</span>
-                    <span className="stat-label">Aceites</span>
+            {/* Inventory Table */}
+            <div className="card">
+              <div style={{ padding: '16px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Existencias</h3>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div className="search-box">
+                    <Search style={{ width: 16, height: 16, color: '#94a3b8' }} />
+                    <input
+                      type="text"
+                      placeholder="Buscar lubricante..."
+                      style={{ border: 'none', outline: 'none', fontSize: '13px' }}
+                      value={filter}
+                      onChange={(e) => setFilter(e.target.value)}
+                    />
                   </div>
-                </div>
-              </div>
-              <div className="col-span-6">
-                <div className="stat-card" style={{ flexDirection: 'row', alignItems: 'center', gap: 'var(--space-6)' }}>
-                  <div className="stat-icon warning"><Package style={{ width: 24, height: 24 }} /></div>
-                  <div>
-                    <span className="stat-value">{greases.length}</span>
-                    <span className="stat-label">Grasas</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Oils Table */}
-              <div className="col-span-12">
-                <div className="card">
-                  <div className="card-header"><span className="card-title">Aceites</span></div>
-                  <div className="data-table-container" style={{ border: 'none', borderRadius: 0 }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Producto</th>
-                          <th>Tipo</th>
-                          <th>Viscosidad</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {oils.map(lub => (
-                          <tr key={lub.id}>
-                            <td className="cell-primary">{lub.name}</td>
-                            <td>
-                              <span style={{
-                                background: '#dbeafe',
-                                color: '#1e40af',
-                                padding: '4px 10px',
-                                borderRadius: '20px',
-                                fontSize: '12px',
-                                fontWeight: 600,
-                              }}>Aceite</span>
-                            </td>
-                            <td>{lub.viscosity || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <button className="btn btn-secondary btn-sm">
+                    <Filter style={{ width: 14, height: 14 }} />
+                    Filtros
+                  </button>
                 </div>
               </div>
 
-              {/* Greases Table */}
-              <div className="col-span-12">
-                <div className="card">
-                  <div className="card-header"><span className="card-title">Grasas</span></div>
-                  <div className="data-table-container" style={{ border: 'none', borderRadius: 0 }}>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Producto</th>
-                          <th>Tipo</th>
-                          <th>Grado NLGI</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {greases.map(lub => (
-                          <tr key={lub.id}>
-                            <td className="cell-primary">{lub.name}</td>
-                            <td>
-                              <span style={{
-                                background: '#fef3c7',
-                                color: '#92400e',
-                                padding: '4px 10px',
-                                borderRadius: '20px',
-                                fontSize: '12px',
-                                fontWeight: 600,
-                              }}>Grasa</span>
-                            </td>
-                            <td>{lub.nlgiGrade || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Lubricante</th>
+                    <th>Tipo</th>
+                    <th>Stock Actual</th>
+                    <th>Estado</th>
+                    <th>Ubicación</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: '32px' }}>Cargando inventario...</td></tr>
+                  ) : filteredItems.map(item => (
+                    <tr key={item.id}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{item.lubricant.name}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>ID: {item.lubricant.id.slice(0, 8)}</div>
+                      </td>
+                      <td>
+                        <span style={{
+                          padding: '4px 10px',
+                          borderRadius: '12px',
+                          background: item.lubricant.type === 'aceite' ? '#e0f2fe' : '#fef3c7',
+                          color: item.lubricant.type === 'aceite' ? '#0369a1' : '#b45309',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          textTransform: 'capitalize'
+                        }}>
+                          {item.lubricant.type}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '15px', fontWeight: 700 }}>
+                          {item.quantity} {item.lubricant.type === 'grasa' ? 'kg' : 'L'}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          Min: {item.minStock} | Max: {item.maxStock}
+                        </div>
+                      </td>
+                      <td>
+                        {item.quantity <= item.minStock ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontWeight: 600, fontSize: '13px' }}>
+                            <AlertTriangle style={{ width: 14, height: 14 }} />
+                            Crítico
+                          </span>
+                        ) : (
+                          <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '13px' }}>Normal</span>
+                        )}
+                      </td>
+                      <td style={{ color: '#64748b' }}>{item.location || 'N/A'}</td>
+                      <td>
+                        <button className="btn btn-sm btn-secondary">
+                          <MoreVertical style={{ width: 16, height: 16 }} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+
           </div>
         </main>
       </div>

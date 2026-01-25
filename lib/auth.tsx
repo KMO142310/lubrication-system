@@ -19,6 +19,8 @@ interface AuthContextType {
     user: AuthUser | null;
     isLoading: boolean;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+    loginWithPasskey: (email: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     isAuthenticated: boolean;
 }
@@ -146,6 +148,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: 'Credenciales inválidas' };
     };
 
+    const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error: any) {
+            console.error('Google Auth Error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const loginWithPasskey = async (email: string): Promise<{ success: boolean; error?: string }> => {
+        // Implementación simulada de WebAuthn para MVP
+        // En producción requeriría servidor FIDO2 real
+        console.log('Initiating WebAuthn for:', email);
+
+        // Simular éxito si es un usuario válido
+        if (typeof window !== 'undefined' && window.PublicKeyCredential) {
+            const foundUser = FALLBACK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+            if (foundUser) {
+                // Simulamos el challenge biométrico del OS
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: new Uint8Array(32),
+                        rp: { name: "AISA Lubricación" },
+                        user: {
+                            id: new Uint8Array(16),
+                            name: email,
+                            displayName: foundUser.name
+                        },
+                        pubKeyCredParams: [{ alg: -7, type: "public-key" }]
+                    }
+                });
+
+                if (credential) {
+                    const { password: _, ...userWithoutPassword } = foundUser;
+                    void _;
+                    setUser(userWithoutPassword);
+                    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+                    return { success: true };
+                }
+            }
+        }
+
+        return { success: false, error: 'Biometría no disponible o usuario no encontrado' };
+    };
+
     const logout = () => {
         setUser(null);
         localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -157,6 +212,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 user,
                 isLoading,
                 login,
+                loginWithGoogle,
+                loginWithPasskey,
                 logout,
                 isAuthenticated: !!user,
             }}
