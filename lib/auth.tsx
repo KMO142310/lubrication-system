@@ -21,6 +21,8 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
     loginWithPasskey: (email: string) => Promise<{ success: boolean; error?: string }>;
+    register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+    forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     isAuthenticated: boolean;
 }
@@ -201,7 +203,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: 'Biometría no disponible o usuario no encontrado' };
     };
 
-    const logout = () => {
+    const register = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { name, full_name: name }
+                }
+            });
+
+            if (error) throw error;
+
+            if (data.user) {
+                // Crear perfil en la tabla profiles
+                await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    email: data.user.email,
+                    full_name: name,
+                    role: 'lubricador', // Default role
+                    created_at: new Date().toISOString()
+                });
+
+                return { success: true };
+            }
+            return { success: false, error: 'No se pudo crear el usuario' };
+        } catch (error: unknown) {
+            const err = error as Error;
+            console.error('Register Error:', err);
+            return { success: false, error: err.message || 'Error al registrar' };
+        }
+    };
+
+    const forgotPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error: unknown) {
+            const err = error as Error;
+            console.error('Forgot Password Error:', err);
+            return { success: false, error: err.message || 'Error al enviar email' };
+        }
+    };
+
+    const logout = async () => {
+        // Also logout from Supabase if connected
+        try {
+            await supabase.auth.signOut();
+        } catch {
+            // Ignore errors, just clear local state
+        }
         setUser(null);
         localStorage.removeItem(AUTH_STORAGE_KEY);
     };
@@ -214,6 +269,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 login,
                 loginWithGoogle,
                 loginWithPasskey,
+                register,
+                forgotPassword,
                 logout,
                 isAuthenticated: !!user,
             }}
