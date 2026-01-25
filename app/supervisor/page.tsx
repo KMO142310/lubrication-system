@@ -276,12 +276,12 @@ export default function SupervisorDashboard() {
           <div className="page-container">
 
             {/* Header Supervisor */}
-            <header style={{
-              background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
-              borderRadius: '16px',
+            <header className="page-header" style={{
+              background: 'var(--primary-950)',
+              borderRadius: 'var(--radius-md)',
               padding: '24px 32px',
-              marginBottom: '24px',
-              border: '1px solid #334155',
+              borderBottom: '4px solid var(--accent-600)',
+              boxShadow: 'var(--shadow-lg)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
@@ -289,8 +289,8 @@ export default function SupervisorDashboard() {
                     <div style={{
                       width: '48px',
                       height: '48px',
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                      borderRadius: '12px',
+                      background: 'var(--accent-600)',
+                      borderRadius: 'var(--radius-sm)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -298,10 +298,10 @@ export default function SupervisorDashboard() {
                       <Eye style={{ width: 24, height: 24, color: '#ffffff' }} />
                     </div>
                     <div>
-                      <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+                      <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Panel de Supervisión
                       </h1>
-                      <p style={{ fontSize: '14px', color: '#94a3b8', margin: 0 }}>
+                      <p style={{ fontSize: '13px', color: 'var(--slate-400)', margin: 0, fontFamily: 'var(--font-mono)' }}>
                         Monitoreo en tiempo real del equipo técnico
                       </p>
                     </div>
@@ -311,36 +311,15 @@ export default function SupervisorDashboard() {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button
                     onClick={loadSupervisorData}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 20px',
-                      background: 'rgba(59, 130, 246, 0.2)',
-                      border: '1px solid rgba(59, 130, 246, 0.3)',
-                      borderRadius: '8px',
-                      color: '#3b82f6',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
+                    className="btn btn-secondary"
+                    style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}
                   >
                     <Activity style={{ width: 18, height: 18 }} />
                     Actualizar
                   </button>
                   <button
                     onClick={downloadDailyReport}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 20px',
-                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
+                    className="btn btn-primary"
                   >
                     <Download style={{ width: 18, height: 18 }} />
                     Descargar Reporte
@@ -357,129 +336,58 @@ export default function SupervisorDashboard() {
               marginBottom: '24px',
             }}>
               {/* Cumplimiento Global */}
-              <div style={{
-                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '1px solid #334155',
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: globalStats.compliance >= 80
-                    ? 'linear-gradient(90deg, #22c55e, #16a34a)'
-                    : 'linear-gradient(90deg, #f59e0b, #d97706)',
-                }} />
+              <div className="stat-card" style={{ background: 'white', borderTop: '4px solid var(--primary-600)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <Target style={{ width: 24, height: 24, color: globalStats.compliance >= 80 ? '#22c55e' : '#f59e0b' }} />
-                  <span style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: globalStats.trend >= 0 ? '#22c55e' : '#ef4444',
-                  }}>
+                  <Target style={{ width: 24, height: 24, color: 'var(--primary-800)' }} />
+                  <span className={`stat-trend ${globalStats.trend >= 0 ? 'up' : 'down'}`}>
                     {globalStats.trend >= 0 ? <TrendingUp style={{ width: 14, height: 14 }} /> : <TrendingDown style={{ width: 14, height: 14 }} />}
                     {globalStats.trend}%
                   </span>
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+                <div className="stat-value">
                   {globalStats.compliance}%
                 </div>
-                <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Cumplimiento HOY
+                <div className="stat-label">
+                  CUMPLIMIENTO HOY
                 </div>
               </div>
 
               {/* Tareas Completadas */}
-              <div style={{
-                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '1px solid #334155',
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: 'linear-gradient(90deg, #3b82f6, #2563eb)',
-                }} />
+              <div className="stat-card" style={{ background: 'white', borderTop: '4px solid var(--primary-500)' }}>
                 <div style={{ marginBottom: '12px' }}>
-                  <CheckCircle2 style={{ width: 24, height: 24, color: '#3b82f6' }} />
+                  <CheckCircle2 style={{ width: 24, height: 24, color: 'var(--primary-600)' }} />
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+                <div className="stat-value">
                   {globalStats.completedTasks}<span style={{ fontSize: '18px', opacity: 0.5 }}>/{globalStats.totalTasks}</span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Tareas Completadas
+                <div className="stat-label">
+                  TAREAS COMPLETADAS
                 </div>
               </div>
 
               {/* Pendientes */}
-              <div style={{
-                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '1px solid #334155',
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: 'linear-gradient(90deg, #f59e0b, #d97706)',
-                }} />
+              <div className="stat-card" style={{ background: 'white', borderTop: '4px solid var(--ansi-orange)' }}>
                 <div style={{ marginBottom: '12px' }}>
-                  <Clock style={{ width: 24, height: 24, color: '#f59e0b' }} />
+                  <Clock style={{ width: 24, height: 24, color: 'var(--ansi-orange)' }} />
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+                <div className="stat-value" style={{ color: 'var(--ansi-orange)' }}>
                   {globalStats.pendingTasks}
                 </div>
-                <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Tareas Pendientes
+                <div className="stat-label">
+                  TAREAS PENDIENTES
                 </div>
               </div>
 
               {/* Anomalías Críticas */}
-              <div style={{
-                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '1px solid #334155',
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: globalStats.overdueAnomalies > 0
-                    ? 'linear-gradient(90deg, #ef4444, #dc2626)'
-                    : 'linear-gradient(90deg, #22c55e, #16a34a)',
-                }} />
+              <div className="stat-card" style={{ background: 'white', borderTop: '4px solid var(--ansi-red)' }}>
                 <div style={{ marginBottom: '12px' }}>
-                  <AlertTriangle style={{ width: 24, height: 24, color: globalStats.overdueAnomalies > 0 ? '#ef4444' : '#22c55e' }} />
+                  <AlertTriangle style={{ width: 24, height: 24, color: globalStats.overdueAnomalies > 0 ? 'var(--ansi-red)' : 'var(--ansi-green)' }} />
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+                <div className="stat-value" style={{ color: globalStats.overdueAnomalies > 0 ? 'var(--ansi-red)' : 'var(--ansi-green)' }}>
                   {globalStats.overdueAnomalies}
                 </div>
-                <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Anomalías Urgentes
+                <div className="stat-label">
+                  ANOMALÍAS URGENTES
                 </div>
               </div>
             </div>
@@ -491,26 +399,15 @@ export default function SupervisorDashboard() {
               gap: '24px',
             }}>
               {/* Panel de Técnicos */}
-              <div style={{
-                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                borderRadius: '12px',
-                border: '1px solid #334155',
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  padding: '20px 24px',
-                  borderBottom: '1px solid #334155',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
+              <div className="card">
+                <div className="card-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Users style={{ width: 20, height: 20, color: '#3b82f6' }} />
-                    <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+                    <Users style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
+                    <h2 className="card-title">
                       Estado del Equipo Técnico
                     </h2>
                   </div>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                     Actualizado: {new Date().toLocaleTimeString('es-CL')}
                   </span>
                 </div>
@@ -524,7 +421,7 @@ export default function SupervisorDashboard() {
                         gridTemplateColumns: '1fr auto auto auto',
                         gap: '20px',
                         padding: '16px 24px',
-                        borderBottom: idx < technicianStats.length - 1 ? '1px solid #1e293b' : 'none',
+                        borderBottom: idx < technicianStats.length - 1 ? '1px solid var(--border)' : 'none',
                         alignItems: 'center',
                       }}
                     >
@@ -532,20 +429,21 @@ export default function SupervisorDashboard() {
                         <div style={{
                           width: '40px',
                           height: '40px',
-                          borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                          borderRadius: 'var(--radius-sm)', // Square
+                          background: 'var(--primary-100)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontWeight: 700,
                           fontSize: '16px',
-                          color: '#0f172a',
+                          color: 'var(--primary-900)',
+                          border: '1px solid var(--primary-200)'
                         }}>
                           {tech.name.charAt(0)}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 600, color: '#ffffff', fontSize: '14px' }}>{tech.name}</div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{tech.name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                             {tech.lastActivity
                               ? `Última actividad: ${new Date(tech.lastActivity).toLocaleTimeString('es-CL')}`
                               : 'Sin actividad hoy'}
@@ -554,41 +452,42 @@ export default function SupervisorDashboard() {
                       </div>
 
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
+                        <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                           {tech.tasksCompleted}/{tech.tasksTotal}
                         </div>
-                        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase' }}>Tareas</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Tareas</div>
                       </div>
 
                       <div style={{ textAlign: 'center' }}>
                         <div style={{
                           fontSize: '20px',
                           fontWeight: 700,
-                          color: tech.compliance >= 80 ? '#22c55e' : tech.compliance >= 50 ? '#f59e0b' : '#ef4444',
+                          color: tech.compliance >= 80 ? 'var(--ansi-green)' : tech.compliance >= 50 ? 'var(--ansi-orange)' : 'var(--ansi-red)',
                           fontFamily: 'var(--font-mono)',
                         }}>
                           {tech.compliance}%
                         </div>
-                        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase' }}>Cumplimiento</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Metas</div>
                       </div>
 
                       <span style={{
                         fontSize: '11px',
                         fontWeight: 700,
                         color: getStatusColor(tech.status),
-                        background: `${getStatusColor(tech.status)}20`,
-                        padding: '6px 12px',
-                        borderRadius: '20px',
+                        background: `${getStatusColor(tech.status)}15`,
+                        padding: '4px 8px',
+                        borderRadius: '2px', // Square tag
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
+                        border: `1px solid ${getStatusColor(tech.status)}`
                       }}>
-                        ● {getStatusLabel(tech.status)}
+                        {getStatusLabel(tech.status)}
                       </span>
                     </div>
                   )) : (
                     <div style={{ padding: '40px', textAlign: 'center' }}>
-                      <Users style={{ width: 48, height: 48, color: '#334155', margin: '0 auto 16px' }} />
-                      <p style={{ color: '#64748b' }}>No hay técnicos asignados</p>
+                      <Users style={{ width: 48, height: 48, color: 'var(--text-muted)', margin: '0 auto 16px' }} />
+                      <p style={{ color: 'var(--text-muted)' }}>No hay técnicos asignados</p>
                     </div>
                   )}
                 </div>
@@ -597,23 +496,14 @@ export default function SupervisorDashboard() {
               {/* Panel Lateral */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Actividad Reciente */}
-                <div style={{
-                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
-                  border: '1px solid #334155',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    padding: '16px 20px',
-                    borderBottom: '1px solid #334155',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                  }}>
-                    <Activity style={{ width: 18, height: 18, color: '#22c55e' }} />
-                    <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                      Actividad Reciente
-                    </h3>
+                <div className="card">
+                  <div className="card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Activity style={{ width: 18, height: 18, color: 'var(--ansi-green)' }} />
+                      <h3 className="card-title">
+                        Actividad Reciente
+                      </h3>
+                    </div>
                   </div>
 
                   <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
@@ -622,46 +512,41 @@ export default function SupervisorDashboard() {
                         key={idx}
                         style={{
                           padding: '12px 20px',
-                          borderBottom: idx < recentCompletions.length - 1 ? '1px solid #1e293b' : 'none',
+                          borderBottom: idx < recentCompletions.length - 1 ? '1px solid var(--border)' : 'none',
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                           <code style={{
                             fontSize: '13px',
                             fontWeight: 600,
-                            color: '#22c55e',
+                            color: 'var(--ansi-green)',
                             fontFamily: 'var(--font-mono)',
                           }}>
                             ✓ {item.taskCode}
                           </code>
                           {item.hasPhoto && (
-                            <span style={{ fontSize: '10px', color: '#3b82f6' }}>📷</span>
+                            <span style={{ fontSize: '10px', color: 'var(--primary-500)' }}>📷</span>
                           )}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#94a3b8' }}>{item.machine}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{item.machine}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
                           {item.technician} • {new Date(item.completedAt).toLocaleTimeString('es-CL')}
                         </div>
                       </div>
                     )) : (
                       <div style={{ padding: '24px', textAlign: 'center' }}>
-                        <p style={{ color: '#64748b', fontSize: '13px' }}>Sin actividad reciente</p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Sin actividad reciente</p>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Acciones Rápidas Supervisor */}
-                <div style={{
-                  background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
-                  border: '1px solid #334155',
-                  padding: '20px',
-                }}>
+                <div className="card" style={{ padding: '20px' }}>
                   <h3 style={{
-                    fontSize: '14px',
+                    fontSize: '12px',
                     fontWeight: 700,
-                    color: '#94a3b8',
+                    color: 'var(--text-muted)',
                     textTransform: 'uppercase',
                     letterSpacing: '1px',
                     marginBottom: '16px',
@@ -675,8 +560,8 @@ export default function SupervisorDashboard() {
                       title="Ver Historial"
                       subtitle=""
                       icon={FileText}
-                      color="#3b82f6"
-                      bgColorRgba="rgba(59, 130, 246, 0.1)"
+                      color="var(--primary-600)"
+                      bgColorRgba="rgba(0, 82, 204, 0.05)"
                     />
 
                     <NavigationCard
@@ -684,8 +569,8 @@ export default function SupervisorDashboard() {
                       title="Métricas Detalladas"
                       subtitle=""
                       icon={BarChart3}
-                      color="#8b5cf6"
-                      bgColorRgba="rgba(139, 92, 246, 0.1)"
+                      color="var(--ansi-purple)"
+                      bgColorRgba="rgba(144, 19, 254, 0.05)"
                     />
 
                     <NavigationCard
@@ -693,17 +578,8 @@ export default function SupervisorDashboard() {
                       title="Revisar Anomalías"
                       subtitle=""
                       icon={AlertTriangle}
-                      color="#ef4444"
-                      bgColorRgba="rgba(239, 68, 68, 0.1)"
-                    />
-
-                    <NavigationCard
-                      href="/schedule"
-                      title="Planificación"
-                      subtitle=""
-                      icon={Calendar}
-                      color="#f59e0b"
-                      bgColorRgba="rgba(245, 158, 11, 0.1)"
+                      color="var(--ansi-red)"
+                      bgColorRgba="rgba(208, 2, 27, 0.05)"
                     />
                   </div>
                 </div>

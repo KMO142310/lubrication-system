@@ -32,12 +32,12 @@ export default function IoTMonitor() {
         <div className="card">
             <div className="card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Activity style={{ width: 20, height: 20, color: '#3b82f6' }} />
+                    <Activity style={{ width: 20, height: 20, color: 'var(--primary-600)' }} />
                     <span className="card-title">IoT: Monitoreo en Tiempo Real</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }}></span>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>En Vivo</span>
+                    <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ansi-green)' }}></span>
+                    <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>ONLINE</span>
                 </div>
             </div>
 
@@ -46,34 +46,35 @@ export default function IoTMonitor() {
                     {sensors.map(sensor => (
                         <div key={sensor.id} style={{
                             padding: '16px',
-                            borderRadius: '12px',
-                            background: sensor.status === 'alert' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(241, 245, 249, 0.5)',
-                            border: `1px solid ${sensor.status === 'alert' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(226, 232, 240, 0.8)'}`,
+                            borderRadius: 'var(--radius-sm)',
+                            background: sensor.status === 'alert' ? 'var(--accent-100)' : 'white',
+                            border: `1px solid ${sensor.status === 'alert' ? 'var(--accent-500)' : 'var(--border)'}`,
+                            borderLeft: `4px solid ${sensor.status === 'alert' ? 'var(--accent-500)' : 'var(--primary-600)'}`,
                             transition: 'all 0.3s ease'
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>
+                                <div style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
                                     {sensor.machineId.replace(/-/g, ' ').toUpperCase()}
                                 </div>
                                 {sensor.status === 'alert' ? (
-                                    <AlertOctagon style={{ width: 16, height: 16, color: '#ef4444' }} />
+                                    <AlertOctagon style={{ width: 16, height: 16, color: 'var(--ansi-red)' }} />
                                 ) : (
-                                    <Wifi style={{ width: 16, height: 16, color: '#22c55e' }} />
+                                    <Wifi style={{ width: 16, height: 16, color: 'var(--ansi-green)' }} />
                                 )}
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
-                                <span style={{ fontSize: '24px', fontWeight: 700, color: sensor.status === 'alert' ? '#ef4444' : '#1e293b' }}>
+                                <span style={{ fontSize: '24px', fontWeight: 800, fontFamily: 'var(--font-mono)', color: sensor.status === 'alert' ? 'var(--ansi-red)' : 'var(--primary-900)' }}>
                                     {sensor.lastReading.toFixed(1)}
                                 </span>
-                                <span style={{ fontSize: '12px', color: '#64748b' }}>{sensor.unit}</span>
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{sensor.unit}</span>
                             </div>
 
-                            <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ height: '6px', background: 'var(--slate-200)', borderRadius: '2px', overflow: 'hidden' }}>
                                 <div style={{
                                     height: '100%',
                                     width: `${Math.min(100, (sensor.lastReading / (sensor.type === 'vibration' ? 10 : 100)) * 100)}%`,
-                                    background: sensor.status === 'alert' ? '#ef4444' : '#3b82f6',
+                                    background: sensor.status === 'alert' ? 'var(--ansi-red)' : 'var(--primary-600)',
                                     transition: 'width 0.5s ease'
                                 }} />
                             </div>
