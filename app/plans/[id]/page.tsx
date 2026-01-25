@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, ZoomIn, ZoomOut, Download, PenTool, Eye } from 'lucide-react';
@@ -17,12 +17,14 @@ const MOCK_PLAN_DETAIL = {
     status: 'Vectorizado',
 };
 
-export default function PlanDetailPage({ params }: { params: { id: string } }) {
+export default function PlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = use(params);
     const [viewMode, setViewMode] = useState<'original' | 'vector'>('original');
     const [zoom, setZoom] = useState(1);
 
     const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
     const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 0.5));
+
 
     return (
         <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 p-6">
@@ -39,7 +41,7 @@ export default function PlanDetailPage({ params }: { params: { id: string } }) {
                             {MOCK_PLAN_DETAIL.name}
                         </h1>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            ID: {params.id} • {MOCK_PLAN_DETAIL.status}
+                            ID: {resolvedParams.id} • {MOCK_PLAN_DETAIL.status}
                         </p>
                     </div>
                 </div>
