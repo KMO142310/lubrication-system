@@ -2,40 +2,50 @@
 
 ## Documento de Transformación a Producto Comercial
 
-**Versión:** 1.0  
-**Fecha:** 23 Enero 2026  
+**Versión:** 1.1  
+**Fecha:** 25 Enero 2026  
+**Última Actualización:** 25-01-2026 18:55  
 **Objetivo:** Convertir el sistema actual (personalizado para AISA) en un producto SaaS multi-tenant vendible a miles de empresas industriales.
 
 ---
 
-## ESTADO ACTUAL DEL PROYECTO
+## ESTADO ACTUAL DEL PROYECTO (ACTUALIZADO)
 
 ### ✅ Lo que YA está implementado:
 | Componente | Estado | Notas |
 |------------|--------|-------|
 | Autenticación local | ✅ | Usuarios hardcodeados |
-| UI/UX móvil responsive | ✅ | Next.js + Tailwind |
+| UI/UX móvil responsive | ✅ | Next.js 16 + CSS Industrial |
 | Gestión de tareas | ✅ | CRUD completo |
 | Captura de fotos | ✅ | Anti-fraude básico |
 | Firma digital | ✅ | Canvas signature |
 | Generación PDF | ✅ | jsPDF + autoTable |
 | Jerarquía de activos | ✅ | Planta > Área > Equipo |
 | Supabase configurado | ✅ | Tablas creadas |
-| Deploy en Vercel | ✅ | Producción activa |
+| Deploy en Vercel | ✅ | https://lubrication-system.vercel.app |
+| **Datos Reales Foresa** | ✅ | 5 áreas, 61 máquinas |
+| **Sidebar Industrial** | ✅ | Estilos HMI/SCADA |
+| **Next.js 16 Compatible** | ✅ | Promise params fixed |
+
+### 🔄 EN PROGRESO:
+| Componente | Estado | Notas |
+|------------|--------|-------|
+| UI Industrial (Fase 0) | 🔄 70% | Sidebar done, Dashboard pending |
+| Componentes HMI | 🔄 50% | LEDs, Gauges, Tags creados |
 
 ### ❌ Lo que FALTA para Enterprise:
-| Componente | Prioridad | Complejidad |
-|------------|-----------|-------------|
-| Multi-tenancy | CRÍTICA | Alta |
-| Sincronización tiempo real | CRÍTICA | Media |
-| Autenticación Supabase | CRÍTICA | Media |
-| Onboarding de empresas | ALTA | Alta |
-| Panel de administración | ALTA | Alta |
-| Notificaciones push | MEDIA | Media |
-| Integración ERP/SAP | MEDIA | Alta |
-| App nativa (PWA) | MEDIA | Media |
-| Reportes avanzados | MEDIA | Media |
-| API pública | BAJA | Alta |
+| Componente | Prioridad | Complejidad | Fase |
+|------------|-----------|-------------|------|
+| Sincronización tiempo real | CRÍTICA | Media | 1.1 |
+| Autenticación Supabase | CRÍTICA | Media | 1.2 |
+| Upload fotos Storage | ALTA | Baja | 1.3 |
+| Multi-tenancy | CRÍTICA | Alta | 2.1 |
+| Onboarding de empresas | ALTA | Alta | 2.2 |
+| Dashboard por rol | ALTA | Media | 2.3 |
+| Notificaciones push | MEDIA | Media | 3.1 |
+| Reportes avanzados | MEDIA | Media | 3.2 |
+| API pública | BAJA | Alta | 3.3 |
+
 
 ---
 
