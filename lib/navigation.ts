@@ -29,8 +29,10 @@ export const NAVIGATION_CONFIG: NavGroupConfig[] = [
     {
         group: 'Principal',
         items: [
-            { label: 'Dashboard', icon: LayoutDashboard, href: '/', roles: ['lubricador'] },
+            { label: 'Panel Admin', icon: LayoutDashboard, href: '/admin', roles: ['desarrollador'] },
             { label: 'Panel Supervisor', icon: Shield, href: '/supervisor', roles: ['desarrollador', 'supervisor', 'supervisor_ext'] },
+            { label: 'Mi Dashboard', icon: ClipboardCheck, href: '/', roles: ['lubricador'] }, // Tech view
+            { label: 'Vista Técnico', icon: Users, href: '/', roles: ['desarrollador', 'supervisor'] }, // Allow them to see tech view
             { label: 'Mis Tareas', icon: ClipboardCheck, href: '/tasks', roles: ['lubricador'] },
             { label: 'Tareas Equipo', icon: ClipboardCheck, href: '/tasks', roles: ['desarrollador', 'supervisor', 'supervisor_ext'] },
             { label: 'Historial', icon: History, href: '/historial', roles: ['desarrollador', 'supervisor', 'lubricador', 'supervisor_ext'] },
@@ -52,6 +54,8 @@ export const NAVIGATION_CONFIG: NavGroupConfig[] = [
         group: 'Sistema',
         items: [
             { label: 'Alertas', icon: Shield, href: '/admin/alertas', roles: ['desarrollador', 'supervisor'] },
+            { label: 'Audit Cycle', icon: Shield, href: '/audit-cycle', roles: ['desarrollador'] },
+            { label: 'Evolution Cycle', icon: BarChart3, href: '/evolution-cycle', roles: ['desarrollador'] },
             { label: 'Usuarios', icon: Users, href: '/users', roles: ['desarrollador'] },
             { label: 'Configuración', icon: Settings, href: '/admin', roles: ['desarrollador'] },
         ]

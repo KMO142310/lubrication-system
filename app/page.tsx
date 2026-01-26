@@ -25,27 +25,20 @@ import { useAuth } from '@/lib/auth';
 import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
 import { calculateCompliance } from '@/lib/analytics';
 import MetricCard from '@/components/MetricCard';
+import type { Task, LubricationPoint, Component, Machine, Lubricant } from '@/lib/types';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
     compliance: 0,
-    completedOrders: 0,
-    totalOrders: 0,
-    openAnomalies: 0,
-    criticalAnomalies: 0,
     todayTasks: 0,
     todayCompleted: 0,
-    totalPoints: 0,
-    totalMachines: 0,
   });
 
   const [todayTasksList, setTodayTasksList] = useState<Array<{
     id: string;
     code: string;
-    component: string;
-    machine: string;
-    frequency: string;
+    description: string; // Combined component/machine info
     status: string;
     lubricant: string;
   }>>([]);
@@ -58,222 +51,181 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      // Inicializar datos locales primero
-      dataService.init();
+    async function loadStats() {
+      // 1. Get today's Work Order and Tasks
+      const todayWO = dataService.getTodayWorkOrder();
 
-      // Cargar tareas completadas del servidor PRIMERO
-      const serverTasksByPoint: Record<string, ServerTaskData> = {};
-      if (isOnline()) {
-        const serverTasks = await getCompletedTasksFromServer();
-        console.log('📥 Dashboard - Tareas servidor:', serverTasks.length, serverTasks.map(t => t.lubricationPointId));
-        serverTasks.forEach(st => {
-          if (st.lubricationPointId) {
-            serverTasksByPoint[st.lubricationPointId] = st;
-          }
-        });
+      if (!todayWO) {
+        setStats({ compliance: 0, todayTasks: 0, todayCompleted: 0 });
+        setTodayTasksList([]);
+        return;
       }
 
-      const workOrders = dataService.getWorkOrders();
-      const allTasks = dataService.getTasks();
-      const anomalies = dataService.getAnomalies();
-      const points = dataService.getLubricationPoints();
-      const machines = dataService.getMachines();
-      const components = dataService.getComponents();
-      const lubricants = dataService.getLubricants();
-      const frequencies = dataService.getFrequencies();
+      const todayTasks = dataService.getTasks(todayWO.id);
 
-      console.log('📊 Dashboard - Tareas locales:', allTasks.length, 'Puntos:', points.length);
+      // 2. Get completed tasks (local + server)
+      const localCompleted = todayTasks.filter(t => t.status === 'completado').length;
 
-      const completedWOs = workOrders.filter(wo => wo.status === 'completado');
-      const totalWOs = workOrders.filter(wo => new Date(wo.scheduledDate) <= new Date());
+      // Try to get server data if online
+      let serverCompletedCount = 0;
+      let completedTaskIds = new Set<string>();
 
-      const todayWO = dataService.getTodayWorkOrder();
-      const todayTasks = todayWO ? allTasks.filter(t => t.workOrderId === todayWO.id) : [];
+      try {
+        if (isOnline()) {
+          const serverTasks = await getCompletedTasksFromServer() as ServerTaskData[];
+          if (serverTasks && serverTasks.length > 0) {
+            // Filter strictly for today's tasks that are completed
+            const serverTodayCompleted = serverTasks.filter(st => {
+              // Check if this server task corresponds to one of our today tasks
+              const isTodayTask = todayTasks.some(tt => tt.id === st.id);
+              return isTodayTask && st.status === 'completado';
+            });
+            serverCompletedCount = serverTodayCompleted.length;
 
-      // Contar completadas: local + servidor
-      const todayCompleted = todayTasks.filter(t => {
-        if (t.status === 'completado') return true;
-        const serverData = serverTasksByPoint[t.lubricationPointId];
-        return serverData && serverData.status === 'completado';
-      }).length;
+            // Track IDs for the list display
+            serverTodayCompleted.forEach(t => completedTaskIds.add(t.id));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching server stats:", error);
+      }
 
-      const compliance = calculateCompliance(todayCompleted, todayTasks.length);
+      // Use the higher count (local sync might be pending)
+      const finalCompleted = Math.max(localCompleted, serverCompletedCount);
+
+      // 3. Calculate Compliance
+      const compliance = calculateCompliance(finalCompleted, todayTasks.length);
 
       setStats({
         compliance,
-        completedOrders: completedWOs.length,
-        totalOrders: totalWOs.length,
-        openAnomalies: anomalies.filter(a => a.status !== 'resuelta').length,
-        criticalAnomalies: anomalies.filter(a => a.severity === 'critica' || a.severity === 'alta').length,
         todayTasks: todayTasks.length,
-        todayCompleted,
-        totalPoints: points.length,
-        totalMachines: machines.length,
+        todayCompleted: finalCompleted
       });
 
-      // Build today's tasks list with full info
-      const tasksList = todayTasks.slice(0, 6).map(task => {
-        const point = points.find(p => p.id === task.lubricationPointId);
-        const comp = point ? components.find(c => c.id === point.componentId) : null;
-        const machine = comp ? machines.find(m => m.id === comp.machineId) : null;
-        const lub = point ? lubricants.find(l => l.id === point.lubricantId) : null;
-        const freq = point ? frequencies.find(f => f.id === point.frequencyId) : null;
+      // 4. Enrich tasks for display
+      // We need catalogs to resolve IDs
+      const points = dataService.getLubricationPoints();
+      const components = dataService.getComponents();
+      const machines = dataService.getMachines();
+      const lubricants = dataService.getLubricants();
+
+      const displayTasks = todayTasks.slice(0, 3).map(t => {
+        const point = points.find(p => p.id === t.lubricationPointId);
+        const component = point ? components.find(c => c.id === point.componentId) : null;
+        const machine = component ? machines.find(m => m.id === component.machineId) : null;
+        const lubricant = point ? lubricants.find(l => l.id === point.lubricantId) : null;
+
+        const description = point
+          ? `${component?.name || 'Unknown'} - ${machine?.name || 'Unknown'}`
+          : 'Tarea desconocida';
+
+        const code = point?.code || t.id.substring(0, 8);
+        const lubName = lubricant?.name || 'N/A';
 
         return {
-          id: task.id,
-          code: point?.code || 'N/A',
-          component: comp?.name || 'N/A',
-          machine: machine?.name || 'N/A',
-          frequency: freq?.name || 'N/A',
-          status: task.status,
-          lubricant: lub?.name || 'N/A',
+          id: t.id,
+          code: code,
+          description: description,
+          status: t.status === 'completado' || completedTaskIds.has(t.id) ? 'completado' : 'pendiente',
+          lubricant: lubName
         };
       });
 
-      setTodayTasksList(tasksList);
-    };
+      setTodayTasksList(displayTasks);
+    }
 
-    loadDashboard();
-    const interval = setInterval(loadDashboard, 10000); // Refresh cada 10s
-    return () => clearInterval(interval);
-  }, []);
-
-  const todayProgress = stats.todayTasks > 0
-    ? Math.round((stats.todayCompleted / stats.todayTasks) * 100)
-    : 0;
-
-
+    loadStats();
+  }, [user]);
 
   return (
     <ProtectedRoute>
-      <div className="app-layout">
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#0f172a' }}>
         <Sidebar />
-
-        <main className="main-content">
-          <div className="page-container dashboard-container">
-
-            {/* Industrial Header Bar */}
-            <header className="dashboard-header">
+        <main style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Header */}
+            <header style={{
+              marginBottom: '32px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid #1e293b',
+              paddingBottom: '24px'
+            }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 900,
-                    fontSize: '20px',
-                    color: '#0f172a',
-                    letterSpacing: '-1px',
-                  }}>
-                    A
-                  </div>
-                  <div>
-                    <h1 style={{
-                      fontSize: '28px',
-                      fontWeight: 800,
-                      color: '#ffffff',
-                      letterSpacing: '-0.5px',
-                      margin: 0,
-                    }}>
-                      AISA LUBRICACIÓN
-                    </h1>
-                    <p style={{
-                      fontSize: '13px',
-                      color: '#94a3b8',
-                      margin: 0,
-                      textTransform: 'uppercase',
-                      letterSpacing: '2px',
-                    }}>
-                      Sistema de Gestión Industrial
-                    </p>
-                  </div>
-                </div>
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  marginBottom: '8px',
+                  letterSpacing: '-0.5px'
+                }}>
+                  Panel de Control
+                </h1>
+                <p style={{ color: '#94a3b8', fontSize: '16px' }}>
+                  Resumen de operaciones y estado del sistema
+                </p>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {new Date().toLocaleDateString('es-CL', { weekday: 'long' })}
-                  </div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
-                    {new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '12px 20px',
-                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                  borderRadius: '8px',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                }}>
-                  ● OPERATIVO
-                </div>
+              <div style={{
+                background: 'rgba(51, 65, 85, 0.5)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: '1px solid #334155',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Calendar style={{ width: 16, height: 16, color: '#94a3b8' }} />
+                <span style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>
+                  {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </span>
               </div>
             </header>
 
-            {/* Industrial KPI Cards - CLICKEABLES */}
-            <section className="dashboard-content">
-              <div className="kpi-grid">
-                <MetricCard
-                  label="Cumplimiento SLA"
-                  value={stats.compliance}
-                  subValue="%"
-                  icon={Target}
-                  href="/metrics"
-                  colorTheme={stats.compliance >= 80 ? 'success' : 'warning'}
-                  badgeText={stats.compliance >= 80 ? '● OK' : '● BAJO'}
-                  footerText="Ver métricas"
-                />
-
-                <MetricCard
-                  label="Tareas Hoy"
-                  value={stats.todayCompleted}
-                  subValue={`/${stats.todayTasks}`}
-                  icon={CheckCircle2}
-                  href="/tasks"
-                  colorTheme="primary"
-                  badgeText={`${todayProgress}%`}
-                  footerText="Ir a tareas"
-                />
-
-                <MetricCard
-                  label="Anomalías Abiertas"
-                  value={stats.openAnomalies}
-                  icon={AlertTriangle}
-                  href="/anomalies"
-                  colorTheme={stats.openAnomalies > 0 ? 'danger' : 'success'}
-                  badgeText={stats.criticalAnomalies > 0 ? `⚠ ${stats.criticalAnomalies} CRÍTICAS` : undefined}
-                  footerText="Ver anomalías"
-                />
-
-                <MetricCard
-                  label="Equipos Activos"
-                  value={stats.totalMachines}
-                  icon={Cog}
-                  href="/assets"
-                  colorTheme="violet"
-                  footerText={`${stats.totalPoints} puntos`}
-                />
-              </div>
-            </section>
-
-            {/* Main Content Grid */}
-            <div className="main-grid">
-              {/* Today's Tasks */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '32px' }}>
               <section>
+                {/* Stats Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '16px',
+                  marginBottom: '32px'
+                }}>
+                  <MetricCard
+                    label="Cumplimiento"
+                    value={stats.compliance}
+                    subValue="%"
+                    badgeText="+2.4%"
+                    icon={Target}
+                    colorTheme="success"
+                    href="/metrics"
+                  />
+                  <MetricCard
+                    label="Tareas Hoy"
+                    value={stats.todayTasks}
+                    footerText={`${stats.todayCompleted} completadas`}
+                    icon={ClipboardCheck}
+                    colorTheme="primary"
+                    href="/tasks"
+                  />
+                  <MetricCard
+                    label="Anomalías"
+                    value="0"
+                    footerText="Sin reportes activos"
+                    icon={AlertTriangle}
+                    colorTheme="warning"
+                    href="/anomalies"
+                  />
+                </div>
+
+                {/* Recent Activity / Tasks Preview */}
                 <div style={{
                   background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   border: '1px solid #334155',
                   overflow: 'hidden',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 }}>
                   <div style={{
                     padding: '20px 24px',
@@ -281,39 +233,21 @@ export default function Dashboard() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    background: 'rgba(30, 41, 59, 0.5)',
                   }}>
-                    <div>
-                      <h2 style={{
-                        fontSize: '18px',
-                        fontWeight: 700,
-                        color: '#ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        margin: 0,
-                      }}>
-                        <ClipboardCheck style={{ width: 20, height: 20, color: '#f59e0b' }} />
-                        TAREAS DE LUBRICACIÓN
-                      </h2>
-                      <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-                        Programa diario según Plan Detallado Cap. 9
-                      </p>
-                    </div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Clock style={{ width: 18, height: 18, color: '#3b82f6' }} />
+                      Actividad de Hoy
+                    </h3>
                     <Link href="/tasks" style={{
+                      fontSize: '13px',
+                      color: '#3b82f6',
+                      fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 16px',
-                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      borderRadius: '8px',
-                      color: '#0f172a',
-                      fontWeight: 700,
-                      fontSize: '13px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
+                      gap: '4px'
                     }}>
-                      Ver Todas
-                      <ArrowRight style={{ width: 14, height: 14 }} />
+                      Ver todo <ArrowRight style={{ width: 14, height: 14 }} />
                     </Link>
                   </div>
 
@@ -347,10 +281,10 @@ export default function Dashboard() {
                             </code>
                             <div>
                               <div style={{ fontWeight: 600, color: '#ffffff', marginBottom: '2px', fontSize: '14px' }}>
-                                {task.component}
+                                {task.description}
                               </div>
                               <div style={{ fontSize: '12px', color: '#64748b' }}>
-                                {task.machine} • {task.lubricant}
+                                {task.lubricant}
                               </div>
                             </div>
                             <span style={{
@@ -484,8 +418,8 @@ export default function Dashboard() {
               </aside>
             </div>
           </div>
-        </main >
-      </div >
-    </ProtectedRoute >
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }

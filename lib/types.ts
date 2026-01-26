@@ -6,12 +6,14 @@
 
 export interface Plant {
     id: string;
+    tenantId?: string;      // Multi-tenant isolation
     name: string;           // e.g., "Línea Gruesa", "Línea Delgada"
     createdAt: string;
 }
 
 export interface Area {
     id: string;
+    tenantId?: string;
     plantId: string;
     name: string;           // e.g., "Sierra Principal", "Desbaste"
     contractorId?: string;  // ID of external company managing this area
@@ -20,6 +22,7 @@ export interface Area {
 
 export interface Machine {
     id: string;
+    tenantId?: string;
     areaId: string;
     name: string;           // e.g., "Sierra Huincha 1", "Transportador A"
     make?: string;
@@ -30,6 +33,7 @@ export interface Machine {
 
 export interface Component {
     id: string;
+    tenantId?: string;
     machineId: string;
     name: string;           // e.g., "Caja Reductora", "Rodamiento Principal"
     createdAt: string;
@@ -37,6 +41,7 @@ export interface Component {
 
 export interface LubricationPoint {
     id: string;
+    tenantId?: string;
     componentId: string;
     code: string;           // Unique identifier, e.g., "LG-SP-SH1-CR-01"
     description: string;
@@ -54,6 +59,7 @@ export interface LubricationPoint {
 
 export interface Lubricant {
     id: string;
+    tenantId?: string;
     name: string;           // e.g., "Shell Omala S2 G 220"
     type: 'aceite' | 'grasa';
     viscosity?: string;
@@ -65,6 +71,7 @@ export interface Lubricant {
 
 export interface Frequency {
     id: string;
+    tenantId?: string;
     name: string;           // e.g., "Diario", "Semanal", "Quincenal", "Mensual"
     days: number;           // Interval in days
     tardinessTolerance?: number; // Days allowed delay before critical
@@ -79,6 +86,7 @@ export type TaskStatus = 'pendiente' | 'en_progreso' | 'completado' | 'omitido';
 
 export interface WorkOrder {
     id: string;
+    tenantId?: string;
     scheduledDate: string;  // ISO date
     status: TaskStatus;
     technicianId?: string;
@@ -88,6 +96,7 @@ export interface WorkOrder {
 
 export interface Task {
     id: string;
+    tenantId?: string;
     workOrderId: string;
     lubricationPointId: string;
     status: TaskStatus;
@@ -107,6 +116,7 @@ export type AnomalyStatus = 'abierta' | 'en_revision' | 'resuelta';
 
 export interface Anomaly {
     id: string;
+    tenantId?: string;
     lubricationPointId?: string;
     machineId?: string;
     reportedBy: string;     // Technician ID
@@ -127,6 +137,7 @@ export type UserRole = 'desarrollador' | 'supervisor' | 'lubricador' | 'supervis
 
 export interface User {
     id: string;
+    tenantId?: string;
     name: string;
     email: string;
     role: UserRole;
@@ -140,6 +151,7 @@ export interface User {
 
 export interface Contractor {
     id: string;
+    tenantId?: string;
     name: string;               // Company name, e.g., "Lubricación Profesional Ltda."
     rut: string;                // Chilean tax ID
     contactName: string;
@@ -155,6 +167,7 @@ export interface Contractor {
 
 export interface Contract {
     id: string;
+    tenantId?: string;
     contractorId: string;
     plantId: string;
     description: string;
@@ -175,6 +188,7 @@ export type AuditResult = 'passed' | 'failed' | 'conditional' | 'pending';
 
 export interface ComplianceAudit {
     id: string;
+    tenantId?: string;
     contractorId: string;
     auditorId: string;          // User who performed the audit
     auditType: AuditType;
@@ -195,6 +209,7 @@ export interface ComplianceAudit {
 
 export interface InventoryItem {
     id: string;
+    tenantId?: string;
     lubricantId: string;
     quantity: number;       // Current stock
     minStock: number;       // Reorder point
@@ -205,6 +220,7 @@ export interface InventoryItem {
 
 export interface LubricantConsumption {
     id: string;
+    tenantId?: string;
     lubricantId: string;
     workOrderId: string;
     quantityUsed: number;
@@ -215,6 +231,7 @@ export interface LubricantConsumption {
 
 export interface InventoryMovement {
     id: string;
+    tenantId?: string;
     lubricantId: string;
     type: 'entrada' | 'salida' | 'ajuste';
     quantity: number;
@@ -230,6 +247,7 @@ export interface InventoryMovement {
 
 export interface KPIMetric {
     id: string;
+    tenantId?: string;
     period: string;             // YYYY-MM format
     contractorId?: string;
     plantId?: string;
@@ -249,6 +267,7 @@ export interface KPIMetric {
 
 export interface Sensor {
     id: string;
+    tenantId?: string;
     machineId: string;
     type: 'vibration' | 'temperature' | 'level';
     status: 'online' | 'offline' | 'alert';
@@ -259,6 +278,7 @@ export interface Sensor {
 
 export interface SensorReading {
     id: string;
+    tenantId?: string;
     sensorId: string;
     value: number;
     timestamp: string;

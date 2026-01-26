@@ -58,19 +58,35 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v4.1.0-full-calendar';
+const DATA_VERSION = 'v4.1.0-cycles';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
 
-    // FORZAR RESET TOTAL - siempre limpiar y recargar datos frescos para asegurar consistencia
-    Object.values(STORAGE_KEYS).forEach(key => {
-        localStorage.removeItem(key);
-    });
-    localStorage.removeItem('aisa_data_version');
-    localStorage.removeItem('aisa_data_initialized_v12');
+    const storedVersion = localStorage.getItem('aisa_data_version');
 
-    console.log('🔄 Inicializando con DATOS MAESTROS AISA 2026...');
+    // Si la versión cambió, resetear datos locales (NO la sesión de auth)
+    if (storedVersion !== DATA_VERSION) {
+        // Limpiar catálogos y datos de trabajo para forzar recarga completa
+        localStorage.removeItem(STORAGE_KEYS.plants);
+        localStorage.removeItem(STORAGE_KEYS.areas);
+        localStorage.removeItem(STORAGE_KEYS.machines);
+        localStorage.removeItem(STORAGE_KEYS.components);
+        localStorage.removeItem(STORAGE_KEYS.lubricants);
+        localStorage.removeItem(STORAGE_KEYS.frequencies);
+        localStorage.removeItem(STORAGE_KEYS.lubricationPoints);
+
+        localStorage.removeItem(STORAGE_KEYS.workOrders);
+        localStorage.removeItem(STORAGE_KEYS.tasks);
+        localStorage.removeItem(STORAGE_KEYS.anomalies);
+        localStorage.removeItem(STORAGE_KEYS.initialized);
+        localStorage.setItem('aisa_data_version', DATA_VERSION);
+    }
+
+    const initialized = localStorage.getItem(STORAGE_KEYS.initialized);
+    if (initialized) return;
+
+    console.log(' Inicializando con DATOS MAESTROS AISA 2026...');
 
     // 1. Cargar Plantas
     saveToStorage(STORAGE_KEYS.plants, PLANTA_AISA);
@@ -96,7 +112,7 @@ function initializeData(): void {
     // 8. Cargar Usuarios
     saveToStorage(STORAGE_KEYS.users, DEFAULT_USERS);
 
-    console.log(`✅ Datos cargados:
+    console.log(` Datos cargados:
     - ${PLANTA_AISA.length} Plantas
     - ${CENTROS_GESTION.length} Áreas
     - ${EQUIPOS.length} Equipos
@@ -203,12 +219,20 @@ export const dataService = {
     },
 
     // Plants
-    getPlants: (): Plant[] => getFromStorage(STORAGE_KEYS.plants, PLANTA_AISA),
+    getPlants: (tenantId?: string): Plant[] => {
+        const plants = getFromStorage(STORAGE_KEYS.plants, PLANTA_AISA);
+        return tenantId ? plants.filter(p => p.tenantId === tenantId) : plants;
+    },
 
     // Areas
-    getAreas: (plantId?: string, userContext?: User): Area[] => {
+    getAreas: (plantId?: string, userContext?: User, tenantId?: string): Area[] => {
         const areas = getFromStorage(STORAGE_KEYS.areas, CENTROS_GESTION);
         let filtered = areas;
+
+        // Filter by Tenant
+        if (tenantId) {
+            filtered = filtered.filter(a => a.tenantId === tenantId);
+        }
 
         // Filter by Plant
         if (plantId) {
@@ -224,19 +248,26 @@ export const dataService = {
     },
 
     // Machines
-    getMachines: (areaId?: string): Machine[] => {
+    getMachines: (areaId?: string, tenantId?: string): Machine[] => {
         const machines = getFromStorage(STORAGE_KEYS.machines, EQUIPOS);
-        return areaId ? machines.filter(m => m.areaId === areaId) : machines;
+        let filtered = machines;
+        if (tenantId) filtered = filtered.filter(m => m.tenantId === tenantId);
+        return areaId ? filtered.filter(m => m.areaId === areaId) : filtered;
     },
 
     // Components
-    getComponents: (machineId?: string): Component[] => {
+    getComponents: (machineId?: string, tenantId?: string): Component[] => {
         const components = getFromStorage(STORAGE_KEYS.components, COMPONENTES);
-        return machineId ? components.filter(c => c.machineId === machineId) : components;
+        let filtered = components;
+        if (tenantId) filtered = filtered.filter(c => c.tenantId === tenantId);
+        return machineId ? filtered.filter(c => c.machineId === machineId) : filtered;
     },
 
     // Lubricants
-    getLubricants: (): Lubricant[] => getFromStorage(STORAGE_KEYS.lubricants, LUBRICANTES),
+    getLubricants: (tenantId?: string): Lubricant[] => {
+        const lubricants = getFromStorage(STORAGE_KEYS.lubricants, LUBRICANTES);
+        return tenantId ? lubricants.filter(l => l.tenantId === tenantId) : lubricants;
+    },
     addLubricant: (data: Omit<Lubricant, 'id' | 'createdAt'>): Lubricant => {
         const lubricants = getFromStorage(STORAGE_KEYS.lubricants, LUBRICANTES);
         const newLub: Lubricant = { ...data, id: generateId(), createdAt: new Date().toISOString() };
@@ -245,12 +276,17 @@ export const dataService = {
     },
 
     // Frequencies
-    getFrequencies: (): Frequency[] => getFromStorage(STORAGE_KEYS.frequencies, FRECUENCIAS),
+    getFrequencies: (tenantId?: string): Frequency[] => {
+        const frequencies = getFromStorage(STORAGE_KEYS.frequencies, FRECUENCIAS);
+        return tenantId ? frequencies.filter(f => f.tenantId === tenantId) : frequencies;
+    },
 
     // Lubrication Points
-    getLubricationPoints: (componentId?: string): LubricationPoint[] => {
+    getLubricationPoints: (componentId?: string, tenantId?: string): LubricationPoint[] => {
         const points = getFromStorage(STORAGE_KEYS.lubricationPoints, PUNTOS_LUBRICACION);
-        return componentId ? points.filter(p => p.componentId === componentId) : points;
+        let filtered = points;
+        if (tenantId) filtered = filtered.filter(p => p.tenantId === tenantId);
+        return componentId ? filtered.filter(p => p.componentId === componentId) : filtered;
     },
     addLubricationPoint: (data: Omit<LubricationPoint, 'id' | 'createdAt'>): LubricationPoint => {
         const points = getFromStorage(STORAGE_KEYS.lubricationPoints, PUNTOS_LUBRICACION);

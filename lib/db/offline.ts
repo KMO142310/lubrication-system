@@ -36,10 +36,26 @@ export class AisaOfflineDB extends Dexie {
 
     constructor() {
         super('AisaOfflineDB');
+
+        // Versión 1: Esquema original
         this.version(1).stores({
             tasks: 'id, work_order_id, status, sync_status',
             workOrders: 'id, scheduled_date, sync_status',
-            syncQueue: '++id, resource, created_at' // Cola FIFO
+            syncQueue: '++id, resource, created_at'
+        });
+
+        // Versión 2: Agregamos updated_at como índice
+        this.version(2).stores({
+            tasks: 'id, work_order_id, status, sync_status, updated_at',
+            workOrders: 'id, scheduled_date, sync_status',
+            syncQueue: '++id, resource, created_at'
+        });
+
+        // Versión 4: Multi-tenancy support
+        this.version(4).stores({
+            tasks: 'id, work_order_id, status, sync_status, tenant_id',
+            workOrders: 'id, scheduled_date, sync_status, tenant_id',
+            syncQueue: '++id, resource, created_at, tenant_id'
         });
     }
 }

@@ -12,6 +12,7 @@ export interface AuthUser {
     email: string;
     name: string;
     role: UserRole;
+    tenantId: string;       // REQUIRED for multi-tenancy
     contractorId?: string;
 }
 
@@ -27,6 +28,9 @@ interface AuthContextType {
     isAuthenticated: boolean;
 }
 
+// Mock Tenant ID for Offline/Dev mode
+const DEFAULT_TENANT_ID = 'tenant-aisa-dev';
+
 // Fallback users para cuando no hay conexión a Supabase
 const FALLBACK_USERS: (AuthUser & { password: string })[] = [
     {
@@ -35,6 +39,7 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         password: 'dev2026!',
         name: 'Desarrollador AISA',
         role: 'desarrollador',
+        tenantId: DEFAULT_TENANT_ID,
     },
     {
         id: 'user-sup-1',
@@ -42,6 +47,7 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         password: 'super123',
         name: 'Enrique Gonzáles M.',
         role: 'supervisor',
+        tenantId: DEFAULT_TENANT_ID,
     },
     {
         id: 'user-lub-1',
@@ -49,6 +55,7 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         password: 'omar123',
         name: 'Omar Alexis',
         role: 'lubricador',
+        tenantId: DEFAULT_TENANT_ID,
     },
     // Contratista Example
     {
@@ -58,6 +65,7 @@ const FALLBACK_USERS: (AuthUser & { password: string })[] = [
         name: 'Juan Pérez (Contratista)',
         role: 'supervisor_ext',
         contractorId: 'cont-123',
+        tenantId: DEFAULT_TENANT_ID,
     }
 ];
 
@@ -80,6 +88,7 @@ async function supabaseUserToAuthUser(supabaseUser: User): Promise<AuthUser> {
         email: supabaseUser.email || '',
         name: profile?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuario',
         role: profile?.role || 'lubricador',
+        tenantId: profile?.tenant_id || supabaseUser.user_metadata?.tenant_id || DEFAULT_TENANT_ID, // Fallback to safe default if migration not fully applied in dev
         contractorId: profile?.contractor_id,
     };
 }
@@ -97,9 +106,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (stored) {
                 try {
                     const parsedUser = JSON.parse(stored);
-                    // FORZAR LOGOUT si tiene rol antiguo (admin/tecnico)
-                    if (parsedUser.role === 'admin' || parsedUser.role === 'tecnico') {
-                        console.log('⚠️ Sesión con rol antiguo, forzando logout');
+                    // FORZAR LOGOUT si tiene rol antiguo O si falta tenantId
+                    if (
+                        parsedUser.role === 'admin' ||
+                        parsedUser.role === 'tecnico' ||
+                        !parsedUser.tenantId
+                    ) {
+                        console.log('⚠️ Sesión inválida (rol antiguo o falta tenant), forzando logout');
                         localStorage.removeItem(AUTH_STORAGE_KEY);
                         localStorage.removeItem('aisa_data_initialized_v12');
                         setUser(null);

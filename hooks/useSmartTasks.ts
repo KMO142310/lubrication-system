@@ -1,35 +1,83 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { dbLocal, OfflineTask } from '@/lib/db/offline';
 import { supabase } from '@/lib/supabase';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 /**
- * AGI LEVEL HOOK: useSmartTasks
+ * AGI LEVEL HOOK: useSmartTasks (v2 - Defensive)
  * 
  * Este hook encapsula toda la complejidad de la sincronización.
  * - Si hay internet: Carga de Supabase y guarda en local (Cache-first).
  * - Si no hay internet: Carga de local (Offline-first).
  * - Si hay cambios locales pendientes: Los fusiona en tiempo real.
+ * 
+ * v2: Manejo defensivo de errores de Dexie (tablas vacías, índices faltantes).
  */
 export function useSmartTasks(date: Date) {
     const dateStr = date.toISOString().split('T')[0];
 
-    // 1. Fuente de la Verdad Local (Reactiva)
-    const localTasks = useLiveQuery(() =>
-        dbLocal.tasks
-            .where('updated_at')
-            .between(dateStr + "T00:00:00", dateStr + "T23:59:59") // Simple filtro por fecha (mejorar índice si es necesario)
-            .toArray()
-        , [dateStr]);
-
-    // FIXME: Dexie where clause limitation strings. For now loading all and filtering in memory or improving schema if performance issues arise.
-    // Optimization: Load by work_order_id linked to date.
-
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [dbReady, setDbReady] = useState(false);
+
+    // Verificar que Dexie está inicializado
+    useEffect(() => {
+        async function checkDb() {
+            try {
+                // Forzar apertura de la base de datos
+                await dbLocal.open();
+                setDbReady(true);
+            } catch (error) {
+                console.error('❌ Error inicializando Dexie:', error);
+                // Si falla, intentamos recrear la DB
+                try {
+                    await dbLocal.delete();
+                    await dbLocal.open();
+                    setDbReady(true);
+                } catch (e2) {
+                    console.error('❌ Error crítico en Dexie:', e2);
+                    setDbReady(false);
+                }
+            }
+        }
+        checkDb();
+    }, []);
+
+    // Fallback: Si Dexie lanza error de esquema en el mount, borramos DB
+    useEffect(() => {
+        const handleError = (event: ErrorEvent) => {
+            if (event.message?.includes('KeyPath') || event.message?.includes('SchemaError')) {
+                console.warn('🔄 Detectado error de esquema, recreando DB...');
+                dbLocal.delete().then(() => {
+                    window.location.reload();
+                });
+            }
+        };
+        window.addEventListener('error', handleError);
+        return () => window.removeEventListener('error', handleError);
+    }, []);
+
+    // 1. Fuente de la Verdad Local (Reactiva) - Con fallback defensivo
+    const localTasks = useLiveQuery(
+        async () => {
+            if (!dbReady) return [];
+            try {
+                // Cargar todas las tareas (simplificado para evitar errores de índice)
+                const allTasks = await dbLocal.tasks.toArray();
+                return allTasks;
+            } catch (error) {
+                console.error('❌ Error leyendo tareas locales:', error);
+                return [];
+            }
+        },
+        [dbReady], // Dependencia en dbReady
+        [] // Valor por defecto mientras carga
+    );
 
     // 2. Sincronización Inteligente (Background)
     useEffect(() => {
+        if (!dbReady) return;
+
         async function syncFromCloud() {
             if (!navigator.onLine) {
                 setIsLoading(false);
@@ -39,26 +87,24 @@ export function useSmartTasks(date: Date) {
             setIsSyncing(true);
             try {
                 // A. Buscar WorkOrder del día
-                const { data: woData } = await supabase
+                const { data: woData, error: woError } = await supabase
                     .from('work_orders')
                     .select('id, status')
                     .eq('scheduled_date', dateStr)
-                    .single();
+                    .maybeSingle(); // Usar maybeSingle para evitar error si no existe
+
+                if (woError) {
+                    console.warn('⚠️ No se encontró WorkOrder para hoy:', woError.message);
+                }
 
                 if (woData) {
                     // B. Buscar Tareas
                     const { data: tasksData } = await supabase
                         .from('tasks')
-                        .select(`
-                *,
-                lubrication_point:lubrication_points (
-                    *,
-                    component:components(name, machine:machines(name, area:areas(name)))
-                )
-            `)
+                        .select('*')
                         .eq('work_order_id', woData.id);
 
-                    if (tasksData) {
+                    if (tasksData && tasksData.length > 0) {
                         // C. Actualizar Local DB (Cache Update)
                         await dbLocal.transaction('rw', dbLocal.tasks, dbLocal.workOrders, async () => {
                             // Upsert WorkOrder
@@ -69,10 +115,9 @@ export function useSmartTasks(date: Date) {
                                 sync_status: 'synced'
                             });
 
-                            // Upsert Tasks (Solo si no hay cambios locales pendientes para no sobrescribir trabajo del usuario)
+                            // Upsert Tasks
                             for (const task of tasksData) {
                                 const localVersion = await dbLocal.tasks.get(task.id);
-                                // Regla de Oro: Si localmente está "pendiente de subida", NO sobrescribir con la nube
                                 if (!localVersion || localVersion.sync_status === 'synced') {
                                     await dbLocal.tasks.put({
                                         id: task.id,
@@ -82,8 +127,6 @@ export function useSmartTasks(date: Date) {
                                         quantity_used: task.quantity_used || 0,
                                         updated_at: task.updated_at || new Date().toISOString(),
                                         sync_status: 'synced',
-                                        // Guardamos datos relacionales desnormalizados para visualización offline?
-                                        // Idealmente sí, o tener tablas 'meta_data'. Por ahora simplificado.
                                     });
                                 }
                             }
@@ -99,38 +142,41 @@ export function useSmartTasks(date: Date) {
         }
 
         syncFromCloud();
-    }, [dateStr]);
+    }, [dateStr, dbReady]);
 
     // 3. Acciones "Optimistas"
-    const completeTask = async (taskId: string, quantity: number, notes?: string) => {
-        // A. Actualizar UI Local Inmediatamente
-        await dbLocal.tasks.update(taskId, {
-            status: 'completado',
-            quantity_used: quantity,
-            notes,
-            sync_status: 'pending_update', // Marcar para subir
-            updated_at: new Date().toISOString()
-        });
-
-        // B. Encolar para subida
-        await dbLocal.syncQueue.add({
-            resource: 'tasks',
-            action: 'update',
-            payload: { id: taskId, status: 'completado', quantity_used: quantity, notes },
-            created_at: Date.now(),
-            retry_count: 0
-        });
-
-        // C. Intentar subir ya (si hay red) - "Fire and Forget"
-        if (navigator.onLine) {
-            // El SyncEngine (via useEffect o evento) se encargará, o podemos forzarlo:
-            // import { processSyncQueue } from './sync-engine'; processSyncQueue();
+    const completeTask = useCallback(async (taskId: string, quantity: number, notes?: string) => {
+        if (!dbReady) {
+            console.warn('DB no lista, reintentando...');
+            return;
         }
-    };
+
+        try {
+            // A. Actualizar UI Local Inmediatamente
+            await dbLocal.tasks.update(taskId, {
+                status: 'completado',
+                quantity_used: quantity,
+                notes,
+                sync_status: 'pending_update',
+                updated_at: new Date().toISOString()
+            });
+
+            // B. Encolar para subida
+            await dbLocal.syncQueue.add({
+                resource: 'tasks',
+                action: 'update',
+                payload: { id: taskId, status: 'completado', quantity_used: quantity, notes },
+                created_at: Date.now(),
+                retry_count: 0
+            });
+        } catch (error) {
+            console.error('Error completando tarea:', error);
+        }
+    }, [dbReady]);
 
     return {
-        tasks: localTasks,
-        isLoading,
+        tasks: localTasks || [],
+        isLoading: isLoading || !dbReady,
         isSyncing,
         completeTask
     };

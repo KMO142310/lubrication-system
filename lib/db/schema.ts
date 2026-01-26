@@ -2,11 +2,24 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 // ===================================
+// MULTI-TENANCY CORE
+// ===================================
+
+export const tenants = sqliteTable('tenants', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    slug: text('slug').notNull().unique(),
+    logoUrl: text('logo_url'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ===================================
 // CORE SYSTEM
 // ===================================
 
 export const users = sqliteTable('users', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
     password: text('password'), // In real app: hashed
@@ -16,6 +29,7 @@ export const users = sqliteTable('users', {
 
 export const plants = sqliteTable('plants', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     name: text('name').notNull(),
     location: text('location'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
@@ -23,6 +37,7 @@ export const plants = sqliteTable('plants', {
 
 export const areas = sqliteTable('areas', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     plantId: text('plant_id').references(() => plants.id).notNull(),
     name: text('name').notNull(),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
@@ -30,6 +45,7 @@ export const areas = sqliteTable('areas', {
 
 export const machines = sqliteTable('machines', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     areaId: text('area_id').references(() => areas.id).notNull(),
     name: text('name').notNull(),
     status: text('status').default('active'),
@@ -38,6 +54,7 @@ export const machines = sqliteTable('machines', {
 
 export const components = sqliteTable('components', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     machineId: text('machine_id').references(() => machines.id).notNull(),
     name: text('name').notNull(),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
@@ -49,6 +66,7 @@ export const components = sqliteTable('components', {
 
 export const lubricants = sqliteTable('lubricants', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     name: text('name').notNull(),
     type: text('type').notNull(), // 'aceite' | 'grasa'
     pricePerUnit: real('price_per_unit'),
@@ -57,6 +75,7 @@ export const lubricants = sqliteTable('lubricants', {
 
 export const frequencies = sqliteTable('frequencies', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     name: text('name').notNull(),
     days: integer('days').notNull(),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
@@ -64,6 +83,7 @@ export const frequencies = sqliteTable('frequencies', {
 
 export const lubricationPoints = sqliteTable('lubrication_points', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     componentId: text('component_id').references(() => components.id).notNull(),
     lubricantId: text('lubricant_id').references(() => lubricants.id).notNull(),
     frequencyId: text('frequency_id').references(() => frequencies.id).notNull(),
@@ -80,6 +100,7 @@ export const lubricationPoints = sqliteTable('lubrication_points', {
 
 export const workOrders = sqliteTable('work_orders', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     scheduledDate: text('scheduled_date').notNull(),
     status: text('status').notNull(), // 'pendiente' | 'completado'
     technicianId: text('technician_id').references(() => users.id),
@@ -89,6 +110,7 @@ export const workOrders = sqliteTable('work_orders', {
 
 export const tasks = sqliteTable('tasks', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     workOrderId: text('work_order_id').references(() => workOrders.id).notNull(),
     lubricationPointId: text('lubrication_point_id').references(() => lubricationPoints.id).notNull(),
     status: text('status').notNull(), // 'pendiente' | 'completado' | 'omitido'
@@ -105,6 +127,7 @@ export const tasks = sqliteTable('tasks', {
 
 export const inventory = sqliteTable('inventory', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     lubricantId: text('lubricant_id').references(() => lubricants.id).notNull(),
     quantity: real('quantity').notNull(),
     minStock: real('min_stock').notNull(),
@@ -115,6 +138,7 @@ export const inventory = sqliteTable('inventory', {
 
 export const sensors = sqliteTable('sensors', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     machineId: text('machine_id').references(() => machines.id),
     type: text('type').notNull(), // 'vibration' | 'temperature'
     unit: text('unit').notNull(),
@@ -125,6 +149,9 @@ export const sensors = sqliteTable('sensors', {
 
 export const sensorReadings = sqliteTable('sensor_readings', {
     id: text('id').primaryKey(),
+    // sensorReadings are typically massive and might not need tenantId directly if they link to sensors which have tenantId, 
+    // BUT for partitioning/RLS usually we want it. Added for consistency.
+    tenantId: text('tenant_id').references(() => tenants.id),
     sensorId: text('sensor_id').references(() => sensors.id).notNull(),
     value: real('value').notNull(),
     timestamp: text('timestamp').default(sql`CURRENT_TIMESTAMP`),
@@ -132,6 +159,7 @@ export const sensorReadings = sqliteTable('sensor_readings', {
 
 export const anomalies = sqliteTable('anomalies', {
     id: text('id').primaryKey(),
+    tenantId: text('tenant_id').references(() => tenants.id),
     machineId: text('machine_id').references(() => machines.id),
     type: text('type').notNull(),
     severity: text('severity').notNull(), // 'baja' | 'media' | 'alta'
