@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Oswald } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { GlobalStatusBar } from "@/components/GlobalStatusBar";
 import "./globals.css";
 
 const inter = Inter({
@@ -57,6 +58,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
+          <GlobalStatusBar />
           {children}
         </Providers>
       </body>

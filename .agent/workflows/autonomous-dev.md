@@ -1,67 +1,25 @@
 ---
-description: Ciclo de desarrollo autónomo que ejecuta todas las fases del ROADMAP secuencialmente
+description: Ciclo de desarrollo autónomo que ejecuta todas las fases del ROADMAP secuencialmente.
 ---
 
-# Autonomous Development Cycle
+# Autonomous Development Workflow
 
-Este workflow automatiza el desarrollo continuo del sistema AISA siguiendo el ROADMAP_ENTERPRISE.md.
+Este workflow dirige la ejecución del Roadmap de Evolución.
 
-## Pre-requisitos
-- El servidor de desarrollo debe estar corriendo (`npm run dev`)
-- Git configurado y con acceso a GitHub
-- Supabase configurado en .env.local
+## Ejecución por Niveles
 
-## Fases de Ejecución
+### Nivel 1: Cimientos (Phase 1)
+- Ejecutar `/audit-cycle` para asegurar estabilidad.
+- Verificar despliegue en producción.
 
-### 1. Verificar Estado Actual
-```bash
-// turbo
-git status
-```
-- Leer `ROADMAP_ENTERPRISE.md` para determinar la siguiente fase pendiente
-- Verificar que el build actual funciona: `npm run build -- --webpack`
+### Nivel 2: Offline (Phase 2)
+- Activar skill `offline-sync-architect`.
+- Crear módulo de sincronización.
+- Ejecutar test de desconexión.
 
-### 2. Ejecutar Siguiente Fase del ROADMAP
-Seguir los prompts exactos definidos en ROADMAP_ENTERPRISE.md para la fase actual.
-Las fases son:
-- **1.1**: Supabase Sync ✅ COMPLETADA
-- **1.2**: Autenticación Supabase
-- **1.3**: Upload de Fotos a Storage
-- **2.1**: Multi-tenancy
-- **2.2**: Onboarding de Empresas
-- **2.3**: Dashboard por Rol
+### Nivel 3: Identidad (Phase 3)
+- Generar script de QRs.
+- Implementar scanner en la app.
 
-### 3. Verificación Post-Implementación
-// turbo
-```bash
-npm run build -- --webpack
-```
-- Si hay errores, corregirlos antes de continuar
-
-### 4. Commit y Deploy
-```bash
-git add -A && git commit -m "feat(phase-X.Y): [descripción]"
-git push origin main
-```
-
-// turbo
-```bash
-vercel --prod
-```
-
-### 5. Actualizar ROADMAP
-- Marcar la fase completada en ROADMAP_ENTERPRISE.md
-- Actualizar la sección "EN PROGRESO"
-- Agregar a "FASE X.Y COMPLETADA"
-
-### 6. Notificar Usuario
-Usar `notify_user` para informar:
-- Qué fase se completó
-- Qué archivos se crearon/modificaron
-- URL de deploy
-- Siguiente fase a ejecutar
-
-## Condición de Parada
-- Si todas las fases hasta 2.3 están completadas
-- Si hay un error que requiere decisión humana
-- Si el usuario envía un mensaje de interrupción
+## Instrucciones para el Agente
+Si el usuario invoca `/autonomous-dev`, determina en qué fase estamos (ver `ROADMAP_EVOLUTION.md`) y ejecuta las tareas pendientes de esa fase usando el ciclo R.E.A.L. (`/evolution-cycle`).
