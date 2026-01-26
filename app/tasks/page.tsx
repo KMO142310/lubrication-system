@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { saveCompletedTask, getCompletedTasksFromServer, isOnline } from '@/lib/sync';
+import { useSmartTasks } from '@/hooks/useSmartTasks';
 import { validateTaskExecution } from '@/lib/quality-control';
 import { useAuth } from '@/lib/auth';
 import { generateWorkOrderPDF } from '@/lib/pdf';
@@ -48,9 +49,11 @@ interface TaskExecution {
 export default function TasksPage() {
   const { user } = useAuth();
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
-  const [tasks, setTasks] = useState<EnrichedTask[]>([]);
+  const today = new Date();
+  const { tasks: smartTasks, isLoading: loading, completeTask } = useSmartTasks(today);
+
+  // Estados de UI
   const [selectedTask, setSelectedTask] = useState<EnrichedTask | null>(null);
-  const [loading, setLoading] = useState(true);
   const [executionMode, setExecutionMode] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
@@ -61,98 +64,66 @@ export default function TasksPage() {
     observations: '',
   });
 
-  interface ServerTaskData {
-    id: string;
-    lubricationPointId?: string;
-    status: string;
-    quantityUsed?: number;
-    observations?: string;
-    photoUrl?: string;
-    completedAt?: string;
-  }
-
-  const loadData = async () => {
-    // Inicializar datos locales
-    dataService.init();
-
-    // Cargar tareas completadas desde Supabase (fuente de verdad)
-    const serverTasksByPoint: Record<string, ServerTaskData> = {};
-    if (isOnline()) {
-      const serverTasks = await getCompletedTasksFromServer();
-      console.log('📥 Tareas del servidor:', serverTasks.length);
-
-      // Mapear por lubrication_point_id (clave única real)
-      serverTasks.forEach(st => {
-        if (st.lubricationPointId) {
-          serverTasksByPoint[st.lubricationPointId] = st;
-        }
-      });
-    }
-
-    const wo = dataService.getTodayWorkOrder();
-    if (wo) {
-      setWorkOrder(wo);
-
-      const rawTasks = dataService.getTasks(wo.id);
-      const points = dataService.getLubricationPoints();
-      const components = dataService.getComponents();
-      const machines = dataService.getMachines();
-      const lubricants = dataService.getLubricants();
-      const frequencies = dataService.getFrequencies();
-
-      console.log('🔍 DEBUG - Tareas raw:', rawTasks.length, rawTasks.map(t => t.lubricationPointId));
-      console.log('🔍 DEBUG - Puntos:', points.length);
-      console.log('🔍 DEBUG - Componentes:', components.length);
-      console.log('🔍 DEBUG - Máquinas:', machines.length);
-
-      const enriched: EnrichedTask[] = rawTasks.map(task => {
-        const lp = points.find(p => p.id === task.lubricationPointId)!;
-        const comp = lp ? components.find(c => c.id === lp.componentId) : null;
-        const mach = comp ? machines.find(m => m.id === comp.machineId) : null;
-        const lub = lp ? lubricants.find(l => l.id === lp.lubricantId) : null;
-        const freq = lp ? frequencies.find(f => f.id === lp.frequencyId) : null;
-
-        if (!lp || !mach) {
-          console.log('⚠️ Tarea sin datos:', task.lubricationPointId, 'lp:', !!lp, 'comp:', !!comp, 'mach:', !!mach);
-        }
-
-        // Merge con datos del servidor (por punto de lubricación)
-        const serverData = serverTasksByPoint[task.lubricationPointId];
-        if (serverData && serverData.status === 'completado') {
-          return {
-            ...task,
-            status: 'completado' as const,
-            quantityUsed: serverData.quantityUsed,
-            observations: serverData.observations,
-            photoUrl: serverData.photoUrl,
-            completedAt: serverData.completedAt,
-            lubricationPoint: lp,
-            component: comp!,
-            machine: mach!,
-            lubricant: lub!,
-            frequency: freq!
-          };
-        }
-
-        return { ...task, lubricationPoint: lp, component: comp!, machine: mach!, lubricant: lub!, frequency: freq! };
-      }).filter(t => t.lubricationPoint && t.machine && t.lubricant);
-
-      console.log('📊 Tareas enriquecidas:', enriched.filter(t => t.status === 'completado').length, 'completadas de', enriched.length);
-      setTasks(enriched);
-    }
-    setLoading(false);
-  };
+  // Transformar offline tasks a formato visual de la UI
+  // Nota: En una refactorización mayor, eliminaríamos 'dataService' y usaríamos solo 'smartTasks'
+  // Por ahora, hacemos un merge en memoria para mantener compatibilidad con el resto de la UI
+  const [enrichedTasks, setEnrichedTasks] = useState<EnrichedTask[]>([]);
 
   useEffect(() => {
-    loadData();
+    if (!smartTasks) return;
 
-    // Refrescar cada 30 segundos para sincronizar
-    const interval = setInterval(() => {
-      loadData();
-    }, 30000);
+    // Aquí enriqueceríamos los datos offline con los maestros (máquinas, componentes)
+    // Para simplificar esta iteración, seguimos usando dataService para los maestros estáticos
+    // y usamos smartTasks para el estado dinámico (status, quantity).
 
-    return () => clearInterval(interval);
-  }, []);
+    dataService.init(); // Asegurar maestros cargados
+    const points = dataService.getLubricationPoints();
+    const components = dataService.getComponents();
+    const machines = dataService.getMachines();
+    const lubricants = dataService.getLubricants();
+    const frequencies = dataService.getFrequencies();
+
+    // Workaround: Obtener tareas base del día desde dataService para tener la estructura
+    // y sobreescribir estado con lo que viene de Dexie (smartTasks)
+    const baseTasks = dataService.getTasks(dataService.getTodayWorkOrder()?.id || '');
+
+    const todayWO = dataService.getTodayWorkOrder();
+    if (todayWO) {
+      setWorkOrder(todayWO);
+    }
+
+    const merged = baseTasks.map(baseTask => {
+      const offlineVersion = smartTasks.find(t => t.id === baseTask.id);
+
+      // Estado final: Si hay versión offline manda esa, sino la base
+      const status = offlineVersion ? offlineVersion.status : baseTask.status;
+      const qty = offlineVersion ? offlineVersion.quantity_used : baseTask.quantityUsed;
+
+      // Enriquecer
+      const lp = points.find(p => p.id === baseTask.lubricationPointId)!;
+      const comp = lp ? components.find(c => c.id === lp.componentId) : null;
+      const mach = comp ? machines.find(m => m.id === comp.machineId) : null;
+      const lub = lp ? lubricants.find(l => l.id === lp.lubricantId) : null;
+      const freq = lp ? frequencies.find(f => f.id === lp.frequencyId) : null;
+
+      return {
+        ...baseTask,
+        status: status as any,
+        quantityUsed: qty,
+        lubricationPoint: lp,
+        component: comp!,
+        machine: mach!,
+        lubricant: lub!,
+        frequency: freq!
+      };
+    }).filter(t => t.lubricationPoint && t.machine); // Filtrar data incompleta
+
+    setEnrichedTasks(merged);
+
+  }, [smartTasks]);
+
+  // Aliases para compatibilidad con código existente
+  const tasks = enrichedTasks;
 
   const openTaskExecution = (task: EnrichedTask) => {
     setSelectedTask(task);
@@ -194,50 +165,13 @@ export default function TasksPage() {
       }
     }
 
-    const completedAt = new Date().toISOString();
-    const photoUrl = execution.photoAfter;
+    // AGI Pattern: Usar la abstracción offline-first
+    // Esto es instantáneo en UI y asíncrono en red (Fire & Forget)
+    await completeTask(selectedTask.id, execution.quantityUsed, execution.observations);
 
-    // PRIMERO: Guardar en Supabase (fuente de verdad)
-    toast.loading('Guardando en servidor...', { id: 'saving' });
+    toast.success('Tarea guardada localmente (Subiendo...)');
 
-    const result = await saveCompletedTask({
-      id: selectedTask.id,
-      workOrderId: selectedTask.workOrderId,
-      lubricationPointId: selectedTask.lubricationPointId,
-      status: 'completado',
-      quantityUsed: execution.quantityUsed,
-      observations: execution.observations,
-      photoUrl: photoUrl.substring(0, 100),
-      completedAt,
-    });
-
-    toast.dismiss('saving');
-
-    if (result.success) {
-      toast.success(`✅ ${selectedTask.lubricationPoint.code} GUARDADO en servidor`);
-    } else if (result.queued) {
-      toast.success(`📱 ${selectedTask.lubricationPoint.code} en cola (se sincronizará)`);
-    } else {
-      toast.error(`⚠️ Error: ${result.error}`);
-    }
-
-    // SEGUNDO: Actualizar localStorage como caché
-    dataService.updateTask(selectedTask.id, {
-      status: 'completado',
-      quantityUsed: execution.quantityUsed,
-      completedAt,
-      observations: execution.observations,
-      photoUrl,
-    });
-
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === selectedTask.id
-          ? { ...t, status: 'completado', completedAt, photoUrl }
-          : t
-      )
-    );
-
+    // Cerrar modal inmediatamente
     setSelectedTask(null);
     setExecutionMode(false);
   };
@@ -283,7 +217,6 @@ export default function TasksPage() {
       generateWorkOrderPDF(pdfData);
       toast.success('Ruta firmada y PDF descargado');
       setShowSignature(false);
-      loadData();
     }
   };
 
