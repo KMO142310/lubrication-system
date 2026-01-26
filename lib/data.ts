@@ -58,7 +58,7 @@ function generateId(): string {
 }
 
 // Versión de datos - incrementar para forzar reset en clientes
-const DATA_VERSION = 'v4.0.1-real-data';
+const DATA_VERSION = 'v4.1.0-full-calendar';
 
 function initializeData(): void {
     if (typeof window === 'undefined') return;
@@ -145,40 +145,50 @@ function generateWeeklyWorkOrders(): void {
     today.setHours(0, 0, 0, 0);
     const dateStr = today.toISOString().split('T')[0];
 
-    // HOY: Crear orden de trabajo con las tareas que tocan hoy según frecuencia
-    const woId = `wo-${dateStr}`;
+    // Generar órdenes para +/- 15 días desde hoy para poblar el calendario
+    const startOffset = -7;
+    const endOffset = 21; // 3 semanas a futuro
 
-    // Obtener tareas que corresponden hoy según día de semana/mes
-    const tareasParaHoy = getTareasPorFecha(today);
+    for (let i = startOffset; i <= endOffset; i++) {
+        const loopDate = new Date();
+        loopDate.setDate(today.getDate() + i);
+        loopDate.setHours(0, 0, 0, 0);
 
-    if (tareasParaHoy.length > 0) {
-        workOrders.push({
-            id: woId,
-            scheduledDate: dateStr,
-            status: 'pendiente',
-            technicianId: 'user-lub-1',
-            createdAt: new Date().toISOString(),
-        });
+        const dateStr = loopDate.toISOString().split('T')[0];
+        const woId = `wo-${dateStr}`;
 
-        tareasParaHoy.forEach((point: LubricationPoint) => {
-            tasks.push({
-                id: `task-${woId}-${point.id}`,
-                workOrderId: woId,
-                lubricationPointId: point.id,
-                status: 'pendiente',
+        // Obtener tareas para esa fecha
+        const tareasParaEseDia = getTareasPorFecha(loopDate);
+
+        if (tareasParaEseDia.length > 0) {
+            // Verificar si ya existe para no duplicar (aunque el reset limpia todo)
+            workOrders.push({
+                id: woId,
+                scheduledDate: dateStr,
+                status: dateStr < new Date().toISOString().split('T')[0] ? 'completado' : 'pendiente', // Pasado como completado simulado
+                technicianId: 'user-lub-1',
                 createdAt: new Date().toISOString(),
             });
-            console.log('✅ Tarea programada para hoy:', point.code, point.description);
-        });
-    } else {
-        console.log('ℹ️ Para hoy no hay tareas según el plan de mantenimiento.');
+
+            tareasParaEseDia.forEach((point: LubricationPoint) => {
+                tasks.push({
+                    id: `task-${woId}-${point.id}`,
+                    workOrderId: woId,
+                    lubricationPointId: point.id,
+                    status: dateStr < new Date().toISOString().split('T')[0] ? 'completado' : 'pendiente', // Pasado as completed
+                    createdAt: new Date().toISOString(),
+                });
+            });
+        }
     }
+
+    console.log(`📅 Calendario generado: ${workOrders.length} órdenes de trabajo creadas.`);
 
     saveToStorage(STORAGE_KEYS.workOrders, workOrders);
     saveToStorage(STORAGE_KEYS.tasks, tasks);
     saveToStorage(STORAGE_KEYS.anomalies, []);
 
-    console.log('📋 Orden de trabajo creada:', woId, 'con', tasks.length, 'tareas');
+    console.log('📋 Generación completada.');
 }
 
 export const dataService = {
