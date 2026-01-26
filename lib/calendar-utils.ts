@@ -152,32 +152,7 @@ export function generarCalendarioMes(año: number, mes: number, turnoInicial: Tu
 }
 
 // Generar rango de fechas (ej: 24 enero - 28 febrero)
-export function generarRangoFechas(
-    fechaInicio: Date,
-    fechaFin: Date,
-    turnoInicial: Turno = 'A'
-): DiaCalendario[] {
-    const dias: DiaCalendario[] = [];
-    const current = new Date(fechaInicio);
 
-    while (current <= fechaFin) {
-        const turno = getTurnoSemana(current, turnoInicial);
-        const esTrabajo = esDiaTrabajo(current, turno);
-        const tareas = esTrabajo ? getTareasParaFecha(current) : [];
-
-        dias.push({
-            fecha: new Date(current),
-            esTrabajo,
-            turno,
-            tareas,
-            totalTareas: tareas.length,
-        });
-
-        current.setDate(current.getDate() + 1);
-    }
-
-    return dias;
-}
 
 // Resumen de tareas por frecuencia
 export function getResumenTareas() {

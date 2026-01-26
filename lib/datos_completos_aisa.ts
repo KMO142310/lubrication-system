@@ -318,17 +318,7 @@ export const PUNTOS_LUBRICACION: LubricationPoint[] = [
 // RESUMEN DE TAREAS POR FRECUENCIA
 // ============================================================
 
-export const RESUMEN_TAREAS = {
-  diarias: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-8hrs').length,
-  diaPorMedio: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-dia-medio').length,
-  semanales: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-40hrs').length,
-  quincenales: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-160hrs').length,
-  mensuales: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-mensual').length,
-  trimestrales: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-trimestral').length,
-  semestrales: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-semestral').length,
-  anuales: PUNTOS_LUBRICACION.filter(lp => lp.frequencyId === 'freq-anual').length,
-  total: PUNTOS_LUBRICACION.length,
-};
+
 
 // Función helper para obtener tareas por fecha
 export function getTareasPorFecha(fecha: Date): LubricationPoint[] {

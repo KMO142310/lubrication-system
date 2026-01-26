@@ -299,13 +299,7 @@ function getDeviceInfo(): string {
 // GPS Y GEOLOCALIZACIÓN (Opcional - funciona sin señal)
 // ============================================================
 
-export interface LocationData {
-  lat: number;
-  lng: number;
-  accuracy: number;
-  timestamp: string;
-  source: 'gps' | 'network' | 'unavailable';
-}
+
 
 
 
