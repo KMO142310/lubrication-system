@@ -2,61 +2,32 @@
 
 ## Documento de Transformación a Producto Comercial
 
-**Versión:** 1.1  
-**Fecha:** 25 Enero 2026  
-**Última Actualización:** 25-01-2026 18:55  
+**Versión:** 1.2
+**Fecha:** 26 Enero 2026
+**Última Actualización:** 26-01-2026 03:45
 **Objetivo:** Convertir el sistema actual (personalizado para AISA) en un producto SaaS multi-tenant vendible a miles de empresas industriales.
 
 ---
 
 ## ESTADO ACTUAL DEL PROYECTO (ACTUALIZADO)
 
-### ✅ Lo que YA está implementado:
+### ✅ Lo que YA está implementado (FASE 1 COMPLETADA):
 | Componente | Estado | Notas |
 |------------|--------|-------|
-| Autenticación local | ✅ | Usuarios hardcodeados |
-| UI/UX móvil responsive | ✅ | Next.js 16 + CSS Industrial |
-| Gestión de tareas | ✅ | CRUD completo |
-| Captura de fotos | ✅ | Anti-fraude básico |
-| Firma digital | ✅ | Canvas signature |
-| Generación PDF | ✅ | jsPDF + autoTable |
-| Jerarquía de activos | ✅ | Planta > Área > Equipo |
-| Supabase configurado | ✅ | Tablas creadas |
-| Deploy en Vercel | ✅ | https://lubrication-system.vercel.app |
-| **Datos Reales Foresa** | ✅ | 5 áreas, 61 máquinas |
-| **Sidebar Industrial** | ✅ | Estilos HMI/SCADA |
-| **Next.js 16 Compatible** | ✅ | Promise params fixed |
+| **Autenticación Híbrida** | ✅ | Auto-login dev + Login real Supabase |
+| **Persistencia Híbrida** | ✅ | SQLite (Operativo) + Supabase (Auth/Storage) |
+| **Gestión de tareas** | ✅ | CRUD completo + Validación |
+| **Captura de fotos** | ✅ | Subida a Supabase Storage + Fallback JS |
+| **Firma digital** | ✅ | Canvas signature |
+| **Generación PDF** | ✅ | jsPDF + autoTable profesional |
+| **Jerarquía Completa** | ✅ | Planta 8006 (Línea Gruesa) integrada |
+| **Ciclos Autónomos** | ✅ | Auditoría y Evolución activos |
 
-### 🔄 EN PROGRESO:
+### 🔄 PRÓXIMOS PASOS (FASE 2):
 | Componente | Estado | Notas |
 |------------|--------|-------|
-| UI Industrial (Fase 0) | 🔄 80% | Sidebar done, Dashboard pending |
-| Componentes HMI | 🔄 50% | LEDs, Gauges, Tags creados |
-
-### ✅ FASE 1.1 COMPLETADA (25-01-2026):
-| Componente | Estado | Notas |
-|------------|--------|-------|
-| Supabase Sync | ✅ | `lib/supabase-sync.ts` |
-| Realtime Subscriptions | ✅ | postgres_changes |
-| Offline Queue | ✅ | localStorage + auto-retry |
-| useSyncStatus Hook | ✅ | `hooks/useSyncStatus.ts` |
-
-### ✅ FASE 1.2 COMPLETADA (25-01-2026):
-| Componente | Estado | Notas |
-|------------|--------|-------|
-| Login Supabase | ✅ | Email/password + fallback local |
-| Register | ✅ | `/register` page |
-| Forgot Password | ✅ | `/forgot-password` page |
-| Google OAuth | ✅ | Prepared (need Supabase config) |
-| Passkey (WebAuthn) | ✅ | MVP implementation |
-
-### ✅ FASE 1.3 COMPLETADA (25-01-2026):
-| Componente | Estado | Notas |
-|------------|--------|-------|
-| Upload to Supabase Storage | ✅ | `lib/sync.ts` |
-| Image Compression | ✅ | Max 1200px, 80% quality |
-| Retry with Backoff | ✅ | 3 attempts |
-| Structured Paths | ✅ | `photos/{date}/{taskId}_{type}_{ts}.jpg` |
+| Multi-tenancy | ⏳ Pendiente | Arquitectura de organizaciones |
+| Onboarding de empresas | ⏳ Pendiente | Wizard de configuración |
 
 ### ❌ Lo que FALTA para Enterprise:
 | Componente | Prioridad | Complejidad | Fase |

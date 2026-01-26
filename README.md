@@ -115,8 +115,22 @@ Esto levantará el contenedor con `aisa.db` persistente.
 ## 🛠 Instalación y Desarrollo
 ```bash
 npm install
-npx tsx scripts/seed.ts # Cargar datos iniciales
 npm run dev
+
+## 🛠 Mantenimiento de Datos (Contingencia)
+Si la base de datos se corrompe o se necesita reiniciar el entorno de pruebas, use el script maestro de recuperación:
+
+```bash
+npx tsx scripts/reseed-full.ts
+```
+
+Esto ejecutará:
+1. Limpieza total de tablas
+2. Regeneración de catálogos (Lubricantes, Frecuencias)
+3. Carga de equipos críticos (Línea Gruesa 8006, HMK20, etc.)
+4. Generación de órdenes de trabajo para el día actual
+
+**Nota Importante**: El sistema utiliza **SQLite (`aisa.db`)** como base de datos principal para las tareas operativas, asegurando funcionamiento offline/local robusto. La integración con Supabase se reserva para Auth y Storage (fotos).
 ```
 
 ---
