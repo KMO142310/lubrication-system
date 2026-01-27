@@ -67,22 +67,3 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 }
 
-/**
- * HOC para envolver componentes con un ErrorBoundary automáticamente.
- */
-export function withErrorBoundary<P extends object>(
-    Component: React.ComponentType<P>,
-    fallback?: ReactNode,
-    userMessage?: string
-): React.FC<P> {
-    const WrappedComponent = (props: P) => (
-        <ErrorBoundary fallback={fallback} userMessage={userMessage}>
-            <Component {...props} />
-        </ErrorBoundary>
-    );
-
-    const name = Component.displayName || Component.name || 'Component';
-    WrappedComponent.displayName = `withErrorBoundary(${name})`;
-
-    return WrappedComponent;
-}

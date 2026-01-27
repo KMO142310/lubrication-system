@@ -1,0 +1,23 @@
+🔍 Buscando código muerto con ts-prune...
+drizzle.config.ts:3 - default
+middleware.ts:11 - middleware
+middleware.ts:74 - config
+app/layout.tsx:48 - default
+app/layout.tsx:25 - viewport
+app/layout.tsx:33 - metadata
+app/page.tsx:30 - default
+components/ErrorBoundary.tsx:73 - withErrorBoundary
+hooks/useSyncStatus.ts:11 - useSyncStatus
+lib/data-provider.tsx:75 - DataProvider
+lib/data-provider.tsx:369 - useData
+lib/equipment-data.ts:266 - getEquipmentByCostCenter
+lib/equipment-data.ts:289 - EQUIPMENT_STATS
+lib/error-handler.ts:127 - getErrorLogs
+lib/error-handler.ts:137 - clearErrorLogs
+lib/error-handler.ts:168 - withErrorHandlingSync
+lib/error-handler.ts:190 - isNetworkError
+lib/error-handler.ts:201 - createNetworkError
+lib/error-handler.ts:165 - safeExecute
+lib/supabase-service.ts:110 - getProfile
+ℹ️  Nota: Si grep no muestra nada, ¡es una buena señal!
+ℹ️  Nota 2: 'used in module' se filtra porque suelen ser falsos positivos en proyectos Next.js (pages/app router).

@@ -18,6 +18,7 @@ import {
     type CalendarioMes,
     type Turno,
 } from '@/lib/calendar-utils';
+import CalendarSummaryCard from '@/components/CalendarSummaryCard';
 
 export default function CalendarioPage() {
     const [currentYear, setCurrentYear] = useState(2026);
@@ -115,48 +116,36 @@ export default function CalendarioPage() {
                     {resumen && (
                         <div className="dashboard-grid" style={{ marginBottom: '24px' }}>
                             <div className="col-span-3">
-                                <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%)' }}>
-                                    <div className="stat-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                                        <Droplets style={{ width: 24, height: 24, color: 'white' }} />
-                                    </div>
-                                    <div className="stat-content">
-                                        <span className="stat-value" style={{ color: 'white' }}>{resumen.diarias}</span>
-                                        <span className="stat-label" style={{ color: 'rgba(255,255,255,0.8)' }}>Diarias</span>
-                                    </div>
-                                </div>
+                                <CalendarSummaryCard
+                                    icon={Droplets}
+                                    value={resumen.diarias}
+                                    label="Diarias"
+                                    gradient="linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%)"
+                                />
                             </div>
                             <div className="col-span-3">
-                                <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%)' }}>
-                                    <div className="stat-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                                        <Clock style={{ width: 24, height: 24, color: 'white' }} />
-                                    </div>
-                                    <div className="stat-content">
-                                        <span className="stat-value" style={{ color: 'white' }}>{resumen.semanales}</span>
-                                        <span className="stat-label" style={{ color: 'rgba(255,255,255,0.8)' }}>Semanales</span>
-                                    </div>
-                                </div>
+                                <CalendarSummaryCard
+                                    icon={Clock}
+                                    value={resumen.semanales}
+                                    label="Semanales"
+                                    gradient="linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%)"
+                                />
                             </div>
                             <div className="col-span-3">
-                                <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%)' }}>
-                                    <div className="stat-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                                        <CheckCircle style={{ width: 24, height: 24, color: 'white' }} />
-                                    </div>
-                                    <div className="stat-content">
-                                        <span className="stat-value" style={{ color: 'white' }}>{resumen.mensuales}</span>
-                                        <span className="stat-label" style={{ color: 'rgba(255,255,255,0.8)' }}>Mensuales</span>
-                                    </div>
-                                </div>
+                                <CalendarSummaryCard
+                                    icon={CheckCircle}
+                                    value={resumen.mensuales}
+                                    label="Mensuales"
+                                    gradient="linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%)"
+                                />
                             </div>
                             <div className="col-span-3">
-                                <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--warning-500) 0%, var(--warning-600) 100%)' }}>
-                                    <div className="stat-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                                        <Info style={{ width: 24, height: 24, color: 'white' }} />
-                                    </div>
-                                    <div className="stat-content">
-                                        <span className="stat-value" style={{ color: 'white' }}>{resumen.total}</span>
-                                        <span className="stat-label" style={{ color: 'rgba(255,255,255,0.8)' }}>Total Puntos</span>
-                                    </div>
-                                </div>
+                                <CalendarSummaryCard
+                                    icon={Info}
+                                    value={resumen.total}
+                                    label="Total Puntos"
+                                    gradient="linear-gradient(135deg, var(--warning-500) 0%, var(--warning-600) 100%)"
+                                />
                             </div>
                         </div>
                     )}

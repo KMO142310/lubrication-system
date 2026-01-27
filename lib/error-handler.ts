@@ -123,21 +123,7 @@ export function logError(error: AppError | Error): void {
   }
 }
 
-// Get error logs for debugging
-export function getErrorLogs(): ErrorLog[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
 
-// Clear error logs
-export function clearErrorLogs(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(ERROR_LOG_KEY);
-}
 
 // Helper to handle async operations with error handling
 export async function withErrorHandling<T>(
