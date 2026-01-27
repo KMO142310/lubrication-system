@@ -1,6 +1,8 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+const { render, screen, fireEvent, act } = require('@testing-library/react') as any;
+import '@testing-library/jest-dom';
 import LoginContainer from '@/components/auth/LoginContainer';
 import React from 'react';
+import '@testing-library/jest-dom';
 
 // Mocks
 const mockLogin = jest.fn();

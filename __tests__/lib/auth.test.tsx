@@ -60,7 +60,7 @@ describe('Auth System', () => {
     it('should reject invalid credentials', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper });
 
-      let loginResult: { success: boolean; error?: string } | undefined;
+      let loginResult: any;
       await act(async () => {
         loginResult = await result.current.login('invalid@email.com', 'wrongpassword');
       });
@@ -76,7 +76,7 @@ describe('Auth System', () => {
         loginResult = await result.current.login('omar@aisa.cl', 'omar123'); // Updated password
       });
 
-      expect(loginResult?.success).toBe(true);
+      expect((loginResult as any)?.success).toBe(true);
     });
 
     it('should set user after successful login', async () => {

@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "ops": "npx tsx .agent/skills/autonomous-operations/agents/ops-manager.ts",
+    "ops:deploy": "npx tsx .agent/skills/autonomous-operations/agents/deploy-guard.ts",
+    "ops:quality": "npx tsx .agent/skills/autonomous-operations/agents/quality-monitor.ts"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
