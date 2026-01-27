@@ -17,6 +17,10 @@ Este archivo almacena el conocimiento acumulado del agente para mejorar su asert
 - **Provider Methods**: When extending authentication (e.g., Google OAuth), ensure the Provider explicitly exposes these new methods in its value prop, otherwise consumers (like `LoginContainer`) will fail at runtime or build time.
 
 
+### React Component Reusability
+- **SVG Icons**: When multiple SVG icons share the same structure (e.g., wrapper attributes), create a BaseIcon component to reduce code size and maintenance effort.
+- **UI Cards**: Identify repetitive UI blocks (like stat summaries) and extract them into reusable components (`CalendarSummaryCard`) early to avoid code bloat.
+
 ### State Management
 - **Circular Dependencies**: Evitar importar stores (ej. `sync.ts`) dentro de componentes que son importados por el store. Usar inyección de dependencias o separar la lógica de estado en archivos aislados (`store.ts`).
 

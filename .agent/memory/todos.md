@@ -14,6 +14,9 @@ Tareas técnicas, refactorizaciones o ideas que surgen pero no son el foco inmed
 - [x] Verificar Hallazgos
 - [x] Revisión Humana
 - [x] Auto-Fix
+- [x] Audit Cycle: Remove dead code (`hooks/useSyncStatus.ts`, `lib/error-handler.ts`).
+- [x] Audit Cycle: Refactor `IndustrialIcons` to use base component.
+- [x] Audit Cycle: Refactor `CalendarSummaryCard` to reduce UI duplication.
 - [x] Snapshot Post-Fix (Git)
 
 ## Media Prioridad
