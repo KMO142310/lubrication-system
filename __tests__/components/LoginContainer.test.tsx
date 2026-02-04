@@ -6,7 +6,6 @@ import React from 'react';
 // Mocks
 const mockLogin = jest.fn();
 const mockLoginWithGoogle = jest.fn();
-const mockLoginWithPasskey = jest.fn();
 const mockPush = jest.fn();
 
 jest.mock('next/navigation', () => ({
@@ -17,7 +16,6 @@ jest.mock('@/lib/auth', () => ({
     useAuth: () => ({
         login: mockLogin,
         loginWithGoogle: mockLoginWithGoogle,
-        loginWithPasskey: mockLoginWithPasskey,
     }),
 }));
 
@@ -26,55 +24,87 @@ describe('LoginContainer', () => {
         jest.clearAllMocks();
     });
 
-    it('should render biometric/google login by default', () => {
+    it('should render Google login by default', () => {
         render(<LoginContainer />);
-
-        expect(screen.getByText('Ingresar con Huella / FaceID')).toBeInTheDocument();
-        expect(screen.getByText('Google Workspace')).toBeInTheDocument();
+        expect(screen.getByText('Continuar con Google')).toBeInTheDocument();
+        expect(screen.getByText('AISA Lubricación')).toBeInTheDocument();
     });
 
     it('should call loginWithGoogle when button is clicked', async () => {
         mockLoginWithGoogle.mockResolvedValue({ success: true });
         render(<LoginContainer />);
 
-        const googleBtn = screen.getByText('Google Workspace');
+        const googleBtn = screen.getByText('Continuar con Google');
         fireEvent.click(googleBtn);
 
         expect(mockLoginWithGoogle).toHaveBeenCalled();
     });
 
-    it('should show error if biometric login fails without email', async () => {
+    it('should switch to password mode when clicking fallback link', () => {
         render(<LoginContainer />);
 
-        const bioBtn = screen.getByText('Ingresar con Huella / FaceID');
-        fireEvent.click(bioBtn);
-
-        expect(await screen.findByText('Ingresa tu email para identificar tu Passkey')).toBeInTheDocument();
-    });
-
-    it('should call loginWithPasskey when email is provided', async () => {
-        mockLoginWithPasskey.mockResolvedValue({ success: true });
-        render(<LoginContainer />);
-
-        const emailInput = screen.getByPlaceholderText('tu@email.com');
-        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-
-        const bioBtn = screen.getByText('Ingresar con Huella / FaceID');
-        await act(async () => {
-            fireEvent.click(bioBtn);
-        });
-
-        expect(mockLoginWithPasskey).toHaveBeenCalledWith('test@example.com');
-        expect(mockPush).toHaveBeenCalledWith('/');
-    });
-
-    it('should switch to legacy password mode', () => {
-        render(<LoginContainer />);
-
-        const switchBtn = screen.getByText('Usar contraseña tradicional');
+        const switchBtn = screen.getByText('¿Problemas? Usar contraseña');
         fireEvent.click(switchBtn);
 
+        expect(screen.getByPlaceholderText('tu@email.com')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument();
-        expect(screen.queryByText('Google Workspace')).not.toBeInTheDocument();
+    });
+
+    it('should call login with credentials', async () => {
+        mockLogin.mockResolvedValue({ success: true });
+        render(<LoginContainer />);
+
+        // Switch to password mode
+        const switchBtn = screen.getByText('¿Problemas? Usar contraseña');
+        fireEvent.click(switchBtn);
+
+        // Fill in credentials
+        const emailInput = screen.getByPlaceholderText('tu@email.com');
+        const passwordInput = screen.getByPlaceholderText('••••••••');
+
+        fireEvent.change(emailInput, { target: { value: 'dev@aisa.cl' } });
+        fireEvent.change(passwordInput, { target: { value: 'dev2026!' } });
+
+        // Submit
+        const loginBtn = screen.getByText('Iniciar Sesión');
+        await act(async () => {
+            fireEvent.click(loginBtn);
+        });
+
+        expect(mockLogin).toHaveBeenCalledWith('dev@aisa.cl', 'dev2026!');
+    });
+
+    it('should show error on failed login', async () => {
+        mockLogin.mockResolvedValue({ success: false, error: 'Credenciales inválidas' });
+        render(<LoginContainer />);
+
+        // Switch to password mode
+        const switchBtn = screen.getByText('¿Problemas? Usar contraseña');
+        fireEvent.click(switchBtn);
+
+        // Fill in wrong credentials
+        const emailInput = screen.getByPlaceholderText('tu@email.com');
+        const passwordInput = screen.getByPlaceholderText('••••••••');
+
+        fireEvent.change(emailInput, { target: { value: 'wrong@email.com' } });
+        fireEvent.change(passwordInput, { target: { value: 'wrongpass' } });
+
+        // Submit
+        const loginBtn = screen.getByText('Iniciar Sesión');
+        await act(async () => {
+            fireEvent.click(loginBtn);
+        });
+
+        expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument();
+    });
+
+    it('should show back to biometric button in password mode', () => {
+        render(<LoginContainer />);
+
+        // Switch to password mode
+        const switchBtn = screen.getByText('¿Problemas? Usar contraseña');
+        fireEvent.click(switchBtn);
+
+        expect(screen.getByText('← Volver a Biometría')).toBeInTheDocument();
     });
 });

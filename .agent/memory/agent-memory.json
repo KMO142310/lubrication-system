@@ -1,0 +1,75 @@
+{
+    "project": "AISA Lubrication System",
+    "version": "5.0.0-production",
+    "lastUpdated": "2026-02-04T19:47:00-03:00",
+    "learnings": [
+        {
+            "id": "L001",
+            "date": "2026-02-04",
+            "type": "architecture",
+            "lesson": "SQLite no funciona en Vercel serverless - usar Supabase para backend",
+            "source": "deploy_failure"
+        },
+        {
+            "id": "L002",
+            "date": "2026-02-04",
+            "type": "security",
+            "lesson": "Nunca auto-login sin credenciales - siempre requerir autenticación",
+            "source": "security_audit"
+        },
+        {
+            "id": "L003",
+            "date": "2026-02-04",
+            "type": "data",
+            "lesson": "datos_completos_aisa.ts es la fuente de verdad para mock data (63 puntos)",
+            "source": "cleanup_audit"
+        },
+        {
+            "id": "L004",
+            "date": "2026-02-04",
+            "type": "cleanup",
+            "lesson": "equipment-data.ts era duplicado de datos_completos_aisa.ts - eliminado",
+            "source": "dead_code_audit"
+        }
+    ],
+    "patterns": {
+        "dataFlow": "localStorage (offline) → Supabase (online) → dataService API",
+        "authFlow": "login → fallback users → session storage → protected routes",
+        "taskGeneration": "getTareasPorFecha() → frequency-based daily task creation"
+    },
+    "keyFiles": {
+        "mockData": "lib/datos_completos_aisa.ts",
+        "dataService": "lib/data.ts",
+        "auth": "lib/auth.tsx",
+        "types": "lib/types.ts",
+        "supabaseService": "lib/supabase-service.ts"
+    },
+    "pendingWork": {
+        "phase3": [
+            "anomaly_creation",
+            "photo_upload",
+            "pdf_reports",
+            "metrics_panel"
+        ],
+        "phase4": [
+            "unit_tests",
+            "e2e_tests"
+        ],
+        "phase6": [
+            "error_tracking",
+            "analytics"
+        ]
+    },
+    "decisions": [
+        {
+            "id": "D001",
+            "decision": "Mantener lib/reports/* para Fase 3 PDF generation",
+            "reason": "Infraestructura necesaria para reportes"
+        },
+        {
+            "id": "D002",
+            "decision": "Mantener lib/data-provider.tsx",
+            "reason": "Contexto híbrido Supabase/localStorage para modo online"
+        }
+    ]
+}

@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-02-04T22:33:55.240Z",
+  "timestamp": "2026-02-04T22:38:16.818Z",
   "summary": {
     "high": 0,
-    "medium": 25,
-    "low": 14
+    "medium": 21,
+    "low": 15
   },
   "results": [
     {
@@ -38,32 +38,12 @@
       "severity": "low"
     },
     {
-      "file": "components/auth/LoginContainer.tsx",
-      "issues": [
-        "Posible import no usado: CheckCircle",
-        "Posible import no usado: Mail",
-        "Posible import no usado: ArrowLeft",
-        "Posible import no usado: Fingerprint",
-        "Posible import no usado: Smartphone"
-      ],
-      "severity": "medium"
-    },
-    {
       "file": "hooks/useSmartTasks.ts",
       "issues": [
         "Posible import no usado: OfflineTask",
         "8 console.* statements (considerar eliminar en producción)"
       ],
       "severity": "low"
-    },
-    {
-      "file": "lib/analytics.ts",
-      "issues": [
-        "Posible import no usado: WorkOrder",
-        "Posible import no usado: Machine",
-        "Posible import no usado: Frequency"
-      ],
-      "severity": "medium"
     },
     {
       "file": "lib/auth.tsx",
@@ -82,11 +62,9 @@
     {
       "file": "lib/data.ts",
       "issues": [
-        "Posible import no usado: FORESA_EQUIPMENT_DATA",
-        "Posible import no usado: LUBRICATION_POINTS",
         "6 console.* statements (considerar eliminar en producción)"
       ],
-      "severity": "medium"
+      "severity": "low"
     },
     {
       "file": "lib/diagrams.ts",
@@ -154,13 +132,6 @@
     },
     {
       "file": "lib/db/offline.ts",
-      "issues": [
-        "Archivo posiblemente huérfano (no importado en ningún lugar)"
-      ],
-      "severity": "medium"
-    },
-    {
-      "file": "lib/equipment-data.ts",
       "issues": [
         "Archivo posiblemente huérfano (no importado en ningún lugar)"
       ],

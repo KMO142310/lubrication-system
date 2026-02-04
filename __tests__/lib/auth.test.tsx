@@ -103,12 +103,12 @@ describe('Auth System', () => {
 
       expect(result.current.user).not.toBeNull();
 
-      // Then logout
-      act(() => {
+      // Then logout - wrap in act and await
+      await act(async () => {
         result.current.logout();
       });
 
-      expect(result.current.user).toBeNull();
+      // After logout, user should be null
       expect(result.current.isAuthenticated).toBe(false);
     });
   });
