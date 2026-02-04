@@ -194,47 +194,47 @@ export default function AnomaliesPage() {
             </div>
           </div>
         </main>
-
-        {/* Modal */}
-        {showForm && (
-          <div className="modal-overlay" onClick={() => setShowForm(false)}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2 className="modal-title">Reportar Anomalía</h2>
-                <button className="modal-close" onClick={() => setShowForm(false)}><X style={{ width: 16, height: 16 }} /></button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="form-group">
-                    <label className="form-label">Máquina (opcional)</label>
-                    <select className="form-select" value={newAnomaly.machineId} onChange={e => setNewAnomaly(prev => ({ ...prev, machineId: e.target.value }))}>
-                      <option value="">Seleccionar...</option>
-                      {machines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Severidad</label>
-                    <select className="form-select" value={newAnomaly.severity} onChange={e => setNewAnomaly(prev => ({ ...prev, severity: e.target.value as AnomalySeverity }))}>
-                      <option value="baja">Baja</option>
-                      <option value="media">Media</option>
-                      <option value="alta">Alta</option>
-                      <option value="critica">Crítica</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Descripción *</label>
-                    <textarea className="form-textarea" value={newAnomaly.description} onChange={e => setNewAnomaly(prev => ({ ...prev, description: e.target.value }))} placeholder="Describa el hallazgo con detalle..." rows={4} required minLength={10} />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancelar</button>
-                  <button type="submit" className="btn btn-primary">Guardar Anomalía</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Modal - Outside app-layout for proper z-index */}
+      {showForm && (
+        <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Reportar Anomalía</h2>
+              <button className="modal-close" onClick={() => setShowForm(false)}><X style={{ width: 16, height: 16 }} /></button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Máquina (opcional)</label>
+                  <select className="form-select" value={newAnomaly.machineId} onChange={e => setNewAnomaly(prev => ({ ...prev, machineId: e.target.value }))}>
+                    <option value="">Seleccionar...</option>
+                    {machines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Severidad</label>
+                  <select className="form-select" value={newAnomaly.severity} onChange={e => setNewAnomaly(prev => ({ ...prev, severity: e.target.value as AnomalySeverity }))}>
+                    <option value="baja">Baja</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
+                    <option value="critica">Crítica</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Descripción *</label>
+                  <textarea className="form-textarea" value={newAnomaly.description} onChange={e => setNewAnomaly(prev => ({ ...prev, description: e.target.value }))} placeholder="Describa el hallazgo con detalle..." rows={4} required minLength={10} />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary">Guardar Anomalía</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
