@@ -139,73 +139,52 @@ export default function HistorialPage() {
             </header>
 
             {/* Resumen */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
-              marginBottom: '24px',
-            }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
-              }}>
-                <div style={{ fontSize: '36px', fontWeight: 800 }}>{completedTasks.length}</div>
-                <div style={{ fontSize: '14px', opacity: 0.9 }}>Total Tareas Completadas</div>
-              </div>
-
-              <div style={{
-                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
-              }}>
-                <div style={{ fontSize: '36px', fontWeight: 800 }}>{todayTasks.length}</div>
-                <div style={{ fontSize: '14px', opacity: 0.9 }}>Completadas Hoy</div>
-              </div>
-
-              <div style={{
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
-              }}>
-                <div style={{ fontSize: '36px', fontWeight: 800 }}>
-                  {completedTasks.filter(t => t.photo).length}
+            <div className="stats-grid" style={{ marginBottom: '24px' }}>
+              <div className="stat-card">
+                <div className="stat-card-icon blue">
+                  <FileText size={24} color="white" />
                 </div>
-                <div style={{ fontSize: '14px', opacity: 0.9 }}>Con Evidencia Fotográfica</div>
+                <div className="stat-value">{completedTasks.length}</div>
+                <div className="stat-label">Total Completadas</div>
               </div>
 
-              <div style={{
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
-              }}>
-                <div style={{ fontSize: '36px', fontWeight: 800 }}>{dates.length}</div>
-                <div style={{ fontSize: '14px', opacity: 0.9 }}>Días con Registros</div>
+              <div className="stat-card">
+                <div className="stat-card-icon green">
+                  <CheckCircle2 size={24} color="white" />
+                </div>
+                <div className="stat-value">{todayTasks.length}</div>
+                <div className="stat-label">Completadas Hoy</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-card-icon" style={{ background: 'var(--gradient-primary)' }}>
+                  <ImageIcon size={24} color="white" />
+                </div>
+                <div className="stat-value">{completedTasks.filter(t => t.photo).length}</div>
+                <div className="stat-label">Con Evidencia</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-card-icon warning">
+                  <Calendar size={24} color="white" />
+                </div>
+                <div className="stat-value">{dates.length}</div>
+                <div className="stat-label">Días con Registros</div>
               </div>
             </div>
 
             {/* Filtro por fecha */}
-            <div className="card" style={{ marginBottom: '16px' }}>
-              <div className="card-body" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
-                  <Calendar style={{ width: 18, height: 18 }} />
+            <div className="card-glass" style={{ marginBottom: '16px', padding: '16px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  <Calendar style={{ width: 18, height: 18, color: 'var(--premium-blue)' }} />
                   Filtrar por fecha:
                 </label>
                 <select
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                    background: 'white',
-                    fontSize: '14px',
-                    minWidth: '200px',
-                  }}
+                  className="form-select"
+                  style={{ minWidth: '220px' }}
                 >
                   <option value="">Todas las fechas</option>
                   {dates.map(date => (
@@ -214,7 +193,7 @@ export default function HistorialPage() {
                     </option>
                   ))}
                 </select>
-                <span style={{ color: '#64748b', fontSize: '14px' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                   {filteredTasks.length} registros encontrados
                 </span>
               </div>

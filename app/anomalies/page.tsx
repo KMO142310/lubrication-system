@@ -109,11 +109,11 @@ export default function AnomaliesPage() {
                   <p className="page-subtitle">Hallazgos y observaciones en terreno</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                  <button className="btn btn-secondary" onClick={handleExportPDF}>
+                  <button className="btn-premium btn-premium-ghost" onClick={handleExportPDF}>
                     <FileDown style={{ width: 16, height: 16 }} />
                     Exportar PDF
                   </button>
-                  <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+                  <button className="btn-premium btn-premium-primary" onClick={() => setShowForm(true)}>
                     <Plus style={{ width: 16, height: 16 }} />
                     Nueva Anomalía
                   </button>
@@ -126,8 +126,8 @@ export default function AnomaliesPage() {
               {(['all', 'open', 'resolved'] as const).map(f => (
                 <button
                   key={f}
-                  className={`btn ${filter === f ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ fontSize: 'var(--text-sm)' }}
+                  className={`btn-premium ${filter === f ? 'btn-premium-primary' : 'btn-premium-ghost'}`}
+                  style={{ fontSize: '0.85rem' }}
                   onClick={() => setFilter(f)}
                 >
                   {f === 'all' ? `Todas (${anomalies.length})` : f === 'open' ? `Abiertas (${anomalies.filter(a => a.status !== 'resuelta').length})` : `Resueltas (${anomalies.filter(a => a.status === 'resuelta').length})`}
@@ -136,57 +136,52 @@ export default function AnomaliesPage() {
             </div>
 
             {/* List */}
-            <div className="card">
-              <div className="card-body" style={{ padding: 0 }}>
+            <div className="card-glass" style={{ overflow: 'hidden' }}>
+              <div style={{ padding: 0 }}>
                 {filteredAnomalies.map(anomaly => (
                   <div
                     key={anomaly.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--space-4)',
-                      padding: 'var(--space-5) var(--space-6)',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background var(--duration-fast)',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--slate-50)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    className="task-item"
+                    style={{ borderRadius: 0, margin: 0, borderBottom: '1px solid var(--glass-border)' }}
                   >
                     <div style={{
-                      width: 6,
+                      width: 4,
                       height: 40,
-                      borderRadius: 3,
-                      background: anomaly.severity === 'critica' ? 'var(--accent-500)' : anomaly.severity === 'alta' ? 'var(--warning-500)' : anomaly.severity === 'media' ? 'var(--primary-500)' : 'var(--success-500)',
+                      borderRadius: 2,
+                      background: anomaly.severity === 'critica' ? 'var(--led-alarm)' : anomaly.severity === 'alta' ? 'var(--led-warning)' : anomaly.severity === 'media' ? 'var(--led-info)' : 'var(--led-on)',
                     }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-1)' }}>
-                        <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{anomaly.machine?.name || anomaly.lubricationPoint?.code || 'General'}</span>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{new Date(anomaly.createdAt).toLocaleDateString('es-CL')}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{anomaly.machine?.name || anomaly.lubricationPoint?.code || 'General'}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(anomaly.createdAt).toLocaleDateString('es-CL')}</span>
                       </div>
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>{anomaly.description}</p>
-                      <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                        <span className={`badge ${getSeverityBadge(anomaly.severity)}`}>{anomaly.severity.toUpperCase()}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                          {anomaly.status === 'resuelta' ? <CheckCircle2 style={{ width: 14, height: 14, color: 'var(--success-500)' }} /> : anomaly.status === 'en_revision' ? <Clock style={{ width: 14, height: 14, color: 'var(--warning-500)' }} /> : <AlertTriangle style={{ width: 14, height: 14, color: 'var(--accent-500)' }} />}
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>{anomaly.description}</p>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <span className={`badge-premium ${anomaly.severity === 'critica' ? 'danger' : anomaly.severity === 'alta' ? 'warning' : anomaly.severity === 'media' ? 'pending' : 'success'}`}>{anomaly.severity.toUpperCase()}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {anomaly.status === 'resuelta' ? <CheckCircle2 style={{ width: 14, height: 14, color: 'var(--led-on)' }} /> : anomaly.status === 'en_revision' ? <Clock style={{ width: 14, height: 14, color: 'var(--led-warning)' }} /> : <AlertTriangle style={{ width: 14, height: 14, color: 'var(--led-alarm)' }} />}
                           {anomaly.status === 'resuelta' ? 'Resuelta' : anomaly.status === 'en_revision' ? 'En Revisión' : 'Abierta'}
                         </span>
                       </div>
                     </div>
                     {anomaly.status !== 'resuelta' && (
                       <button
-                        className="btn btn-ghost btn-sm"
+                        className="btn-premium btn-premium-ghost"
+                        style={{ padding: '8px' }}
                         onClick={() => handleResolve(anomaly.id)}
                         title="Marcar como resuelta"
                       >
-                        <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--success-500)' }} />
+                        <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--led-on)' }} />
                       </button>
                     )}
                   </div>
                 ))}
                 {filteredAnomalies.length === 0 && (
                   <div className="empty-state">
-                    <AlertTriangle className="empty-state-icon" />
-                    <h2 className="empty-state-title">Sin anomalías</h2>
+                    <div className="empty-state-icon">
+                      <AlertTriangle size={32} />
+                    </div>
+                    <div className="empty-state-title">Sin anomalías</div>
                     <p className="empty-state-description">No hay registros con el filtro seleccionado.</p>
                   </div>
                 )}
