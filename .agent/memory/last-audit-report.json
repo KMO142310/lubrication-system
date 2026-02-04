@@ -1,0 +1,296 @@
+{
+  "timestamp": "2026-02-04T22:33:55.240Z",
+  "summary": {
+    "high": 0,
+    "medium": 25,
+    "low": 14
+  },
+  "results": [
+    {
+      "file": "app/admin/alertas/page.tsx",
+      "issues": [
+        "Posible import no usado: type FraudAlert",
+        "Posible import no usado: type SecuritySummary"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "app/api/onboarding/submit/route.ts",
+      "issues": [
+        "5 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "app/api/sync/pull/route.ts",
+      "issues": [
+        "Posible import no usado: type CookieOptions",
+        "4 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "app/schedule/calendar/page.tsx",
+      "issues": [
+        "Posible import no usado: type CalendarioMes",
+        "Posible import no usado: type Turno"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "components/auth/LoginContainer.tsx",
+      "issues": [
+        "Posible import no usado: CheckCircle",
+        "Posible import no usado: Mail",
+        "Posible import no usado: ArrowLeft",
+        "Posible import no usado: Fingerprint",
+        "Posible import no usado: Smartphone"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "hooks/useSmartTasks.ts",
+      "issues": [
+        "Posible import no usado: OfflineTask",
+        "8 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/analytics.ts",
+      "issues": [
+        "Posible import no usado: WorkOrder",
+        "Posible import no usado: Machine",
+        "Posible import no usado: Frequency"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/auth.tsx",
+      "issues": [
+        "7 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/data-provider.tsx",
+      "issues": [
+        "12 usos de 'any' type (debilita TypeScript)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/data.ts",
+      "issues": [
+        "Posible import no usado: FORESA_EQUIPMENT_DATA",
+        "Posible import no usado: LUBRICATION_POINTS",
+        "6 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/diagrams.ts",
+      "issues": [
+        "Posible import no usado: LubricationPoint"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "issues": [
+        "Posible import no usado: type NextRequest"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/supabase-service.ts",
+      "issues": [
+        "20 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/supabase-sync.ts",
+      "issues": [
+        "7 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/sync-engine.ts",
+      "issues": [
+        "4 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/sync.ts",
+      "issues": [
+        "Posible import no usado: notifyListeners",
+        "24 console.* statements (considerar eliminar en producción)"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/utils.ts",
+      "issues": [
+        "Posible import no usado: type ClassValue"
+      ],
+      "severity": "low"
+    },
+    {
+      "file": "lib/data-provider.tsx",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/datos_completos_aisa.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/db/offline.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/equipment-data.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/reports/anomaly-report.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/reports/compliance-report.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/reports/executive-report.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/reports/technical-report.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/reports/work-order-report.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/supabase/client.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/supabase/middleware.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/supabase/server.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/supabase-service.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/supabase-sync.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "lib/validations.ts",
+      "issues": [
+        "Archivo posiblemente huérfano (no importado en ningún lugar)"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/ErrorBoundary.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/icons/IndustrialIcons.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/ui/IndustrialGauge.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/ui/MachineCard.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/ui/Skeleton.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/ui/StatusPanel.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    },
+    {
+      "file": "components/ui/card.tsx",
+      "issues": [
+        "Componente posiblemente no usado"
+      ],
+      "severity": "medium"
+    }
+  ]
+}

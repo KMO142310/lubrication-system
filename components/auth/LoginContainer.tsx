@@ -8,25 +8,19 @@ import {
     Eye,
     EyeOff,
     AlertCircle,
-    CheckCircle,
-    Mail,
-    ArrowLeft,
-    Fingerprint,
-    Smartphone
 } from 'lucide-react';
 
 type ViewMode = 'login' | 'register' | 'forgot' | 'biometric';
 
 export default function LoginContainer() {
     const router = useRouter();
-    const { login, loginWithGoogle, loginWithPasskey } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
 
     const [viewMode, setViewMode] = useState<ViewMode>('biometric'); // Default to modern auth
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     // Legacy handlers
@@ -57,21 +51,6 @@ export default function LoginContainer() {
             setIsLoading(false);
         }
         // Redirect handled by Supabase
-    };
-
-    const handleBiometricLogin = async () => {
-        if (!email) {
-            setError('Ingresa tu email para identificar tu Passkey');
-            return;
-        }
-        setIsLoading(true);
-        const result = await loginWithPasskey(email);
-        if (result.success) {
-            router.push('/');
-        } else {
-            setError(result.error || 'No se encontró credencial biométrica');
-            setIsLoading(false);
-        }
     };
 
     return (
