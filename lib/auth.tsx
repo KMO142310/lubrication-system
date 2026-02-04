@@ -123,12 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     localStorage.removeItem(AUTH_STORAGE_KEY);
                 }
             } else {
-                // AUTO-LOGIN PARA PRUEBAS (BYPASS)
-                console.log('🔓 Auto-login enabled for testing: Logging in as Dev');
-                const devUser = FALLBACK_USERS[0];
-                const { password: _, ...userWithoutPassword } = devUser;
-                setUser(userWithoutPassword);
-                // No guardamos en localStorage para evitar persistencia real si se quiere probar logout luego
+                // No hay sesión guardada - usuario debe hacer login
+                console.log('📋 No session found, redirecting to login');
+                setUser(null);
             }
             setIsLoading(false);
         };

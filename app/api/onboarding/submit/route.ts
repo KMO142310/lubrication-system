@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { tenants, plants, users } from '@/lib/db/schema';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { orgName, orgSlug, plantName, plantLocation, adminName, adminEmail, assets } = body;
+        const { orgName, orgSlug, plantName, plantLocation, adminName, adminEmail } = body;
 
         // Basic Validation
         if (!orgName || !plantName || !adminEmail) {
@@ -17,7 +15,7 @@ export async function POST(req: Request) {
         const cookieStore = await cookies();
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!, // REQUIRED: Service Role to bypass RLS and create tenant/users
+            process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
                     get(name: string) { return cookieStore.get(name)?.value },
@@ -25,79 +23,72 @@ export async function POST(req: Request) {
             }
         );
 
-        // 1. Create Tenant
-        // Use random UUID for ID calling wrapper/ORM or letting DB handle default if configured
+        // 1. Create Tenant in Supabase
         const tenantId = crypto.randomUUID();
+        const slug = orgSlug || orgName.toLowerCase().replace(/ /g, '-');
 
-        // Note: We are using Drizzle for data insertion, but for Auth user creation we need Supabase Admin API.
-        // Since we are in a Route Handler, we can use the Service Role client.
-
-        // Insert Tenant into DB
-        try {
-            await db.insert(tenants).values({
+        const { error: tenantError } = await supabase
+            .from('tenants')
+            .insert({
                 id: tenantId,
                 name: orgName,
-                slug: orgSlug || orgName.toLowerCase().replace(/ /g, '-'),
+                slug: slug,
             });
-        } catch (_e) {
-            console.error('Error creating tenant');
+
+        if (tenantError) {
+            console.error('Error creating tenant:', tenantError);
             return NextResponse.json({ error: 'Error creating organization. Slug might be taken.' }, { status: 409 });
         }
 
-        // 2. Create First Plant
+        // 2. Create First Plant in Supabase
         const plantId = crypto.randomUUID();
-        await db.insert(plants).values({
-            id: plantId,
-            tenantId: tenantId,
-            name: plantName,
-            location: plantLocation,
-        });
-
-        // 3. Create Admin User (Supabase Auth + DB Profile)
-        // Check if user already exists (fetch for validation, not using result directly)
-        await supabase.auth.admin.listUsers();
-        // Simple check, real app should be more robust
-
-        let userId = '';
-
-        try {
-            const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-                email: adminEmail,
-                password: 'TempPassword123!', // In real app, send invite email
-                email_confirm: true,
-                user_metadata: {
-                    full_name: adminName,
-                    tenant_id: tenantId,
-                    role: 'supervisor' // Admin role
-                }
+        const { error: plantError } = await supabase
+            .from('plants')
+            .insert({
+                id: plantId,
+                tenant_id: tenantId,
+                name: plantName,
+                location: plantLocation,
             });
 
-            if (createError) throw createError;
-            userId = newUser.user.id;
-        } catch (_e) {
-            console.log('User might already exist, linking...');
-            // Logic to handle existing user invites would go here.
-            // For now, we assume fresh user or manual fail.
-            return NextResponse.json({ error: 'User creation failed. Email might be in use.' }, { status: 400 });
+        if (plantError) {
+            console.error('Error creating plant:', plantError);
         }
 
-        // Insert into internal users table (if not handled by trigger/webhook)
-        await db.insert(users).values({
-            id: userId,
-            tenantId: tenantId,
-            name: adminName,
-            email: adminEmail,
-            role: 'supervisor', // Mapped to Admin in our simple role system
-        });
+        // 3. Create Admin User (if service role key available)
+        let userId = '';
 
+        if (process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY) {
+            try {
+                const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+                    email: adminEmail,
+                    password: 'TempPassword123!', // In production, send invite email
+                    email_confirm: true,
+                    user_metadata: {
+                        full_name: adminName,
+                        tenant_id: tenantId,
+                        role: 'supervisor'
+                    }
+                });
 
-        // 4. Import Assets (if any)
-        if (assets && assets.length > 0) {
-            // Very basic loop for demo purposes. Bulk insert is better.
-            // Structure: Machine Name | Component Name | Criticality
+                if (createError) throw createError;
+                userId = newUser.user.id;
 
-            // Group by Machine to optimize
-            // ... (Simple implementation for MVP)
+                // Insert profile
+                await supabase.from('profiles').insert({
+                    id: userId,
+                    tenant_id: tenantId,
+                    full_name: adminName,
+                    email: adminEmail,
+                    role: 'supervisor',
+                });
+
+            } catch (e) {
+                console.log('User creation failed:', e);
+                return NextResponse.json({ error: 'User creation failed. Email might be in use.' }, { status: 400 });
+            }
+        } else {
+            console.log('No service role key, skipping user creation');
         }
 
         return NextResponse.json({
