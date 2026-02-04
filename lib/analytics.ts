@@ -1,6 +1,6 @@
 // Data Service mock type for analytics to access raw data if needed
 // In real app, we pass data as arguments
-import { Task, WorkOrder, Machine, Frequency } from './types';
+import type { Task } from './types';
 
 export function calculateCompliance(completedCount: number, totalCount: number): number {
     if (totalCount === 0) return 0;

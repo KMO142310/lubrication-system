@@ -6,7 +6,6 @@
 
 import type { Plant, Area, Machine, Component, Lubricant, Frequency, LubricationPoint, WorkOrder, Task, Anomaly, User } from './types';
 import { PLANTA_AISA, CENTROS_GESTION, EQUIPOS, COMPONENTES, LUBRICANTES, FRECUENCIAS, PUNTOS_LUBRICACION, getTareasPorFecha } from './datos_completos_aisa';
-// import { FORESA_EQUIPMENT_DATA, LUBRICATION_POINTS as NEW_POINTS } from './equipment-data';
 
 // ============================================================
 // STORAGE KEYS
