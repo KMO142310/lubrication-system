@@ -104,6 +104,7 @@ export interface Task {
     observations?: string;
     photoUrl?: string;
     completedAt?: string;
+    syncedAt?: string;      // When synced to server (for offline support)
     createdAt: string;
 }
 
