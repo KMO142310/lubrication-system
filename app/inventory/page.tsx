@@ -7,7 +7,6 @@ import {
   Package,
   AlertTriangle,
   ArrowUpRight,
-  ArrowDownRight,
   Search,
   Filter,
   MoreVertical,

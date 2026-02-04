@@ -1,6 +1,13 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Module augmentation for jspdf-autotable
+declare module 'jspdf' {
+    interface jsPDF {
+        lastAutoTable: { finalY: number };
+    }
+}
+
 interface ComplianceData {
     period: string; // "Semana 4, Enero 2026"
     contractorName: string;
@@ -89,7 +96,7 @@ export function generateComplianceReport(data: ComplianceData): void {
 
     // Tabla de Desviaciones (Si existen)
     if (data.delays.length > 0) {
-        const finalY = (doc as any).lastAutoTable.finalY + 20;
+        const finalY = doc.lastAutoTable.finalY + 20;
         doc.text('JUSTIFICACIÓN DE DESVIACIONES', 15, finalY);
 
         autoTable(doc, {

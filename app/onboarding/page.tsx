@@ -30,13 +30,13 @@ export default function OnboardingPage() {
         plantLocation: '',
         adminName: '',
         adminEmail: '',
-        assets: [] as any[], // Imported from excel
+        assets: [] as Record<string, unknown>[], // Imported from excel
     });
 
-    const updateForm = (key: string, value: any) => {
+    const updateForm = (key: string, value: string | Record<string, unknown>[]) => {
         setFormData(prev => ({ ...prev, [key]: value }));
         // Auto-generate slug from org name if empty
-        if (key === 'orgName' && !formData.orgSlug) {
+        if (key === 'orgName' && typeof value === 'string' && !formData.orgSlug) {
             setFormData(prev => ({
                 ...prev,
                 orgSlug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')

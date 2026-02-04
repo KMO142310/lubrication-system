@@ -6,18 +6,14 @@ import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import {
   Target,
-  CheckCircle2,
   AlertTriangle,
-  TrendingUp,
   Clock,
   ArrowRight,
   Droplets,
-  Cog,
   ClipboardCheck,
   BarChart3,
   Play,
-  Calendar,
-  LogOut
+  Calendar
 } from 'lucide-react';
 import NavigationCard from '@/components/NavigationCard';
 import { dataService } from '@/lib/data';
@@ -25,7 +21,6 @@ import { useAuth } from '@/lib/auth';
 import { getCompletedTasksFromServer, isOnline } from '@/lib/sync';
 import { calculateCompliance } from '@/lib/analytics';
 import MetricCard from '@/components/MetricCard';
-import type { Task, LubricationPoint, Component, Machine, Lubricant } from '@/lib/types';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -68,7 +63,7 @@ export default function Dashboard() {
 
       // Try to get server data if online
       let serverCompletedCount = 0;
-      let completedTaskIds = new Set<string>();
+      const completedTaskIds = new Set<string>();
 
       try {
         if (isOnline()) {

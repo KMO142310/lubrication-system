@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, TrendingDown, Coins } from 'lucide-react';
+import { Coins } from 'lucide-react';
 
 interface CostMetricProps {
     monthlyTotal: string; // Formatted currency string

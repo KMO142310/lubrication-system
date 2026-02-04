@@ -6,14 +6,14 @@ import { Upload, FileSpreadsheet, X, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Assuming utils exists, if not I'll remove or create it. checked package.json -> clsx/tailwind-merge are there.
 
 interface ExcelImporterProps {
-    onImport: (data: any[]) => void;
+    onImport: (data: Record<string, unknown>[]) => void;
     templateUrl?: string;
 }
 
 export default function ExcelImporter({ onImport, templateUrl }: ExcelImporterProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState<File | null>(null);
-    const [previewData, setPreviewData] = useState<any[]>([]);
+    const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     const handleDrag = useCallback((e: React.DragEvent) => {
@@ -43,7 +43,7 @@ export default function ExcelImporter({ onImport, templateUrl }: ExcelImporterPr
                 const workbook = read(data, { type: 'binary' });
                 const sheetName = workbook.SheetNames[0]; // Assume first sheet
                 const worksheet = workbook.Sheets[sheetName];
-                const jsonData = utils.sheet_to_json(worksheet);
+                const jsonData: Record<string, unknown>[] = utils.sheet_to_json(worksheet);
 
                 if (jsonData.length === 0) {
                     setError('El archivo parece estar vacío.');
@@ -172,7 +172,7 @@ export default function ExcelImporter({ onImport, templateUrl }: ExcelImporterPr
                                         <tbody>
                                             {previewData.map((row, i) => (
                                                 <tr key={i} className="border-b border-[var(--metal-700)] last:border-0 hover:bg-[var(--metal-700)]/50">
-                                                    {Object.values(row).map((val: any, j) => (
+                                                    {Object.values(row).map((val: unknown, j) => (
                                                         <td key={j} className="p-2 text-[var(--text-primary)] whitespace-nowrap">
                                                             {String(val)}
                                                         </td>

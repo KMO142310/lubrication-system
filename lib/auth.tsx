@@ -181,9 +181,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (error) throw error;
             return { success: true };
-        } catch (error: any) {
-            console.error('Google Auth Error:', error);
-            return { success: false, error: error.message };
+        } catch (error: unknown) {
+            const err = error as Error;
+            console.error('Google Auth Error:', err);
+            return { success: false, error: err.message || 'Error de autenticación' };
         }
     };
 

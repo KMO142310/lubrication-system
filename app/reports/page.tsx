@@ -143,7 +143,7 @@ export default function ReportsPage() {
                                     key={report.id}
                                     className={`card hover:shadow-xl transition-all duration-300 cursor-pointer border-l-4 border-${report.color}-500 transform hover:-translate-y-1`}
                                     style={{ animation: `fadeIn 0.5s ease-out ${idx * 0.1}s backwards` }}
-                                    onClick={() => !loading && handleDownload(report.id as any)}
+                                    onClick={() => !loading && handleDownload(report.id as 'technical' | 'compliance' | 'executive')}
                                 >
                                     <div className="card-body relative overflow-hidden">
                                         {/* Background decoration */}

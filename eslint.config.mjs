@@ -14,6 +14,15 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Utility scripts (Node.js, not part of Next.js app):
     "scripts/**",
+    // Agent system scripts (run with tsx, not Next.js):
+    ".agent/**",
+    // Test files (have looser typing requirements):
+    "__tests__/**",
+    // Generated data files:
+    "lib/datos_completos_aisa.ts",
+    // Service Worker files (generated):
+    "public/service-worker.js",
+    "public/workbox-*.js",
   ]),
   // Custom rule overrides for valid patterns
   {

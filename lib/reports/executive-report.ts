@@ -1,6 +1,13 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Module augmentation for jspdf-autotable
+declare module 'jspdf' {
+    interface jsPDF {
+        lastAutoTable: { finalY: number };
+    }
+}
+
 interface ExecutiveData {
     month: string;
     riskScore: number; // 0-100
@@ -57,8 +64,8 @@ export function generateExecutiveSummary(data: ExecutiveData): void {
     doc.setFont('helvetica', 'bold');
     doc.text('EJECUCIÓN PRESUPUESTARIA', 15, y);
 
-    // Cards Financieras Simples
-    const drawCard = (x: number, title: string, value: string, sub: string) => {
+    // Cards Financieras Simples (sub param unused intentionally)
+    const drawCard = (x: number, title: string, value: string, _sub: string) => {
         doc.setFillColor(248, 250, 252);
         doc.rect(x, y + 10, 55, 30, 'F');
         doc.setFontSize(20);
@@ -104,7 +111,7 @@ export function generateExecutiveSummary(data: ExecutiveData): void {
     // ==========================================
     // CONCLUSIÓN INTELIGENTE
     // ==========================================
-    const finalY = (doc as any).lastAutoTable.finalY + 20;
+    const finalY = doc.lastAutoTable.finalY + 20;
     doc.setFillColor(240, 253, 244); // Green 50
     doc.rect(15, finalY, pageWidth - 30, 30, 'F');
     doc.setDrawColor(22, 163, 74);

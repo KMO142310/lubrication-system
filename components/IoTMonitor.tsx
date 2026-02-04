@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Activity, Wifi, WifiOff, Thermometer, AlertOctagon } from 'lucide-react';
+import { Activity, Wifi, AlertOctagon } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { Sensor } from '@/lib/types';
 
 export default function IoTMonitor() {
     const [sensors, setSensors] = useState<Sensor[]>([]);
-    const [lastUpdate, setLastUpdate] = useState(new Date());
 
     useEffect(() => {
         // Initial load
@@ -22,7 +21,6 @@ export default function IoTMonitor() {
                     : Math.max(20, s.lastReading + (Math.random() - 0.5)), // Temp variant
                 status: Math.random() > 0.95 ? 'alert' : 'online' // Random alert simulation
             })));
-            setLastUpdate(new Date());
         }, 2000);
 
         return () => clearInterval(interval);

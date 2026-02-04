@@ -11,20 +11,16 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import {
   CheckCircle2,
-  Circle,
   AlertTriangle,
-  Droplets,
   X,
-  Play,
   Clock,
   MapPin,
   Wrench,
   FileText,
   PenTool,
-  Settings,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
-import { saveCompletedTask, getCompletedTasksFromServer, isOnline } from '@/lib/sync';
+// Note: sync functions are used via useSmartTasks hook
 import { useSmartTasks } from '@/hooks/useSmartTasks';
 import { validateTaskExecution } from '@/lib/quality-control';
 import { useAuth } from '@/lib/auth';
@@ -108,7 +104,7 @@ export default function TasksPage() {
 
       return {
         ...baseTask,
-        status: status as any,
+        status: status as Task['status'],
         quantityUsed: qty,
         lubricationPoint: lp,
         component: comp!,

@@ -7,7 +7,6 @@ import { execSync } from 'child_process';
  */
 
 const GREEN = '\x1b[32m';
-const RED = '\x1b[31m';
 const YELLOW = '\x1b[33m';
 const RESET = '\x1b[0m';
 
@@ -18,7 +17,7 @@ function log(emoji: string, msg: string) {
 function run(cmd: string): string {
     try {
         return execSync(cmd, { stdio: 'pipe' }).toString().trim();
-    } catch (e: any) {
+    } catch {
         return '';
     }
 }
@@ -47,7 +46,7 @@ async function main() {
         try {
             execSync('git push origin main', { stdio: 'inherit' });
             log('✅', 'Push exitoso.');
-        } catch (e) {
+        } catch {
             log('❌', 'Error al hacer push. Verifica credenciales o conflictos.');
             process.exit(1);
         }
@@ -59,7 +58,8 @@ async function main() {
     log('▲', 'Verificando estado de Vercel...');
     try {
         // Obtenemos lista de deployments recientes
-        const deployments = run('vercel list --prod --yes --limit 1');
+        // Estrategia simple: verificar estado antes de deploy
+        run('vercel list --prod --yes --limit 1');
 
         // Estrategia simple: Si el usuario ejecuta este script, probablemente quiere forzar un deploy seguro
         // para estar 100% seguro.

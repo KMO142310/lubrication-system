@@ -1,6 +1,6 @@
 
 import { dataService } from './data';
-import { Component, LubricationPoint } from './types';
+import { Component, LubricationPoint, Machine } from './types';
 
 export function generateMachineSVG(machineId: string): string {
     const machine = dataService.getMachines().find(m => m.id === machineId);
@@ -17,7 +17,19 @@ export function generateMachineSVG(machineId: string): string {
     return generateGenericSVG(machine, components);
 }
 
-function generateDescortezadorSVG(machine: any, components: Component[]): string {
+interface DiagramNode {
+    id?: string;
+    x?: number;
+    y?: number;
+    w?: number;
+    h?: number;
+    label?: string;
+    shape?: string;
+    parent?: string;
+    [key: string]: unknown;
+}
+
+function generateDescortezadorSVG(machine: Machine, components: Component[]): string {
     const width = 800;
     const height = 500;
 
@@ -73,8 +85,8 @@ function generateDescortezadorSVG(machine: any, components: Component[]): string
     `;
 
     // Draw Nodes
-    Object.values(nodes).forEach((n: any) => {
-        if (!n.id || n.parent) return; // Skip if no data or is child
+    (Object.values(nodes) as DiagramNode[]).forEach((n) => {
+        if (!n.id || n.parent || n.x === undefined || n.y === undefined || n.w === undefined || n.h === undefined) return; // Skip if no data or is child
 
         const color = '#334155'; // Dark slate
         const stroke = '#94a3b8';
@@ -102,6 +114,8 @@ function generateDescortezadorSVG(machine: any, components: Component[]): string
         }
 
         // Add Points overlay
+        const nodeX = n.x!; // Already verified above
+        const nodeY = n.y!;
         const points = dataService.getLubricationPoints(n.id);
         points.forEach((p, i) => {
             const px = 10 + (i * 20);
@@ -110,7 +124,7 @@ function generateDescortezadorSVG(machine: any, components: Component[]): string
 
             // Draw relative to component
             svg += `
-                <g transform="translate(${n.x + px}, ${n.y + py})">
+                <g transform="translate(${nodeX + px}, ${nodeY + py})">
                      <circle cx="0" cy="0" r="8" fill="${pColor}" stroke="white" stroke-width="1"/>
                      <text x="0" y="3" text-anchor="middle" fill="white" font-size="8" font-weight="bold">L</text>
                 </g>
@@ -140,7 +154,7 @@ function generateDescortezadorSVG(machine: any, components: Component[]): string
     return svg;
 }
 
-function generateGenericSVG(machine: any, components: Component[]): string {
+function generateGenericSVG(machine: Machine, components: Component[]): string {
     // Same as before but cleaner code
     const padding = 40;
     const compWidth = 220;

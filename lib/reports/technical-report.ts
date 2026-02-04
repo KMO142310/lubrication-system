@@ -2,6 +2,13 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { WorkOrder, Task, LubricationPoint, Machine, Component, Lubricant } from '@/lib/types';
 
+// Module augmentation for jspdf-autotable
+declare module 'jspdf' {
+    interface jsPDF {
+        lastAutoTable: { finalY: number };
+    }
+}
+
 interface TechnicalReportData {
     workOrder: WorkOrder;
     tasks: (Task & {
@@ -103,7 +110,7 @@ export function generateTechnicalReport(data: TechnicalReportData): void {
     // ==========================================
     // MURO DE EVIDENCIA (Fotos)
     // ==========================================
-    let finalY = (doc as any).lastAutoTable.finalY + 20;
+    let finalY = doc.lastAutoTable.finalY + 20;
 
     const tasksWithPhotos = data.tasks.filter(t => t.photoUrl && t.status === 'completado');
 

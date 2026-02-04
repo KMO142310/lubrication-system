@@ -10,7 +10,7 @@ export function calculateCompliance(completedCount: number, totalCount: number):
 interface TaskWithStatus {
     status: string;
     quantityUsed?: number;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export function getTaskStats(tasks: TaskWithStatus[]) {

@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NavigationCard from '@/components/NavigationCard';
-import Link from 'next/link';
 import {
   Users,
   CheckCircle2,
@@ -14,12 +13,10 @@ import {
   TrendingDown,
   Eye,
   FileText,
-  Calendar,
   Target,
   Activity,
   BarChart3,
   Download,
-  ChevronRight,
 } from 'lucide-react';
 import { dataService } from '@/lib/data';
 import { supabase } from '@/lib/supabase';
@@ -64,8 +61,8 @@ export default function SupervisorDashboard() {
     // Cargar datos de Supabase
     const serverTasks = await getCompletedTasksFromServer();
 
-    // Datos locales
-    const _workOrders = dataService.getWorkOrders();
+    // Datos locales (workOrders loaded for future use)
+    dataService.getWorkOrders(); // Side effect: load data
     const allTasks = dataService.getTasks();
     const anomalies = dataService.getAnomalies();
     const points = dataService.getLubricationPoints();

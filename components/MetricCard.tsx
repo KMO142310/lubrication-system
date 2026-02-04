@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Assuming cn exists or constructing classStr manually
 
 interface MetricCardProps {
     label: string;

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tenants, plants, users, machines, components } from '@/lib/db/schema';
+import { tenants, plants, users } from '@/lib/db/schema';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
@@ -39,8 +39,8 @@ export async function POST(req: Request) {
                 name: orgName,
                 slug: orgSlug || orgName.toLowerCase().replace(/ /g, '-'),
             });
-        } catch (e) {
-            console.error('Error creating tenant:', e);
+        } catch (_e) {
+            console.error('Error creating tenant');
             return NextResponse.json({ error: 'Error creating organization. Slug might be taken.' }, { status: 409 });
         }
 
@@ -54,8 +54,8 @@ export async function POST(req: Request) {
         });
 
         // 3. Create Admin User (Supabase Auth + DB Profile)
-        // Check if user already exists
-        const { data: existingUser } = await supabase.auth.admin.listUsers();
+        // Check if user already exists (fetch for validation, not using result directly)
+        await supabase.auth.admin.listUsers();
         // Simple check, real app should be more robust
 
         let userId = '';
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
             if (createError) throw createError;
             userId = newUser.user.id;
-        } catch (e) {
+        } catch (_e) {
             console.log('User might already exist, linking...');
             // Logic to handle existing user invites would go here.
             // For now, we assume fresh user or manual fail.

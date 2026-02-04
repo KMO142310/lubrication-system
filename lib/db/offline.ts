@@ -24,7 +24,7 @@ export interface SyncQueueItem {
     id?: number; // Auto-increment
     resource: 'tasks' | 'anomalies' | 'photos';
     action: 'create' | 'update';
-    payload: any;
+    payload: Record<string, unknown>;
     created_at: number;
     retry_count: number;
 }

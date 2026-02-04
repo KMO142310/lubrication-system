@@ -15,7 +15,7 @@ export async function GET() {
 
     try {
         // 1. Verificar conexión a DB (Supabase)
-        const { data, error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+        const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
 
         if (error) throw error;
         dbStatus = 'healthy';
@@ -35,8 +35,9 @@ export async function GET() {
             }
         }, { status: 200 });
 
-    } catch (error: any) {
-        console.error('Health Check Failed:', error);
+    } catch (error: unknown) {
+        const err = error as { message?: string };
+        console.error('Health Check Failed:', err);
         return NextResponse.json({
             status: 'unhealthy',
             timestamp: new Date().toISOString(),
@@ -44,7 +45,7 @@ export async function GET() {
             services: {
                 database: {
                     status: 'unhealthy',
-                    error: error.message
+                    error: err.message || 'Unknown error'
                 }
             }
         }, { status: 503 });

@@ -3,7 +3,7 @@
 import { useState, use, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, ZoomIn, ZoomOut, Download, PenTool, Eye, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Download, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { dataService } from '@/lib/data';
 import { generateMachineSVG } from '@/lib/diagrams';
@@ -14,7 +14,6 @@ export default function PlanDetailPage({ params }: { params: Promise<{ id: strin
     const resolvedParams = use(params);
     const [machine, setMachine] = useState<Machine | null>(null);
     const [svgContent, setSvgContent] = useState<string>('');
-    const [viewMode, setViewMode] = useState<'original' | 'vector'>('vector');
     const [zoom, setZoom] = useState(1);
 
     useEffect(() => {

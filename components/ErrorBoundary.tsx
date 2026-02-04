@@ -2,7 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { logError, AppError } from '@/lib/error-handler';
+import { logError } from '@/lib/error-handler';
 
 interface Props {
     children: ReactNode;

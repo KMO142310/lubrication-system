@@ -1,7 +1,6 @@
 
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
 
 /**
  * QUALITY MONITOR AGENT
@@ -26,9 +25,10 @@ async function main() {
     try {
         execSync('npx tsc --noEmit', { stdio: 'pipe' });
         log('✅', 'Tipos correctos.');
-    } catch (e: any) {
+    } catch (e: unknown) {
         log('❌', 'Errores de TypeScript detectados:');
-        console.log(e.stdout?.toString());
+        const err = e as { stdout?: { toString(): string } };
+        console.log(err.stdout?.toString());
         errors++;
     }
 

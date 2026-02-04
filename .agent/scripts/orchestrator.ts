@@ -13,7 +13,6 @@ const execPromise = util.promisify(exec);
 
 // Configuración
 const CHECKPOINT_FILE = '.agent/.checkpoint.json';
-const SCAN_INTERVAL_MS = 1000 * 60 * 30; // 30 minutos
 
 interface Checkpoint {
     lastRun: string;
@@ -73,13 +72,15 @@ async function verifyPhase() {
     try {
         await execPromise('npm run build'); // Verificar build
         console.log('Build passed.');
-    } catch (e) { // @ts-ignore
-        console.error('Build failed!', e.stderr);
+        // @ts-expect-error - exec error has stderr property
+    } catch (e: unknown) {
+        const err = e as { stderr?: string };
+        console.error('Build failed!', err.stderr);
         throw new Error('BUILD_FAILED');
     }
 }
 
-async function recoveryPhase(error: any) {
+async function recoveryPhase(error: Error) {
     console.log('🚑 RECOVERY MODE ACTIVATED');
     console.log(`Analyzing error: ${error.message}`);
     // Lógica de self-healing

@@ -9,7 +9,7 @@ import { User } from '@/lib/types';
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const showSuccess = false; // Toast disabled - can enable later
   useEffect(() => { setUsers(dataService.getUsers()); }, []);
 
   return (

@@ -24,6 +24,7 @@ interface TaskSummary {
   status: 'completado' | 'pendiente' | 'omitido';
   completedAt?: string;
   observations?: string;
+  [key: string]: unknown; // Index signature for TaskWithStatus compatibility
 }
 
 interface DailyReportProps {

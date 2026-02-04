@@ -11,11 +11,12 @@ import {
     Calendar,
     Package,
     Map,
+    LucideIcon,
 } from 'lucide-react';
 
 export interface NavItemConfig {
     label: string;
-    icon: any;
+    icon: LucideIcon;
     href: string;
     roles: string[];
 }
