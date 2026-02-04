@@ -29,7 +29,7 @@ export default function PlansPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                                Planos Técnicos Restauraudos
+                                Planos Técnicos Restaurados
                             </h1>
                             <p className="text-slate-500 dark:text-slate-400 mt-1">
                                 Diagramas vectoriales de alta fidelidad generados por el Workflow de Restauración.
