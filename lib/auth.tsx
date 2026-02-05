@@ -106,26 +106,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (stored) {
                 try {
                     const parsedUser = JSON.parse(stored);
-                    // FORZAR LOGOUT si tiene rol antiguo O si falta tenantId
-                    if (
-                        parsedUser.role === 'admin' ||
-                        parsedUser.role === 'tecnico' ||
-                        !parsedUser.tenantId
-                    ) {
-                        console.log('⚠️ Sesión inválida (rol antiguo o falta tenant), forzando logout');
-                        localStorage.removeItem(AUTH_STORAGE_KEY);
-                        localStorage.removeItem('aisa_data_initialized_v12');
-                        setUser(null);
+                    if (parsedUser.role === 'admin' || parsedUser.role === 'tecnico' || !parsedUser.tenantId) {
+                        console.log('⚠️ Sesión inválida, reseteando para bypass');
+                        // Auto-login bypass
+                        const devUser = FALLBACK_USERS.find(u => u.role === 'lubricador');
+                        if (devUser) {
+                            console.log('🔄 Bypassing login -> Auto-login as Lubricator');
+                            const { password, ...userWithoutPassword } = devUser;
+                            setUser(userWithoutPassword);
+                            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+                        } else {
+                            setUser(null);
+                        }
                     } else {
                         setUser(parsedUser);
                     }
                 } catch {
                     localStorage.removeItem(AUTH_STORAGE_KEY);
+                    setUser(null);
                 }
             } else {
-                // No hay sesión guardada - usuario debe hacer login
-                console.log('📋 No session found, redirecting to login');
-                setUser(null);
+                // BYPASS: Auto-login si no hay sesión
+                console.log('🚧 DEV MODE: Bypassing Login Screen');
+                const devUser = FALLBACK_USERS.find(u => u.role === 'lubricador');
+                if (devUser) {
+                    const { password, ...userWithoutPassword } = devUser;
+                    setUser(userWithoutPassword);
+                    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+                } else {
+                    setUser(null);
+                }
             }
             setIsLoading(false);
         };
