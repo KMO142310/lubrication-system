@@ -12,37 +12,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - name: Install Dependencies
-      run: npm ci
+      - name: Install Dependencies
+        run: npm ci
 
-    - name: 🔍 Audit: Lint & Type Check
-      run: |
-        npm run lint
-        # npx tsc --noEmit (Optional, heavy)
+      - name: "🔍 Audit: Lint & Type Check"
+        run: |
+          npm run lint
 
-    - name: 🧪 Verify: Unit Tests
-      run: npm test
+      - name: "🧪 Verify: Unit Tests"
+        run: npm test
 
-    - name: 🏗️ Build: Production Check
-      run: npm run build -- --webpack
-      env:
-        # Vercel-like env for build check
-        NEXT_TELEMETRY_DISABLED: 1
+      - name: "🏗️ Build: Production Check"
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
-    - name: 📊 Report: Status
-      if: always()
-      run: |
-        if [ "${{ job.status }}" == "success" ]; then
-          echo "✅ Quality Gate Passed. Ready for Deployment."
-        else
-          echo "❌ Quality Gate Failed. Fix issues before deploying."
-          exit 1
-        fi
+      - name: "📊 Report: Status"
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Quality Gate Passed. Ready for Deployment."
+          else
+            echo "❌ Quality Gate Failed. Fix issues before deploying."
+            exit 1
+          fi
