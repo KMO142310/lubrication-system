@@ -35,9 +35,9 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-slate-900">
+      <div className="min-h-screen bg-slate-900">
         <Sidebar />
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        <main className="transition-all duration-300 md:ml-[260px] p-6 md:p-8 overflow-y-auto w-auto">
           {renderDashboard()}
         </main>
       </div>
