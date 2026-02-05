@@ -17,6 +17,20 @@ export function useOfflineSync() {
         lastSync: null,
     });
 
+    // Trigger background sync
+    const triggerSync = useCallback(async () => {
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                // @ts-expect-error - sync is not fully typed in TS
+                await registration.sync.register('sync-completed-tasks');
+                console.log('[App] Background sync registered');
+            } catch (error) {
+                console.log('[App] Background sync not supported:', error);
+            }
+        }
+    }, []);
+
     // Track online/offline
     useEffect(() => {
         const handleOnline = () => {
@@ -36,7 +50,7 @@ export function useOfflineSync() {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, []);
+    }, [triggerSync]);
 
     // Listen for SW messages
     useEffect(() => {
@@ -76,19 +90,7 @@ export function useOfflineSync() {
         }
     }, []);
 
-    // Trigger background sync
-    const triggerSync = useCallback(async () => {
-        if ('serviceWorker' in navigator && 'SyncManager' in window) {
-            try {
-                const registration = await navigator.serviceWorker.ready;
-                // @ts-expect-error - sync is not fully typed in TS
-                await registration.sync.register('sync-completed-tasks');
-                console.log('[App] Background sync registered');
-            } catch (error) {
-                console.log('[App] Background sync not supported:', error);
-            }
-        }
-    }, []);
+
 
     // Queue an item for sync
     const queueForSync = useCallback((item: { type: string; data: unknown }) => {
