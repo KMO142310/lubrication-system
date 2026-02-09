@@ -1,85 +1,65 @@
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-/**
- * Enterprise Security Middleware
- * - Security headers
- * - Rate limiting headers
- * - Request logging
- */
+export async function middleware(request: NextRequest) {
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-export function middleware(_request: NextRequest) {
-  const response = NextResponse.next();
-
-  // ============================================================
-  // SECURITY HEADERS (OWASP Recommendations)
-  // ============================================================
-
-  // Prevent clickjacking
-  response.headers.set('X-Frame-Options', 'DENY');
-
-  // Prevent MIME type sniffing
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-
-  // Enable XSS protection
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-
-  // Referrer policy
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-  // Permissions policy
-  response.headers.set(
-    'Permissions-Policy',
-    'camera=(self), microphone=(), geolocation=(self), interest-cohort=()'
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
   );
 
-  // Content Security Policy (allows camera for photo capture)
-  response.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-      "media-src 'self' blob:",
-      "frame-ancestors 'none'",
-    ].join('; ')
-  );
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Strict Transport Security (HTTPS only)
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains'
-    );
+  const { pathname } = request.nextUrl;
+
+  if (!user && pathname !== '/login' && pathname !== '/register') {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // ============================================================
-  // REQUEST METADATA
-  // ============================================================
+  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-  // Add request ID for tracing
-  const requestId = crypto.randomUUID();
-  response.headers.set('X-Request-ID', requestId);
+    if (userData?.role === 'admin' || userData?.role === 'supervisor') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
 
-  // Add timestamp
-  response.headers.set('X-Response-Time', new Date().toISOString());
+    if (userData?.role === 'lubricator') {
+      return NextResponse.redirect(new URL('/lubricator/dashboard', request.url));
+    }
+  }
 
   return response;
 }
 
-// Apply middleware to all routes except static files
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)',
   ],
 };

@@ -217,7 +217,7 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
     if (data.signature) {
         try {
             doc.addImage(data.signature, 'PNG', 14, finalY - 5, 60, 25);
-        } catch (_e) {
+        } catch {
             // Firma no disponible
         }
     }
@@ -257,7 +257,7 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
         const photoHeight = 60;
 
         // Fotos de tareas completadas
-        tasksWithPhotos.forEach((task, _index) => {
+        tasksWithPhotos.forEach((task) => {
             if (photoY > 220) {
                 doc.addPage();
                 photoY = 20;
@@ -294,7 +294,7 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
                     doc.setTextColor(255, 255, 255);
                     doc.setFontSize(6);
                     doc.text('VERIFICADO', 16, photoY + 21);
-                } catch (_e) {
+                } catch {
                     doc.setTextColor(200, 100, 100);
                     doc.text('[Foto no disponible]', 14, photoY + 40);
                 }
@@ -326,7 +326,7 @@ export function generateWorkOrderPDF(data: WorkOrderPDFData): void {
                     doc.setDrawColor(30, 58, 138);
                     doc.setLineWidth(0.5);
                     doc.rect(14, photoY + 15, photoWidth, photoHeight);
-                } catch (_e) {
+                } catch {
                     doc.text('[Foto no disponible]', 14, photoY + 40);
                 }
 

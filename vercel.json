@@ -1,14 +1,21 @@
 {
-    "buildCommand": "npm run build -- --webpack",
-    "framework": "nextjs",
-    "installCommand": "npm install",
-    "regions": [
-        "sfo1"
-    ],
-    "crons": [
-        {
-            "path": "/api/sync/pull",
-            "schedule": "0 0 * * *"
-        }
-    ]
+  "framework": "nextjs",
+  "regions": ["sfo1"],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    }
+  ]
 }

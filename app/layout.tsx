@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Oswald } from "next/font/google";
-import { Providers } from "@/components/Providers";
-import { GlobalStatusBar } from "@/components/GlobalStatusBar";
+import { Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/toast";
+import { ServiceWorkerRegistrar } from "@/components/shared/ServiceWorkerRegistrar";
 import "./globals.css";
 
 const inter = Inter({
@@ -10,39 +10,26 @@ const inter = Inter({
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
-
-const oswald = Oswald({
-  subsets: ["latin"],
-  variable: "--font-oswald",
-  display: "swap",
-});
+export const metadata: Metadata = {
+  title: "BITACORA",
+  description: "Sistema de Control de Lubricación Industrial",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "BITACORA",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
 
 export const viewport: Viewport = {
+  themeColor: "#0F1419",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#1e3654",
-};
-
-export const metadata: Metadata = {
-  title: "AISA - Sistema de Gestión de Lubricación",
-  description: "Plataforma de control y planificación de mantenimiento de lubricación industrial",
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/icons/icon-192x192.svg",
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "AISA Lub",
-  },
 };
 
 export default function RootLayout({
@@ -51,19 +38,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable} ${oswald.variable}`}>
+    <html lang="es" className={inter.variable}>
       <head>
-        {/* PWA Service Worker Registration */}
-        {/* Note: next-pwa might auto-register, but explicit registration ensures control */}
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
       </head>
-      <body>
-        <Providers>
-          <GlobalStatusBar />
-          {children}
-        </Providers>
+      <body className={inter.className}>
+        {children}
+        <Toaster />
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );
 }
-
-// Force redeploy: 1770247213

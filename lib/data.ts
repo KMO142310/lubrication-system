@@ -154,11 +154,11 @@ async function syncFromApi(): Promise<void> {
 function generateWeeklyWorkOrders(): void {
     const workOrders: WorkOrder[] = [];
     const tasks: Task[] = [];
-    const points = PUNTOS_LUBRICACION;
+    const _points = PUNTOS_LUBRICACION;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const dateStr = today.toISOString().split('T')[0];
+    const _dateStr = today.toISOString().split('T')[0];
 
     // Generar órdenes para +/- 15 días desde hoy para poblar el calendario
     const startOffset = -7;

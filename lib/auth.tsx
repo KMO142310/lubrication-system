@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         const devUser = FALLBACK_USERS.find(u => u.role === 'lubricador');
                         if (devUser) {
                             console.log('🔄 Bypassing login -> Auto-login as Lubricator');
-                            const { password, ...userWithoutPassword } = devUser;
+                            const { password: _p1, ...userWithoutPassword } = devUser;
                             setUser(userWithoutPassword);
                             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
                         } else {
@@ -130,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 console.log('🚧 DEV MODE: Bypassing Login Screen');
                 const devUser = FALLBACK_USERS.find(u => u.role === 'lubricador');
                 if (devUser) {
-                    const { password, ...userWithoutPassword } = devUser;
+                    const { password: _p2, ...userWithoutPassword } = devUser;
                     setUser(userWithoutPassword);
                     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
                 } else {
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));
                 return { success: true };
             }
-        } catch (_e) {
+        } catch {
             console.log('Supabase auth failed, trying local fallback');
         }
 

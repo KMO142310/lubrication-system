@@ -1,6 +1,6 @@
 
 import { dataService } from './data';
-import { Component, LubricationPoint, Machine } from './types';
+import { Component, Machine } from './types';
 
 export function generateMachineSVG(machineId: string): string {
     const machine = dataService.getMachines().find(m => m.id === machineId);

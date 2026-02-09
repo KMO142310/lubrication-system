@@ -1,92 +1,59 @@
-# Changelog - Sistema de Lubricación AISA
+# Changelog — BITACORA
 
-Todas las versiones notables del proyecto están documentadas aquí.
+---
+
+## [2.0.0] - 2026-02-09
+
+### Auditoría y preparación de deploy
+
+#### Build
+- Resuelto conflicto de rutas paralelas: `(lubricator)` movido a segmento `/lubricator/`
+- Resuelto error Turbopack con `@react-pdf/renderer` usando import dinámico en runtime
+- Corregido error TypeScript en `UserForm.tsx` (union type en react-hook-form)
+- Instalado Tailwind CSS 3 + PostCSS (faltaba como dependencia)
+- Eliminadas dependencias no usadas: `@ducanh2912/next-pwa`, `next-pwa`
+- Build limpio con 0 errores en Next.js 16.1.4 (Turbopack)
+
+#### Seguridad
+- Agregado filtro `company_id` en todos los hooks de datos (multi-tenant)
+- Creado helper `lib/supabase/getCompanyId.ts` reutilizable
+- Hooks corregidos: useAreas, useMachines, useLubricantTypes, useLubricationPoints, useRoutes, useWorkOrders, useUsers, useInventory, useInsights
+
+#### Deploy
+- `next.config.ts`: eliminado wrapper PWA, agregado `serverExternalPackages`, dominios de imagen Supabase
+- `vercel.json`: eliminado flag `--webpack`, agregados headers de seguridad, config de Service Worker
+- `.gitignore`: excluido `.env.local.example` para que sea committeable
+
+#### PWA
+- `manifest.json` actualizado a branding BITACORA
+- Iconos SVG con iniciales "BT" en machinery orange sobre carbon
+- Service Worker con cache-first (estáticos), network-first (Supabase), stale-while-revalidate (páginas)
+- `ServiceWorkerRegistrar.tsx` integrado en layout raíz
+
+#### Documentación
+- README.md reescrito para BITACORA
+- CHANGELOG.md actualizado
 
 ---
 
 ## [1.0.0] - 2026-01-23
 
-### 🎉 Release de Producción
+### Release inicial
 
-**Primera versión estable lista para uso en producción.**
-
-### Funcionalidades Principales
-
-#### Gestión de Activos
-- ✅ Jerarquía completa: Planta → Centro de Gestión → Equipo → Componente → Punto de Lubricación
-- ✅ 64 puntos de lubricación auditados y validados
-- ✅ 8 equipos configurados según documentación oficial AISA
-- ✅ 63 componentes mapeados
-- ✅ 7 lubricantes con especificaciones técnicas
-
-#### Ejecución Operacional
-- ✅ Generación automática de órdenes de trabajo
-- ✅ 8 frecuencias configuradas (diario, semanal, quincenal, mensual, trimestral, semestral, anual)
-- ✅ Captura y previsualización de fotografías
-- ✅ Firma digital para cierre de rutas
-- ✅ Generación de PDF con evidencia
-
-#### Sistema de Usuarios
-- ✅ 3 roles implementados (Admin, Supervisor, Técnico)
-- ✅ Control de acceso por rol (RBAC)
-- ✅ Autenticación segura
-
-#### Reportes y Métricas
-- ✅ Dashboard con KPIs en tiempo real
-- ✅ Gráfico de cumplimiento semanal
-- ✅ Control de anomalías por severidad
-- ✅ Exportación de reportes PDF
-
-#### Infraestructura
-- ✅ Desplegado en Vercel
-- ✅ Repositorio en GitHub
-- ✅ Base de datos Supabase configurada
-- ✅ Almacenamiento de imágenes en Supabase Storage
-
-### Datos Auditados
-
-Fuentes oficiales procesadas:
-- `PLAN_DETALLADO_LUBRICACION_AISA.xlsx`
-- `PROGRAMA_LUBRICACION_ENERO_2026.xlsx`
-- `REGISTRO_CONSUMO_LUBRICANTES.xlsx`
-- `MANUAL_TECNICO_LUBRICACION_INDUSTRIAL_AISA_2026.pdf`
-- `MANUAL_EXPRESS_LUBRICACION_AISA_2026.pdf`
-
-### Distribución de Tareas
-
-| Frecuencia | Cantidad |
-|------------|----------|
-| Diarias (8 hrs) | 19 |
-| Día por Medio | 1 |
-| Semanales (40 hrs) | 9 |
-| Quincenales (160 hrs) | 8 |
-| Mensuales | 14 |
-| Trimestrales | 6 |
-| Semestrales | 5 |
-| Anuales | 2 |
-| **TOTAL** | **64** |
-
----
-
-## [0.9.0] - 2026-01-22
-
-### Prerelease
-
-- Integración inicial con Supabase
-- Corrección de datos de lubricación
-- Mejoras de UI/UX
+- Gestión de activos: áreas, máquinas, puntos de lubricación, lubricantes
+- Ejecución operacional: órdenes de trabajo, ejecución punto a punto
+- Roles: supervisor y lubricador con RBAC
+- Dashboard con KPIs
+- Reportes PDF
+- Integración Supabase (Auth + Storage + PostgreSQL)
+- Deploy en Vercel
 
 ---
 
 ## [0.1.0] - 2026-01-20
 
-### Versión Inicial
+### Versión inicial
 
 - Estructura base del proyecto
 - Componentes UI
 - Sistema de autenticación local
-- Generación de PDF
-
----
-
-**Desarrollado para Aserradero Industrial AISA**

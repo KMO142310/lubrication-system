@@ -1,5 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { dbLocal, OfflineTask } from '@/lib/db/offline';
+import { dbLocal } from '@/lib/db/offline';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { OfflineTask } from '@/lib/db/offline';
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState, useCallback } from 'react';
 

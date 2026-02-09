@@ -120,7 +120,7 @@ export function generarCalendarioMes(año: number, mes: number, turnoInicial: Tu
     ];
 
     const diasMes: DiaCalendario[] = [];
-    const primerDia = new Date(año, mes, 1);
+    const _primerDia = new Date(año, mes, 1);
     const ultimoDia = new Date(año, mes + 1, 0);
 
     let totalTareasMes = 0;

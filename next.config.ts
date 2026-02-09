@@ -1,18 +1,20 @@
 import type { NextConfig } from "next";
-import withPWAInit from "@ducanh2912/next-pwa";
-
-const withPWA = withPWAInit({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  scope: "/",
-  sw: "service-worker.js",
-});
 
 const nextConfig: NextConfig = {
-  /* config options here */
   output: "standalone",
-  turbopack: {},
+  serverExternalPackages: ["@react-pdf/renderer"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.in",
+      },
+    ],
+  },
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;

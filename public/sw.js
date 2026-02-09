@@ -1,33 +1,27 @@
-// AISA Lubrication PWA Service Worker v2
-// Estrategias: Cache-First (assets), Network-First (API), Stale-While-Revalidate (pages)
+// BITACORA Service Worker v3
+// Cache-First: static assets (HTML, CSS, JS, images)
+// Network-First: Supabase API requests
+// Stale-While-Revalidate: page navigations
 
-const CACHE_VERSION = 'v2';
-const STATIC_CACHE = `aisa-static-${CACHE_VERSION}`;
-const DYNAMIC_CACHE = `aisa-dynamic-${CACHE_VERSION}`;
-const API_CACHE = `aisa-api-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v3';
+const STATIC_CACHE = `bitacora-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `bitacora-dynamic-${CACHE_VERSION}`;
+const API_CACHE = `bitacora-api-${CACHE_VERSION}`;
 
-// Assets para pre-cache
 const STATIC_ASSETS = [
   '/',
-  '/login',
-  '/tasks',
-  '/metrics',
-  '/anomalies',
-  '/schedule',
   '/manifest.json',
-  '/favicon.ico',
   '/icons/icon-192x192.svg',
   '/icons/icon-512x512.svg',
 ];
 
 // ===============================
-// INSTALL: Pre-cache static assets
+// INSTALL
 // ===============================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v2...');
+  console.log('[SW] BITACORA v3 installing...');
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      console.log('[SW] Pre-caching static assets');
       return cache.addAll(STATIC_ASSETS);
     })
   );
@@ -35,17 +29,17 @@ self.addEventListener('install', (event) => {
 });
 
 // ===============================
-// ACTIVATE: Clean old caches
+// ACTIVATE
 // ===============================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v2...');
+  console.log('[SW] BITACORA v3 activating...');
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys
           .filter((key) => !key.includes(CACHE_VERSION))
           .map((key) => {
-            console.log('[SW] Deleting old cache:', key);
+            console.log('[SW] Removing old cache:', key);
             return caches.delete(key);
           })
       );
@@ -55,19 +49,22 @@ self.addEventListener('activate', (event) => {
 });
 
 // ===============================
-// FETCH: Cache strategies
+// FETCH
 // ===============================
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET
   if (request.method !== 'GET') return;
-
-  // Skip chrome-extension and other protocols
   if (!url.protocol.startsWith('http')) return;
 
-  // API calls: Network-First
+  // Supabase API: Network-First with cache fallback
+  if (url.hostname.includes('supabase.co') || url.hostname.includes('supabase.in')) {
+    event.respondWith(networkFirst(request, API_CACHE));
+    return;
+  }
+
+  // Internal API routes: Network-First
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, API_CACHE));
     return;
@@ -79,7 +76,9 @@ self.addEventListener('fetch', (event) => {
     request.destination === 'style' ||
     request.destination === 'script' ||
     request.destination === 'font' ||
-    url.pathname.includes('/_next/static/')
+    url.pathname.includes('/_next/static/') ||
+    url.pathname.endsWith('.svg') ||
+    url.pathname.endsWith('.ico')
   ) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
@@ -89,7 +88,10 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(staleWhileRevalidate(request, DYNAMIC_CACHE));
 });
 
-// Strategy: Cache-First (images, CSS, JS)
+// ===============================
+// STRATEGIES
+// ===============================
+
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -101,11 +103,10 @@ async function cacheFirst(request, cacheName) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
-    // Return placeholder for images
+  } catch (_error) {
     if (request.destination === 'image') {
       return new Response(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="#1e3654" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="#94a3b8" font-size="10">Offline</text></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="#0F1419" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="#A0AEC0" font-size="10">Offline</text></svg>',
         { headers: { 'Content-Type': 'image/svg+xml' } }
       );
     }
@@ -113,7 +114,6 @@ async function cacheFirst(request, cacheName) {
   }
 }
 
-// Strategy: Network-First (APIs)
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
@@ -122,10 +122,10 @@ async function networkFirst(request, cacheName) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch (_error) {
     const cached = await caches.match(request);
     if (cached) {
-      console.log('[SW] Returning cached API response');
+      console.log('[SW] Serving cached response for:', request.url);
       return cached;
     }
     return new Response(
@@ -135,7 +135,6 @@ async function networkFirst(request, cacheName) {
   }
 }
 
-// Strategy: Stale-While-Revalidate (pages)
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
@@ -153,92 +152,12 @@ async function staleWhileRevalidate(request, cacheName) {
 }
 
 // ===============================
-// BACKGROUND SYNC
-// ===============================
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background Sync:', event.tag);
-
-  if (event.tag === 'sync-completed-tasks') {
-    event.waitUntil(syncCompletedTasks());
-  }
-});
-
-async function syncCompletedTasks() {
-  // Get pending tasks from IndexedDB
-  // This would connect to the offline database
-  console.log('[SW] Syncing completed tasks to server...');
-
-  // Notify clients that sync completed
-  const clients = await self.clients.matchAll();
-  clients.forEach(client => {
-    client.postMessage({ type: 'SYNC_COMPLETE', timestamp: Date.now() });
-  });
-}
-
-// ===============================
-// PUSH NOTIFICATIONS
-// ===============================
-self.addEventListener('push', (event) => {
-  const data = event.data?.json() || {};
-
-  const options = {
-    body: data.body || 'Tienes tareas pendientes',
-    icon: '/icons/icon-192x192.svg',
-    badge: '/icons/icon-192x192.svg',
-    vibrate: [200, 100, 200],
-    tag: data.tag || 'aisa-notification',
-    renotify: true,
-    data: {
-      url: data.url || '/tasks',
-      taskId: data.taskId,
-    },
-    actions: [
-      { action: 'open', title: 'Ver Tarea' },
-      { action: 'dismiss', title: 'Cerrar' },
-    ],
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'AISA Lubricación', options)
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'dismiss') return;
-
-  event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
-      // Focus existing window or open new
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.navigate(event.notification.data.url);
-          return client.focus();
-        }
-      }
-      return clients.openWindow(event.notification.data.url);
-    })
-  );
-});
-
-// ===============================
 // MESSAGE HANDLING
 // ===============================
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-
-  if (event.data?.type === 'CACHE_TASK') {
-    // Pre-cache specific task data
-    const taskUrl = event.data.url;
-    caches.open(API_CACHE).then(cache => {
-      fetch(taskUrl).then(response => {
-        if (response.ok) cache.put(taskUrl, response);
-      });
-    });
-  }
 });
 
-console.log('[SW] AISA Service Worker v2 loaded');
+console.log('[SW] BITACORA Service Worker v3 loaded');

@@ -1,46 +1,7 @@
-'use client';
-
-import { useAuth } from '@/lib/auth';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Sidebar from '@/components/Sidebar';
-import LubricatorDashboard from '@/components/dashboards/LubricatorDashboard';
-import SupervisorDashboard from '@/components/dashboards/SupervisorDashboard';
-import ContractorDashboard from '@/components/dashboards/ContractorDashboard';
-import { Loader2 } from 'lucide-react';
-
-export default function Dashboard() {
-  const { user, isLoading } = useAuth();
-
-  // Role Strategy Pattern
-  const renderDashboard = () => {
-    switch (user?.role) {
-      case 'supervisor':
-        return <SupervisorDashboard />;
-      case 'supervisor_ext':
-        return <ContractorDashboard />;
-      case 'lubricador':
-      default:
-        // Default to Lubricator view as it's the core operational view
-        return <LubricatorDashboard />;
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-full bg-slate-900 flex items-center justify-center">
-        <Loader2 className="animate-spin text-blue-500 w-12 h-12" />
-      </div>
-    );
-  }
-
+export default function Home() {
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-slate-900">
-        <Sidebar />
-        <main className="transition-all duration-300 md:ml-[260px] pt-24 pb-8 px-6 md:pt-28 md:px-8 overflow-y-auto w-auto">
-          {renderDashboard()}
-        </main>
-      </div>
-    </ProtectedRoute>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0F1419' }}>
+      <h1 className="text-white text-4xl font-bold">BITACORA</h1>
+    </div>
   );
 }

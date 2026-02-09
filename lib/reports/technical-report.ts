@@ -158,7 +158,7 @@ export function generateTechnicalReport(data: TechnicalReportData): void {
                     doc.addImage(task.photoUrl, 'JPEG', xPos, finalY, photoWidth, photoHeight);
                     doc.rect(xPos, finalY, photoWidth, photoHeight); // Borde
                 }
-            } catch (e) {
+            } catch {
                 doc.rect(xPos, finalY, photoWidth, photoHeight);
                 doc.text('Img Error', xPos + 30, finalY + 30);
             }

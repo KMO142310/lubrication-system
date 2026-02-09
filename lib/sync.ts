@@ -6,7 +6,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import { updateSyncStatus, notifyListeners } from './sync-store';
+import { updateSyncStatus } from './sync-store';
 export { getSyncStatus, onSyncStatusChange, type SyncStatus } from './sync-store';
 
 export const syncDataService = {
